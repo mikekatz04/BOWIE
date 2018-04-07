@@ -463,7 +463,8 @@ class main_process:
 		par_1 = float(self.gid['fixed_parameter_1'])
 		par_2 = float(self.gid['fixed_parameter_2'])
 
-		#check if spins are set to the same value. 
+		#check if spins are set to the same value. Need to fill par_3 with spin_2 if so. 
+		#then use np.meshgrid to create a full grid of parameters. 
 		if self.gid['par_3_name'] == 'same_spin':
 			self.xvals, self.yvals, par_1, par_2 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]))
 			self.xvals, self.yvals, par_1, par_2 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel()
@@ -477,14 +478,17 @@ class main_process:
 			par_3 = float(self.gid['fixed_parameter_3'])
 
 			self.xvals, self.yvals, par_1, par_2, par_3 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]), np.array([par_3]))
-
 			self.xvals, self.yvals, par_1, par_2, par_3 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel(), par_3.ravel()
 
+		#add parameters to input dict. Names must be 'total_mass', 'mass_ratio', 'redshift' or 'luminosity_distance' or 'comoving distance', 'spin_1', 'spin_2'
 		self.input_dict = {self.gid['xval_name']:self.xvals, self.gid['yval_name']:self.yvals, self.gid['par_1_name']:par_1, self.gid['par_2_name']:par_2, self.gid['par_3_name']:par_3, 'start_time': float(self.gid['start_time']), 'end_time':float(self.gid['end_time'])}
  
 		return
 
 	def add_extras(self):
+		"""
+		Add extras to extra_dict. This includes averaging factors and number of points in the waveforms, signal types, distance key
+		"""
 		if 'snr_calculation_factors' in self.gid.keys():
 			if 'averaging_factor' in self.gid['snr_calculation_factors'].keys():
 				self.extra_dict['averaging_factor'] = float(self.gid['snr_calculation_factors']['averaging_factor'])
@@ -497,23 +501,24 @@ class main_process:
 
 		self.extra_dict['signal_types'] = self.pid['general']['signal_type']
 
+		#find which type of distance is used
 		self.dist_key = 'redshift'
 		for key in ['xval_name', 'yval_name', 'par_1_name', 'par_2_name', 'par_3_name']:
-			if self.gid[key] == 'luminosity_distance':
-				self.dist_key = 'luminosity_distance'
-				self.extra_dict['dist_type'] = 'luminosity_distance'
+			if self.gid[key] == 'luminosity_distance' or self.gid[key] == 'comoving_distance':
+				self.dist_key = self.extra_dict['dist_type'] = self.gid[key]
 				self.extra_dict['dist_unit'] = self.gid[key[:-4] + 'unit']
 
 		return
 
 
 	def prep_parallel(self):
+		"""
+		Prepare the program for generating the waveforms and finding the snr. This divides the data arrays into chunks and loads them into CalculateSignalClass. This is also used with single generation, running through the chunks in a list.  
+		"""
 		st = time.time()
-		num_processors = 4
 		num_splits = 100
 
 		num_splits = int(self.pid['general']['num_splits'])
-		self.num_processors = int(self.pid['general']['num_processors'])
 
 		#set up inputs for each processor
 		#based on num_splits which indicates max number of boxes per processor
@@ -523,17 +528,21 @@ class main_process:
 		array_inds = np.arange(len(self.xvals))
 		find_split = np.split(array_inds,split_inds)
 
-		
-
 		#start time ticker
 
 		self.args = []
 		for i, find_part in enumerate(find_split):
 			binaries_class = CalculateSignalClass(self.pid, self.input_dict['total_mass'][find_part], self.input_dict['mass_ratio'][find_part], self.input_dict[self.dist_key][find_part], self.input_dict['spin_1'][find_part], self.input_dict['spin_2'][find_part],  self.input_dict['start_time'], self.input_dict['end_time'], self.extra_dict)
 			self.args.append((i, binaries_class,  self.pid['general']['signal_type'], self.sensitivity_dict))
+
 		return
 
 	def run_parallel(self):
+		"""
+		Runs the generation in parallel.
+		"""
+		self.num_processors = int(self.pid['general']['num_processors'])
+
 		results = []
 		with Pool(self.num_processors) as pool:
 			print('start pool', 'num process:', len(self.args), '\n')
@@ -549,6 +558,10 @@ class main_process:
 		return
 
 	def run_single(self):
+		"""
+		Runs the generation with single process.
+		"""
+
 		out = [parallel_func(*arg) for arg in self.args]
 
 		self.final_dict = OrderedDict()
@@ -556,25 +569,28 @@ class main_process:
 			for sig_type in self.pid['general']['signal_type']:
 				self.final_dict[sc + '_' + sig_type] = np.concatenate([r[sc + '_' + sig_type] for r in out])
 
-		"""
-		binaries_class = CalculateSignalClass(self.pid, self.input_dict['total_mass'], self.input_dict['mass_ratio'], self.input_dict['redshift'], self.input_dict['spin_1'], self.input_dict['spin_2'],  self.input_dict['start_time'], self.input_dict['end_time'], self.extra_dict)
-		self.final_dict = parallel_func(0, binaries_class,  self.pid['general']['signal_type'], self.sensitivity_dict)
-
-		"""
 		return
 
 
 def generate_contour_data(pid):
-	#choose all phases or entire signal
-	#ADD FILES LIKE IN MAKE PLOT WITH SEPARATE DICTS
+	"""
+	Main function for this program. 
+
+	Input:
+		:param pid: (dict) - contains all of the input information for the generation from a dict in a script or .json configuration file. See BOWIE documentation for all possibilities with the pid. 
+	"""
 
 	begin_time = time.time()
 	global WORKING_DIRECTORY
 
 	gid = pid['generate_info']
 
-	WORKING_DIRECTORY = pid['general']['WORKING_DIRECTORY']
+	WORKING_DIRECTORY = '.'
 
+	if 'WORKING_DIRECTORY' in pid['general'].keys():
+		WORKING_DIRECTORY = pid['general']['WORKING_DIRECTORY']
+
+	#instantiate
 	running_process = main_process(pid)
 	running_process.set_parameters()
 	running_process.add_extras()
@@ -587,18 +603,21 @@ def generate_contour_data(pid):
 	else:
 		running_process.run_single()
 
+	#read out
 	file_out = file_read_out(pid, pid['output_info']['output_file_type'], pid['output_info']['output_folder'] + '/' + pid['output_info']['output_file_name'],  running_process.xvals, running_process.yvals, running_process.final_dict, running_process.num_x, running_process.num_y, gid['xval_name'], gid['yval_name'], gid['par_1_name'], gid['par_2_name'], gid['par_3_name'])
 
+	#adding extras to output info
 	file_out.prep_output()
+
 	print('outputing file')
 	getattr(file_out, pid['output_info']['output_file_type'] + '_read_out')()
-
-	#create header for data_file
-
 
 	print(time.time()-begin_time)
 
 if __name__ == '__main__':
+	"""
+	__main__ function for loading in .json configuration file. 
+	"""
 	plot_info_dict = json.load(open(sys.argv[1], 'r'))
 
 	generate_contour_data(plot_info_dict)
