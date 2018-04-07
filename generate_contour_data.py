@@ -20,7 +20,7 @@ from scipy.interpolate import interp1d
 import scipy.constants as ct
 #import pdb
 
-from astropy.cosmology import Planck13 as cosmo
+from astropy.cosmology import Planck15 as cosmo
 from astropy.io import ascii
 
 from pyphenomd import PhenomDWaveforms, SNRCalculation
@@ -317,10 +317,10 @@ class file_read_out:
 		return
 
 		
-class main_process:
+class MainProcess:
 	def __init__(self, pid):
 		"""
-		Class that carries the input dictionary (pid) and directs the program to accomplish generation tasks. 
+		Class that carries the input dictionary (pid) and directs the program to accomplish plotting tasks. 
 
 		Inputs:
 			:param pid: (dict) - carries all arguments for the program from a dictionary in a script or .json configuration file. 
@@ -328,18 +328,10 @@ class main_process:
 
 		self.pid = pid
 
+		#separate 'generate_info' for ease in code
 		self.gid = pid['generate_info']
 
 		self.extra_dict = {}
-
-		#Galactic Background Noise --> 'True', 'False', or 'Both'
-		if pid['general']['add_wd_noise'] == 'True' or pid['general']['add_wd_noise'] == 'Both':
-			self.read_in_wd_noise()
-
-		#Sensitivity curve files
-		self.sensecurves = pid['input_info']['sensitivity_curves']
-
-		self.read_in_sensitivity_curves()
 
 
 	def read_in_noise_file(self, file_dict, wd_noise=False):
@@ -406,6 +398,10 @@ class main_process:
 		"""
 		Read in all the sensitivity curves
 		"""
+
+
+		#Sensitivity curve files
+		self.sensecurves = self.pid['input_info']['sensitivity_curves']
 
 		#declare dict for noise curve functions
 		self.sensitivity_dict = OrderedDict()
@@ -591,7 +587,8 @@ def generate_contour_data(pid):
 		WORKING_DIRECTORY = pid['general']['WORKING_DIRECTORY']
 
 	#instantiate
-	running_process = main_process(pid)
+	running_process = MainProcess(pid)
+	running_process.read_in_sensitivity_curves()
 	running_process.set_parameters()
 	running_process.add_extras()
 

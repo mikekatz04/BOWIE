@@ -1,16 +1,20 @@
 """
-Make_plot module turns gridded datasets into helpful plots. It is designed for LISA Signal-to-Noise (SNR) comparisons across sennsitivity curves and parameters.
+Module turns gridded datasets into helpful plots. It is designed for LISA Signal-to-Noise (SNR) comparisons across sennsitivity curves and parameters, but is flexible to other needs. It is part of the BOWIE analysis tool. Author: Michael Katz. Paper: (arxiv: ******)
+
+	This code is licensed under the GNU public license. 
 	
-	The three main classes are plot types: waterfall, horizon, and ratio. 
+	The methods here can be called with in input dictionary or .json configuration file. The plotting classes are also importable for customization. See make_plot_guide.ipynb for examples on how to use this code. See make_plot_for_paper.ipynb for the plots shown in the paper. 
+
+	The three main classes are plot types: Waterfall, Horizon, and Ratio. 
 
 	Waterfall: 
-		SNR contour plot based on plots from LISA proposal.
+		SNR contour plot based on plots from LISA Mission proposal.
 
 	Ratio:
-		Comparison plot of the log10 of the ratio of SNRs for two different inputs. This plot also contains loss/gain contours, which describe when sources are gained or lost compared to one another based on a user specified SNR cut.
+		Comparison plot of the nratio of SNRs for two different inputs. This plot also contains Loss/Gain contours, which describe when sources are gained or lost compared to one another based on a user specified SNR cut. See paper above for further explanation. 
 
 	Horizon:
-		SNR contour plots comparing multipile inputs. User can specify contour value. The default is the user specified SNR cut. 
+		SNR contour plots comparing multipile inputs. User can specify contour value. The default is the user specified SNR cut.
 """
 
 
@@ -27,11 +31,7 @@ from matplotlib  import cm
 from matplotlib import colors
 from astropy.io import ascii
 
-import warnings
-warnings.filterwarnings("ignore")
-
 SNR_CUT = 5.0
-
 
 class CreateSinglePlot:
 
@@ -42,43 +42,28 @@ class CreateSinglePlot:
 		This is the base class for the subclasses designed for creating the plots.
 
 			Mandatory Inputs:
-				fig - figure object - Figure environment for the plots.
-				axis - axes object - Axis object representing specific plot.
-				xvals - list of 2d arrays - list of x-value arrays for the plot.
-				yvals - list of 2d arrays - list of y-value arrays for the plot.
-				zvals - list of 2d arrays - list of z-value arrays for the plot.
+				:param fig: - figure object - Figure environment for the plots.
+				:param axis: - axes object - Axis object representing specific plot.
+				
+				:param xvals, yvals, zvals: (float) - list of 2d arrays - list of x,y,z-value arrays for the plot.
 
-			Optional Inputs:
-				limits_dict - dict containing axis limits and axes labels information.
+			Optional Inputs (options for the dictionaries will be given in the documentation):
+				gen_dict - dict containing extra kwargs for plot
 
-					limits_dict inputs/keys:
-						xlims, ylims - length 2 list of floats - min followed by max. default is log for x and linear for y. If log, the limits should be log of values.
-						dx, dy - float - x-change and y-change
-						xscale, yscale - string - scaling for axes. Either 'log' or 'lin'.
+				limits_dict - dict containing axis limits and axes labels information. Inputs/keys:
 
-				label_dict - dict containing label information for x labels, y labels, and title.
+				label_dict - dict containing label information for x labels, y labels, and title. Inputs/keys:	
 
-					label_dict inputs/keys:
-						title - string - title for each plot
-						title_fontsize - float - fontsize for title_fontsize
-						xlabel, ylabel - string - x, y axis label
-						xlabel_fontsize, ylabel_fontsize - float - x,y axis label fontsize		
+				extra_dict - dict containing extra plot information to aid in customization. Inputs/keys:
 
-				extra_dict - dict containing extra plot information to aid in customization.
-
-					extra_dict inputs/keys:
-						snr_contour_value - float - snr value for contour lines on a horizon plot. This will override SNR_CUT for horizon plots. 
-						spacing - string - Choices are 'tight' or 'wide' spacing for overall plots. 'tight' spacing will cutouf the last entry in ticklabels.
-
-				legend_dict - dict describing legend labels and properties. This is mainly used for horizon plots.
-
-					legend_dict inputs/keys given under horizon plot docstring. 
+				legend_dict - dict describing legend labels and properties. This is used for horizon plots.
 
 		"""
 		self.gen_dict = gen_dict
 		self.fig = fig
 		self.axis = axis
 
+		#make sure that xvals, yvals, and zvals of shape (num data sets, num_x, num_y)
 		if len(np.shape(zvals)) ==2:
 			self.zvals = [zvals]
 			len_z = 1
@@ -100,27 +85,11 @@ class CreateSinglePlot:
 			self.yvals = yvals
 
 	
-		
 		self.limits_dict, self.label_dict, self.extra_dict, self.legend_dict = limits_dict, label_dict, extra_dict, legend_dict
 
 	def setup_plot(self):
 		"""
-		This method takes an axis and sets up plot limits and labels according to label_dict and limits_dict from CreateSinglePlot __init__.
-
-			limits_dict - dict containing axis limits and axes labels information.
-
-				limits_dict inputs/keys:
-					xlims, ylims - length 2 list of floats - min followed by max. default is log for x and linear for y. If log, the limits should be log of values.
-					dx, dy - float - x-change and y-change
-					xscale, yscale - string - scaling for axes. Either 'log' or 'lin'.
-
-			label_dict - dict containing label information for x labels, y labels, and title.
-
-				label_dict inputs/keys:
-					title - string - title for each plot
-					title_fontsize - float - fontsize for title_fontsize
-					xlabel, ylabel - string - x, y axis label
-					xlabel_fontsize, ylabel_fontsize - float - x,y axis label fontsize	
+		Takes an axis and sets up plot limits and labels according to label_dict and limits_dict from input dict or .json file. 
 
 		"""
 
@@ -141,6 +110,7 @@ class CreateSinglePlot:
 			y_tick_label_fontsize = self.gen_dict['tick_label_fontsize']
 
 		#setup xticks and yticks and limits
+		#if logspaced, the log values are used. 
 		xticks = np.arange(float(self.limits_dict['xlims'][0]), 
 			float(self.limits_dict['xlims'][1]) 
 			+ float(self.limits_dict['dx']), 
@@ -194,7 +164,14 @@ class CreateSinglePlot:
 				for i in yticks[y_inds]], fontsize=y_tick_label_fontsize)
 
 		#add grid
-		self.axis.grid(True, linestyle='-', color='0.75')
+		add_grid = True
+		if 'remove_grid' in self.extra_dict.keys():
+			add_grid = self.extra_dict['remove_grid']
+		elif 'remove_grid' in self.gen_dict.keys():
+			add_grid = self.gen_dict['remove_grid']
+
+		if add_grid:
+			self.axis.grid(True, linestyle='-', color='0.75')
 
 		#add title
 		title_fontsize = 20
@@ -220,12 +197,11 @@ class CreateSinglePlot:
 				fontsize=label_fontsize)
 
 
-
 		return
 
 	def interpolate_data(self):
 		"""
-		Method interpolates data if two data sets have different shapes. This method is mainly used on ratio plots to allow for direct comparison of snrs. The higher resolution array is reduced to the lower resolution. However, functionality will be added for waterfall and horizon plts. 
+		Interpolate data if two data sets have different shapes. This method is mainly used on ratio plots to allow for direct comparison of snrs. The higher resolution array is reduced to the lower resolution. 
 		"""
 
 		#check the number of points in the two arrays and select max and min
@@ -235,7 +211,7 @@ class CreateSinglePlot:
 		min_points = np.argmin(points)
 		max_points = np.argmax(points)
 
-		#create a new arrays to replace array with more to interpolated array with less points.
+		#create new arrays to replace array with more points to interpolated array with less points.
 		new_x = np.linspace(self.xvals[min_points].min(),
 			self.xvals[min_points].max(),
 			np.shape(self.xvals[min_points])[1])
@@ -247,7 +223,7 @@ class CreateSinglePlot:
 		#grid new arrays
 		new_x, new_y = np.meshgrid(new_x, new_y)
 
-		#use griddate fro scipy.interpolate to create new z array
+		#use griddate from scipy.interpolate to create new z array
 		new_z = griddata((self.xvals[max_points].ravel(),
 			self.yvals[max_points].ravel()),
 			self.zvals[max_points].ravel(),
@@ -258,6 +234,22 @@ class CreateSinglePlot:
 		return
 
 	def setup_colorbars(self, colorbar_pos, plot_call_sign, plot_type, colorbar_label, levels=[], ticks_fontsize=17, label_fontsize=20, colorbar_axes=[]):
+		"""
+		Setup colorbars for each type of plot. 
+
+		Inputs:
+			:param colorbar_pos: (int) - scalar - position of colorbar. Options are 1-5. See documentation for positions and uses. 
+			:param plot_call_sign: (string) - plot class name
+			:colorbar_label: (string) - label of colorbar
+
+		Optional Inputs:
+			:param levels: (float) - list or array - levels used in the contouring. This is used for Waterfall plots. 
+			:param ticks_fontsize: (float) - fontsize for the ticks applied to colorbar
+			:param label_fontsize: (float) - fontsize for the label for the colorbar
+			:param colorbar_axes: (float) - list of len 4 - allows for custom placement of colorbar. Values must be [0.0, 1.0]. See adding colorbar axes to figures in matplotlib documentation. Structure [horizontal placement, vertical placement, horizontal stretch, vertical stretch]
+		"""
+
+		#setup tick labels depending on plot
 
 		if plot_type == 'Waterfall':
 			ticks = levels 
@@ -271,9 +263,10 @@ class CreateSinglePlot:
 			ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
 			tick_labels = [r'$-10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + [r'$10^{%i}$'%i for i in [0.0, 1.0,2.0, 3.0, 4.0]]
 
-
+		#dict with axes locations
 		cbar_axes_dict = {'1': [0.83, 0.52, 0.03, 0.38], '2': [0.83, 0.08, 0.03, 0.38], '3': [0.05, 0.9, 0.4, 0.03], '4': [0.55, 0.9, 0.4, 0.03], '5': [0.83, 0.1, 0.03, 0.8]}
 
+		#check if custom colorbar desired
 		if colorbar_axes == []:
 			cbar_ax_list = cbar_axes_dict[str(colorbar_pos)]
 		else:
@@ -281,6 +274,7 @@ class CreateSinglePlot:
 
 		cbar_ax = self.fig.add_axes(cbar_ax_list)
 
+		#check if colorbar is horizontal or vertical 
 		if cbar_ax_list[2]>cbar_ax_list[3]:
 			orientation = 'horizontal'
 			label_pad = -60
@@ -293,12 +287,27 @@ class CreateSinglePlot:
 		self.fig.colorbar(plot_call_sign, cax=cbar_ax,
 			ticks=ticks, orientation=orientation)
 
+		#setup colorbar ticks
 		getattr(cbar_ax, 'set_' + var + 'ticklabels')(tick_labels, fontsize = ticks_fontsize)
 		getattr(cbar_ax, 'set_' + var + 'label')(colorbar_label, fontsize = label_fontsize, labelpad=label_pad)
 
 		return
 
 	def find_colorbar_information(self, cbar_info_dict, plot_type):
+		"""
+		This method helps configure the colorbar. 
+		Inputs:
+			:param cbar_info_dict: (dict) - contains information set by user for colorbar. Includes, label, ticks_fontsize, label_fontsize, colorbar_axes, pos. 
+			:param plot_type: (string) - plot class name.
+
+		Outputs:
+			colorbar_pos: (int) - scalar - position of colorbar, will be offset by colorbar_axes if specified.
+			cbar_label: (string) - label for the colorbar.
+			ticks_fontsize: (float) - scalar - colorbar ticks fontsize
+			label_fontsize: (float) - scalar - colorbar label fontsize 
+			colorbar_axes: (float) - list of len 4 - default is []. See setup_colorbars method and documentation. 
+		"""
+
 		cbar_label = "None"
 		if 'label' in cbar_info_dict.keys():
 			cbar_label = cbar_info_dict['label']
@@ -315,6 +324,7 @@ class CreateSinglePlot:
 		if 'colorbar_axes' in cbar_info_dict.keys():
 			colorbar_axes = cbar_info_dict['colorbar_axes'] 
 
+		#check if pos is specified. If not set to defaults. 
 		if 'pos' in cbar_info_dict.keys():
 			colorbar_pos = cbar_info_dict['pos']
 
@@ -336,7 +346,7 @@ class Waterfall(CreateSinglePlot):
 		"""
 		Waterfall is a subclass of CreateSinglePlot. Refer to CreateSinglePlot class docstring for input information. 
 
-		Waterfall creates an snr filled contour plot similar in style to those seen in the LISA proposal. Contours are displayed at snrs of 10, 20, 50, 100, 200, 500, 1000, and 3000 and above. If lower contours are needed, adjust contour_vals in extra_dict for the specific plot. 
+		Waterfall creates an snr filled contour plot similar in style to those seen in the LISA proposal. Contours are displayed at snrs of 10, 20, 50, 100, 200, 500, 1000, and 3000 and above. If lower contours are needed, adjust 'contour_vals' in extra_dict for the specific plot. 
 
 			Contour_vals needs to start with zero and end with a higher value than the max in the data. Contour_vals needs to be a list of max length 9 including zero and max value. 
 		"""
@@ -359,10 +369,11 @@ class Waterfall(CreateSinglePlot):
 		if 'contour_vals' in self.extra_dict.keys():
 			levels = np.asarray(self.extra_dict['contour_vals'])
 		
-		#produce filled contour of SNR vs. z vs. Mtotal
+		#produce filled contour of SNR
 		sc=self.axis.contourf(self.xvals[0],self.yvals[0],self.zvals[0],
 			levels = levels, colors=colors1)
 
+		#check for user desire to show separate contour line
 		if 'snr_contour_value' in self.extra_dict.keys():
 			contour_val = self.extra_dict['snr_contour_value']
 			self.axis.contour(self.xvals[0], self.yvals[0], self.zvals[0], np.array([contour_val]), 
@@ -375,21 +386,12 @@ class Waterfall(CreateSinglePlot):
 
 		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes = super(Waterfall, self).find_colorbar_information(cbar_info_dict, 'Waterfall')
 
+		#default label for Waterfall colorbar
 		if cbar_label == 'None':
 			cbar_label = r"$\rho_i$"
 
 		super(Waterfall, self).setup_colorbars(colorbar_pos, sc, 'Waterfall', cbar_label, levels = levels, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes)
 
-		"""
-		#add colorbar axes for both contour plots
-		cbar_ax = self.fig.add_axes([0.83, 0.55, 0.03, 0.4])
-
-		#establish colorbar and labels for main contour plot
-		self.fig.colorbar(sc, cax=cbar_ax, ticks=levels)
-		cbar_ax.set_yticklabels([int(i)
-			for i in np.delete(levels,-1)], fontsize = 17)
-		cbar_ax.set_ylabel(r"$\rho_i$", fontsize = 20)
-		"""
 		return
 
 
@@ -401,7 +403,7 @@ class Ratio(CreateSinglePlot):
 		"""
 		Ratio is a subclass of CreateSinglePlot. Refer to CreateSinglePlot class docstring for input information. 
 
-		Ratio creates an filled contour plot comparing snrs from two different data sets. Typically, it is used to compare sensitivty curves and/or varying binary parameters. It takes the snr of the first dataset and divides it by the snr from the second dataset. The log10 of this ratio is ploted. Additionally, a loss/gain contour is plotted. Loss/gain contour is based on SNR_CUT but can be overridden with 'snr_contour_value' in extra_dict. A gain indicates the first dataset reaches the snr threshold while the second does not. A loss is the opposite.  
+		Ratio creates a filled contour plot comparing snrs from two different data sets. Typically, it is used to compare sensitivty curves and/or varying binary parameters. It takes the snr of the first dataset and divides it by the snr from the second dataset. Additionally, a Loss/Gain contour is plotted. Loss/Gain contour is based on SNR_CUT but can be overridden with 'snr_contour_value' in extra_dict. A gain indicates the first dataset reaches the snr threshold while the second does not. A loss is the opposite.  
 		"""
 		CreateSinglePlot.__init__(self, fig, axis, xvals,yvals,zvals,
 			 gen_dict, limits_dict, label_dict, extra_dict, legend_dict)
@@ -428,7 +430,7 @@ class Ratio(CreateSinglePlot):
 		levels2 = np.linspace(-normval2, normval2,num_contours2)
 		norm2 = colors.Normalize(-normval2, normval2)
 
-		#find loss/gain contour and ratio contour
+		#find Loss/Gain contour and Ratio contour
 		diff_out, loss_gain_contour = self.find_difference_contour()
 
 		#plot ratio contours
@@ -446,6 +448,7 @@ class Ratio(CreateSinglePlot):
 			loss_gain_status = self.extra_dict['show_loss_gain']
 			
 		if loss_gain_status == True:
+			#if there is no loss/gain contours, this will produce an error, so we catch the exception. 
 			try:
 				self.axis.contour(self.xvals[0],self.yvals[0],loss_gain_contour,1,colors = 'grey', linewidths = 2)
 			except ValueError:
@@ -458,32 +461,27 @@ class Ratio(CreateSinglePlot):
 		
 		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes = super(Ratio, self).find_colorbar_information(cbar_info_dict, 'Ratio')
 
+		#default Ratio colorbar label
 		if cbar_label == 'None':
 			cbar_label = r"$\rho_i/\rho_0$"
 
 		super(Ratio, self).setup_colorbars(colorbar_pos, sc3, 'Ratio', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes)
 
-		"""
-		#establish colorbar and labels for ratio comp contour plot
-		cbar_ax2 = self.fig.add_axes([0.83, 0.1, 0.03, 0.4])
-		self.fig.colorbar(sc3, cax=cbar_ax2,
-			ticks=[-3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0])
-		cbar_ax2.set_yticklabels([r'$10^{%i}$'%i
-			for i in np.arange(-normval2, normval2+1.0, 1.0)], fontsize = 17)
-		cbar_ax2.set_ylabel(r"$\rho_i/\rho_0$", fontsize = 20)
-		"""
-
 		return
 
 	def find_difference_contour(self):
 		"""
-		This method finds the ratio contour and the loss gain contour values. Its inputs are the two datasets for comparison where the second is the control to compare against the first. 
+		This method finds the ratio contour and the Loss/Gain contour values. Its inputs are the two datasets for comparison where the second is the control to compare against the first. 
 
 			The input data sets need to be the same shape. CreateSinglePlot.interpolate_data corrects for two datasets of different shape.
 
-			Returns: loss_gain_contour, ratio contour (diff)
+			Outputs: 
+				loss_gain_contour: (float) - 2D array - values for Loss/Gain contour. Value will be -1, 0, or 1.
+				diff_out: (float) - 2D array - ratio contours.
 			
 		"""
+
+		#set contour to test and control contour
 		zout = self.zvals[0]
 		control_zout = self.zvals[1]
 
@@ -492,45 +490,27 @@ class Ratio(CreateSinglePlot):
 		if 'snr_contour_value' in self.extra_dict.keys():
 			comparison_value = self.extra_dict['snr_contour_value']
 
-		#set indices of loss,gained. inds_check tells the ratio calculator not to control_zout if both SNRs are below 1
+		#indices of loss,gained.
 		inds_gained = np.where((zout>=comparison_value) & (control_zout< comparison_value))
 		inds_lost = np.where((zout<comparison_value) & (control_zout>=comparison_value))
 
-		#Also set rid for when neither curve measures source. 
+		#Also set rid for when neither curve measures gets SNR of 1.0. 
 		inds_rid = np.where((zout<1.0) & (control_zout<1.0))
 
-		#set diff2 to ratio for purposed of determining raito differences
+		#set diff to ratio for purposed of determining raito differences
 		diff = zout/control_zout
 
 		#flatten arrays	
 		diff =  diff.ravel()
 
-		# the following determines the log10 of the ratio difference if it is extremely small, we neglect and put it as zero (limits chosen to resemble ratios of less than 1.05 and greater than 0.952)
+		# the following determines the log10 of the ratio difference. If it is extremely small, we neglect and put it as zero (limits chosen to resemble ratios of less than 1.05 and greater than 0.952)
 		diff = np.log10(diff)*(diff >= 1.05) + (-np.log10(1.0/diff))*(diff<=0.952) + 0.0*((diff<1.05) & (diff>0.952))
 
-		"""
-		#inds_check tells the ratio calculator not to make comparison if both SNRs are below 0.1
-		inds_check = np.where((zout.ravel()<0.1)
-			& (control_zout.ravel()<0.1))[0]
-
-		i = 0
-		for d in diff:
-			if i not in inds_check:
-				if d >= 1.05:
-					diff[i] = np.log10(diff[i])
-				elif d<= 0.952:
-					diff[i] = -np.log10(1.0/diff[i])
-				else:
-					diff[i] = 0.0
-			else: 
-				diff[i] = 0.0
-			i+=1
-		"""
 
 		#reshape difference array for dimensions of contour
 		diff = np.reshape(diff, np.shape(zout))
 
-		#change inds rid and inds_check value to zero
+		#change inds rid
 		diff[inds_rid] = 0.0
 
 		#initialize loss/gain
@@ -712,37 +692,37 @@ class CodetectionPotential(CreateSinglePlot):
 class Horizon(CreateSinglePlot):
 
 
-	def __init__(self, fig, axis, xvals,yvals,zvals, gen_dict={},limits_dict={}, label_dict={}, extra_dict={}, legend_dict={}, contour_val = SNR_CUT):
+	def __init__(self, fig, axis, xvals,yvals,zvals, gen_dict={},limits_dict={}, label_dict={}, extra_dict={}, legend_dict={}):
 		"""
 		Horizon is a subclass of CreateSinglePlot. Refer to CreateSinglePlot class docstring for input information. 
 
-		Horizon plots snr contour lines for a designated SNR value. The defaul is SNR_CUT, but can be overridden with "snr_contour_value" in extra_dict. Horizon can take as many curves as the user prefers and will plot a legend to label those curves. With its current design, it can only contour one snr value. 
+		Horizon plots snr contour lines for a designated SNR value. The defaul is SNR_CUT, but can be overridden with "snr_contour_value" in extra_dict. Horizon can take as many curves as the user prefers and will plot a legend to label those curves. It can only contour one snr value. 
 
 		Additional Inputs:
 
 		legend_dict - dict describing legend labels and properties.
 		legend_dict inputs/keys:
-						labels - list of strings - contains labels for each plot that will appear in the legend.
-						loc - string or int - location of legend. Refer to matplotlib documentation for legend placement for choices. Default is 'upper left'. 
-						size - float - size of legend. Default is 10. 
-						bbox_to_anchor - list of floats, length 2 or 4 - Places legend in custom location. First two entries represent corner of box is placed. Second two entries (not required) represent how to stretch the legend box from there. See matplotlib documentation on bbox_to_anchor for specifics. 
-						ncol - int - number of columns in legend. Default is 1. 
+			labels - list of strings - contains labels for each plot that will appear in the legend.
+			loc - string or int - location of legend. Refer to matplotlib documentation for legend placement for choices. Default is 'upper left'. 
+			size - float - size of legend. Default is 10. 
+			bbox_to_anchor - list of floats, length 2 or 4 - Places legend in custom location. First two entries represent corner of box is placed. Second two entries (not required) represent how to stretch the legend box from there. See matplotlib documentation on bbox_to_anchor for specifics. 
+			ncol - int - number of columns in legend. Default is 1. 
 		"""
 
 		CreateSinglePlot.__init__(self, fig, axis, xvals,yvals,zvals, gen_dict,
 			limits_dict, label_dict, extra_dict, legend_dict)
 
-		self.contour_val = contour_val
 
 	def make_plot(self):
 		"""
-		This method adds a horizon plot as desribed in the Horizon class docstring. The class contains an axis as a part of self. The horizon plot is added to this axis. Can compare up to 7 curves.
+		This method adds a horizon plot as desribed in the Horizon class docstring. Can compare up to 7 curves.
 		"""
 		#sets levels of main contour plot
 		colors1 = ['blue', 'green', 'red','purple', 'orange',
 			'gold','magenta']
 
 		#set contour value. Default is SNR_CUT.
+		self.contour_val = SNR_CUT
 		if 'snr_contour_value' in self.extra_dict.keys():
 			self.contour_val = float(self.extra_dict['snr_contour_value'])
 		
@@ -790,10 +770,10 @@ class PlotVals:
 		""" 
 		This class is designed to carry around the data for each plot as an attribute of self.
 
-			Inputs/Attributes:
-				x_arr_list -list of 2D arrays - list of gridded, 2D datasets representing the x-values.
-				y_arr_list - list of 2d arrays - list of gridded, 2D datasets representing the y-values.
-				z_arr_list - list of 2d arrays - list of gridded, 2D datasets representing the z-values.
+		Inputs/Attributes:
+			:param x_arr_list: (float) -list of 2D arrays - list of gridded, 2D datasets representing the x-values.
+			:param y_arr_list: (float) - list of 2d arrays - list of gridded, 2D datasets representing the y-values.
+			:param z_arr_list: (float) - list of 2d arrays - list of gridded, 2D datasets representing the z-values.
 		"""
 
 		self.x_arr_list, self.y_arr_list, self.z_arr_list = x_arr_list, y_arr_list, z_arr_list
@@ -807,17 +787,10 @@ class ReadInData:
 		This class reads in data based on the pid and file_dict. The file_dict provides information about the files to read in. This information is transferred to the read in methods that work for .txt, .csv, and .hdf5. 
 
 			Mandatory Inputs:
-				pid - dict - plot_info_dict used in main code. It contains information for types of plots created and the general settings in the pid['general'] dict. 
-
-					pid inputs/keys:
-						see config file and README documentation. This dict contains everything for code.
-
-						x_column_label, y_column_label - string - general x and y column names in file_dict
-						xscale, yscale - string - 'log' or 'lin' representing general scale of data in x and y
+				pid - dict - plot_info_dict used in main code. It contains information for types of plots created and the general settings in the pid['general'] dict. See documentation for all options. 
 
 
-				file_dict - dict - contains info about the file to read in
-					file_dict inputs/keys:
+				file_dict - dict - contains info about the file to read in. Inputs/keys:
 						Mandatory:
 						name - string - file name including path extension from WORKING_DIRECTORY.
 						label - string - name of column for the z values.
@@ -833,12 +806,10 @@ class ReadInData:
 
 
 			Optional Inputs:
-				limits_dict - dict containing axis limits and axes labels information.
-
-					limits_dict inputs/keys:
-						xlims, ylims - length 2 list of floats - min followed by max. default is log for x and linear for y. If log, the limits should be log of values.
-						dx, dy - float - x-change and y-change
-						xscale, yscale - string - scaling for axes. Either 'log' or 'lin'.
+				limits_dict - dict containing axis limits and axes labels information. Inputs/keys:
+					xlims, ylims - length 2 list of floats - min followed by max. default is log for x and linear for y. If log, the limits should be log of values.
+					dx, dy - float - x-change and y-change
+					xscale, yscale - string - scaling for axes. Either 'log' or 'lin'.
 		"""
 
 		if 'name' in file_dict.keys():
@@ -900,11 +871,6 @@ class ReadInData:
 	def txt_read_in(self):
 		"""
 		Method for reading in text or csv files. This uses ascii class from astropy.io for flexible input. It is slower than numpy, but has greater flexibility with less input.
-
-			Inputs: 
-				file_name, x and y column names from self. 
-
-			Return: Add x,y,z values to self.
 		"""
 
 		#read in
@@ -923,12 +889,8 @@ class ReadInData:
 
 	def hdf5_read_in(self):
 		"""
-		Method for reading in hdf5 files. This uses ascii class from astropy.io for flexible input. It is slower than numpy, but has greater flexibility with less input.
+		Method for reading in hdf5 files.
 
-			Inputs: 
-				file_name, x and y column names from self. 
-
-			Return: Add x,y,z values to self.
 		"""
 		
 		with h5py.File(WORKING_DIRECTORY + '/' + self.file_name) as f:
@@ -953,6 +915,12 @@ class ReadInData:
 
 class MainProcess:
 	def __init__(self, pid):
+		"""
+		Class that carries the input dictionary (pid) and directs the program to accomplish plotting tasks. 
+
+		Inputs:
+			:param pid: (dict) - carries all arguments for the program from a dictionary in a script or .json configuration file. 
+		"""
 
 		self.pid = pid
 
@@ -961,24 +929,6 @@ class MainProcess:
 		"""
 		Function to extract data from files according to pid. 
 
-			Inputs:
-				pid - dict - (Mandatory) dict containing all information for this code. 
-
-				pid inputs/keys:
-					plot_info - dict holding info specifically for the plots. This is converted into control_dict.
-
-						plot_info inputs/keys:
-							'limits' - dict - represents limits_dict
-
-							'indices' - list of ints - can add first set of z values from plot of index (int) to values for this plot. 
-
-					control - dict - containing file information for the control in raito plots.
-						control_dict inputs/keys:
-							name - string - file name
-
-							or
-
-							index - int - represents the index of a plot to compare to its first set of z values. 
 		"""
 
 		#set control_dict to plot_info part of pid.
@@ -1062,6 +1012,9 @@ class MainProcess:
 		return 
 
 	def setup_figure(self):
+		"""
+		Sets up the initial figure on which every plot is added. 
+		"""
 		#defaults for sharing axes
 		sharex = True
 		sharey = True
@@ -1089,7 +1042,7 @@ class MainProcess:
 
 		fig.set_size_inches(figure_width,figure_height)
 
-		#create list of ax. Catch error if it is a sinlge plot.
+		#create list of ax. Catch error if it is a single plot.
 		try:
 			ax = ax.ravel()
 		except AttributeError:
@@ -1099,6 +1052,7 @@ class MainProcess:
 		plot_types = [self.pid['plot_info'][axis_string]['type']
 			for axis_string in self.pid['plot_info'].keys()]
 
+		#set subplots_adjust settings
 		adjust_bottom = 0.1
 		if 'adjust_figure_bottom' in self.pid['general'].keys():
 			adjust_bottom = self.pid['general']['adjust_figure_bottom']
@@ -1118,6 +1072,7 @@ class MainProcess:
 		if 'adjust_figure_top' in self.pid['general'].keys():
 			adjust_top = self.pid['general']['adjust_figure_top']
 
+		#adjust spacing
 		adjust_wspace = 0.3
 		if 'spacing' in self.pid['general'].keys():
 			if self.pid['general']['spacing'] == 'wide':
@@ -1166,6 +1121,9 @@ class MainProcess:
 
 
 	def create_plots(self):
+		"""
+		Creates plots according to each plotting class. 
+		"""
 		for i, axis in enumerate(self.ax):
 
 			self.setup_trans_dict(i)
@@ -1189,6 +1147,9 @@ class MainProcess:
 		return
 
 	def setup_trans_dict(self, i):
+		"""
+		Take necessary parameters from 'general' if they are not in plot specific dictionaries. 
+		"""
 
 		trans_dict = self.pid['plot_info'][str(i)]
 		for name in ['legend', 'limits', 'label', 'extra']:
@@ -1222,7 +1183,11 @@ class MainProcess:
 def plot_main(pid, return_fig_ax=False):
 
 	"""
-	Main function for creating these plots. Reads in plot info dict from json file. 
+	Main function for creating these plots. Reads in plot info dict from json file or dictionary in script. 
+
+	Optional Outputs:
+		fig: figure object - for customization outside of those in this program
+		ax: axes object - for customization outside of those in this program
 	"""
 
 	global WORKING_DIRECTORY, SNR_CUT
