@@ -98,9 +98,46 @@ class PhenomDWaveforms:
 		
 		self.m1, self.m2, self.chi1, self.chi2, self.z, self.dist, self.st, self.et = m1, m2, chi1, chi2, z, dist, st, et
 
+		self.sanity_check()
+
 		self.length = len(m1)
 
 		self.num_points, self.exec_call = num_points, exec_call
+
+	def sanity_check(self):
+		"""
+		Check if parameters are okay.
+		"""
+		if any(self.m1<0.0):
+			raise Exception("Mass 1 is negative.")
+		if any(self.m2<0.0):
+			raise Exception("Mass 1 is negative.")
+
+		if any(self.chi1<-1.0) or any(self.chi1>1.0):
+			raise Exception("Chi 1 is outside [-1.0, 1.0].")
+
+		if any(self.chi2<-1.0) or any(self.chi2>1.0):
+			raise Exception("Chi 2 is outside [-1.0, 1.0].")
+
+		if any(self.z<=0.0):
+			raise Exception("Redshift is zero or negative.")
+
+		if any(self.dist<=0.0):
+			raise Exception("Distance is zero or negative.")
+
+		if any(self.st<0.0):
+			raise Exception("Start Time is negative.")
+
+		if any(self.et<0.0):
+			raise Exception("End Time is negative.")
+
+		if len(np.where(self.st<self.et)[0]) != 0:
+			raise Exception("Start Time is less than End time.")
+
+		if any(self.m1/self.m2 > 1e4) or any(self.m1/self.m2 < 1e-4):
+			raise Exception("Mass Ratio too far from unity.")
+
+		return
 
 	def create_waveforms(self):
 		"""
