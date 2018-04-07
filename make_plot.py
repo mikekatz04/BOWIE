@@ -260,8 +260,18 @@ class CreateSinglePlot:
 			tick_labels = [r'$10^{%i}$'%i for i in [-2.0,-1.0,0.0, 1.0,2.0]]
 
 		elif plot_type == 'CodetectionPotential':
-			ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
-			tick_labels = [r'$-10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + [r'$10^{%i}$'%i for i in [0.0, 1.0,2.0, 3.0, 4.0]]
+			#ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
+			#tick_labels = [r'$-10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + [r'$10^{%i}$'%i for i in [0.0, 1.0,2.0, 3.0, 4.0]]
+
+			ticks = np.arange(-8, 10, 2)
+			tick_labels = ['%i'%(-i) for i in ticks if i<0.0] + ['%i'%i for i in ticks if i>=0.0]
+
+		elif plot_type == 'SingleDetection':
+			#ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
+			#tick_labels = [r'$-10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + [r'$10^{%i}$'%i for i in [0.0, 1.0,2.0, 3.0, 4.0]]
+
+			ticks = np.arange(-4, 5, 1)
+			tick_labels = ['%i'%(-i) for i in ticks if i<0.0] + ['%i'%i for i in ticks if i>=0.0]
 
 		#dict with axes locations
 		cbar_axes_dict = {'1': [0.83, 0.52, 0.03, 0.38], '2': [0.83, 0.08, 0.03, 0.38], '3': [0.05, 0.9, 0.4, 0.03], '4': [0.55, 0.9, 0.4, 0.03], '5': [0.83, 0.1, 0.03, 0.8]}
@@ -281,7 +291,7 @@ class CreateSinglePlot:
 			var = 'x'
 		else:
 			orientation = 'vertical'
-			label_pad = 0
+			label_pad = 20
 			var = 'y'
 
 		self.fig.colorbar(plot_call_sign, cax=cbar_ax,
@@ -566,22 +576,27 @@ class CodetectionPotential(CreateSinglePlot):
 		cmap2.set_bad(color='white', alpha=0.001)
 		cmap_single.set_bad(color='white', alpha=0.001)
 
-		normval2 = 4.0
+		normval2 = 8.0
 		num_contours2 = 40 #must be even
 		levels2 = np.linspace(-normval2, normval2,num_contours2)
 		norm2 = colors.Normalize(-normval2, normval2)
 
 		#plot ratio contours
 		sc3=self.axis.contourf(self.xvals[0],self.yvals[0],codect_pot,
-			levels = levels2, extend='both', cmap=cmap2, alpha=1.0)
+			levels = levels2, norm=norm2, extend='both', cmap=cmap2, alpha=1.0)
+
+		normval3 = 4.0
+		num_contours3 = 40 #must be even
+		levels3 = np.linspace(-normval3, normval3,num_contours3)
+		norm3 = colors.Normalize(-normval3, normval3)
 		sc4=self.axis.contourf(self.xvals[0],self.yvals[0],single,
-			levels = levels2, extend='both', cmap=cmap_single, alpha=1.0)
+			levels = levels3, norm=norm3, extend='both', cmap=cmap_single, alpha=1.0)
 
 
 		#toggle line contours of orders of magnitude of ratio comparisons
 		if 'ratio_contour_lines' in self.extra_dict.keys():
 			if self.extra_dict['ratio_contour_lines'] == True:
-				self.axis.contour(self.xvals[0],self.yvals[0],codect_pot, np.array([-3.0, -2.0, -1.0, 1.0, 2.0, 3.0]), colors = 'black', linewidths = 1.0)
+				self.axis.contour(self.xvals[0],self.yvals[0],codect_pot, np.arange(-8, 9, 1), colors = 'black', linewidths = 1.0)
 				self.axis.contour(self.xvals[0],self.yvals[0],single, np.array([-3.0, -2.0, -1.0, 1.0, 2.0, 3.0]), colors = 'black', linewidths = 1.0)
 
 		cbar_info_dict = {}
@@ -606,25 +621,9 @@ class CodetectionPotential(CreateSinglePlot):
 		if cbar_label == 'None':
 			cbar_label = 'Single Detection'
 
-		super(CodetectionPotential, self).setup_colorbars(colorbar_pos, sc4, 'CodetectionPotential', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes)
+		super(CodetectionPotential, self).setup_colorbars(colorbar_pos, sc4, 'SingleDetection', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes)
 
-		"""
-		#establish colorbar and labels for ratio comp contour plot
-		cbar_ax2 = self.fig.add_axes([0.83, 0.1, 0.03, 0.4])
-		self.fig.colorbar(sc3, cax=cbar_ax2,
-			ticks=np.array([-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]))
-		cbar_ax2.set_yticklabels([r'$10^{%i}$'%i
-			for i in np.arange(-normval2, normval2+1.0, 1.0)], fontsize = 17)
-		cbar_ax2.set_ylabel(r"Codetection Potential", fontsize = 20)
 
-		#establish colorbar and labels for ratio comp contour plot
-		cbar_ax3 = self.fig.add_axes([0.83, 0.5, 0.03, 0.4])
-		self.fig.colorbar(sc4, cax=cbar_ax3,
-			ticks=np.array([-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]))
-		cbar_ax3.set_yticklabels([r'$10^{%i}$'%i
-			for i in np.arange(-normval2, normval2+1.0, 1.0)], fontsize = 17)
-		cbar_ax3.set_ylabel(r"Single Detection", fontsize = 20)
-		"""
 		return
 
 	def find_codetection_potential(self):
@@ -658,28 +657,10 @@ class CodetectionPotential(CreateSinglePlot):
 		#Also set rid for when neither curve measures source. 
 		inds_rid = ((zout<1.0) & (control_zout<1.0))
 
-		out_vals_codect = inds_up*np.log10(np.sqrt(zout**2 + control_zout**2)) + inds_down*-1*np.log10(np.sqrt(zout**2 + control_zout**2))
+		#out_vals_codect = inds_up*np.log10(np.sqrt(zout**2 + control_zout**2)) + inds_down*-1*np.log10(np.sqrt(zout**2 + control_zout**2))
+		out_vals_codect = inds_up*(np.log10(zout) + np.log10(control_zout)) + inds_down*-1*(np.log10(zout) + np.log10(control_zout)) 
 
 		out_vals_single = inds_up_only*np.log10(zout) + inds_down_only*-1*np.log10(control_zout)
-
-		"""
-		#inds_check tells the ratio calculator not to make comparison if both SNRs are below 0.1
-		inds_check = np.where((zout.ravel()<0.1)
-			& (control_zout.ravel()<0.1))[0]
-
-		i = 0
-		for d in diff:
-			if i not in inds_check:
-				if d >= 1.05:
-					diff[i] = np.log10(diff[i])
-				elif d<= 0.952:
-					diff[i] = -np.log10(1.0/diff[i])
-				else:
-					diff[i] = 0.0
-			else: 
-				diff[i] = 0.0
-			i+=1
-		"""
 
 		#reshape difference array for dimensions of contour
 		out_vals_codect = np.reshape(out_vals_codect, np.shape(zout))
