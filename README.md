@@ -32,7 +32,7 @@ The repo includes compiled c files into a .so shared file read with ctypes. Howe
 git clone https://github.com/mikekatz04/BOWIE.git 
 ```
 
-3) compile the c codes into a .so file. Three files are needed: phenomd.c, phenomd.h, and ringdown_spectrum_fitting.h. Just run 'make'. 
+3) compile the c codes into a .so file. Four files are needed: phenomd.c, phenomd.h, ringdown_spectrum_fitting.h, and makefile. Just run 'make'. 
 
 ```
 make
