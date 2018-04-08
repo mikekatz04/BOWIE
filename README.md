@@ -4,7 +4,7 @@ BOWIE is a tool designed for graphical analysis of binary signals from gravitati
 
 The three plots to choose from are Waterfall, Ratio, and Horizon. A Waterfall plot is a filled contour plots similar to figure 3 in the LISA Mission Proposal (arxiv:1702.00786). Ratio shows the ratio of SNRs between two different binary and sensitivity configurations. Horizon plots show line contours of multiple configurations for a given SNR value. See BOWIE documentation and examples for more information. 
 
-Currently, the program is designed for unix and linux where the directories are divided by '/'. 
+Currently, the program is designed for unix and linux where the directories are divided by ```/```. 
 
 ## Getting Started
 
@@ -38,8 +38,13 @@ git clone https://github.com/mikekatz04/BOWIE.git
 make
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
+## Testing and Running an Example
 
+To test the codes, you run the testing notebook. 
+
+```
+jupyter notebook quick_testing_example.ipynb
+```
 
 ## Contributing
 
