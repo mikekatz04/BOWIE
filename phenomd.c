@@ -736,6 +736,8 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
 
   //dist is the luminosity distance
 
+  //initialize all parameters
+
   double f, f_min_log10, f_max_log10, df, AmpPreFac, Amp0_dist_mass, PhenomD_amplitude;
   double M, M_redshifted, M_redshifted_time;
   double MF_ISCO = 1.0/(pow(6.0, 3.0/2.0)*Pi);
@@ -748,6 +750,8 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
   double finspin, eta;
   double m1_in, m2_in, chi1_in, chi2_in;
 
+
+  //initialize interpolation functions for fring and fdamp
   gsl_interp_accel *acc_fring = gsl_interp_accel_alloc();
   gsl_spline *iFring = gsl_spline_alloc(gsl_interp_cspline, QNMData_length);
   gsl_spline_init(iFring, QNMData_a, QNMData_fring, QNMData_length);
@@ -759,6 +763,7 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
 
   for(j=0; j<length_of_arrays; j+=1){
 
+    //make sure m1 is the larger mass
     if (m1[j]>m2[j]){
       m1_in = m1[j];
       m2_in = m2[j];
@@ -772,21 +777,29 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
     }
 
 
+    //make redshifted mass variables, one with units of seconds
     M = m1_in + m2_in;
     M_redshifted =  M * (1.0+z[j]);
     M_redshifted_time = M_redshifted * MTSUN;
+
+    // find eta and final spin of binary
     eta = eta_func(m1_in, m2_in);
     finspin = FinalSpin0815(eta, chi1_in, chi2_in);
 
+    // find the start frequency based at time before merger
     f_min = find_frequency_from_time_before_merger(start_time[j], eta, M_redshifted_time);
+
+    //if end_time is greater than zero, find corresponding frequency
     if (end_time[j] > 0.0){
       f_max = find_frequency_from_time_before_merger(end_time[j], eta, M_redshifted_time);
     } else {
       f_max = f_CUT;
     }
   
+    // initialize all the PhenomD amplitude coefficients
     IMRPhenomDAmplitudeCoefficients *p = ComputeIMRPhenomDAmplitudeCoefficients(eta, chi1_in, chi2_in, finspin, acc_fring, iFring, acc_fdamp, iFdamp);
 
+    // find amplitude prefactors
     AmpInsPrefactors *prefactors = init_amp_ins_prefactors(p);
 
     //Find where INS joins INT
@@ -801,10 +814,6 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
     // Find vertical signal factor
     Amp0_dist_mass = Amp0_from_dist_mass(M_redshifted, dist[j]*PARSEC_TO_METERS*1e6);
 
-    /*remove this when using full waveform, this is for testing*/
-    //f_min = p->fmaxCalc;
-    //f_max = f_ins_meets_intermediate;
-
    // The frequencies are log-spaced
    f_min_log10 = log10(f_min);
    f_max_log10 = log10(f_max);
@@ -812,10 +821,13 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
 
   for(i=0; i<num_points; i+=1){
 
+    //find next frequency
      f = pow(10.0, f_min_log10 + (i*df));
      
+    //numerical prefactor for amplitude at this frequency
      AmpPreFac = Amp0_dist_mass*prefactors->amp0 / pow(f, 7.0/6.0);
 
+     // calculate amplitdue based on phase
      if (f<=p->fInsJoin){
       PhenomD_amplitude = AmpPreFac * AmpInsAnsatz(f, prefactors);
      } else if (f>=p->fMRDJoin){
@@ -825,7 +837,7 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
      }
 
       /*
-      THIS RETURNS THE CHARACTERISTIC FREQUENCY. 
+      THIS RETURNS THE CHARACTERISTIC AMPLITUDE. 
       NEEDS TO BE CHANGED WHEN PHASE IS INCLUDED DUE TO IMAGINARY TERMS.
      */
 
@@ -840,6 +852,7 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
   fpeak[j] = p->fmaxCalc/M_redshifted_time;
 } 
 
+  //free spline memory
   gsl_spline_free(iFring);
   gsl_interp_accel_free(acc_fring);
 
@@ -853,6 +866,7 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
 
  int SNR_function(double *snr_all, double *snr_ins, double *snr_mrg, double *snr_rd, double *freqs, double *hc, double *hn, double *fmrg, double *fpeak, int length_of_signal, int num_binaries){
 
+  // initialize parameters
   int i, j, ind;
   double snr_all_trans;
   double snr_ins_trans;
@@ -869,8 +883,9 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
    snr_rd_trans=0.0;
 
    for(j=1; j<length_of_signal; j+=1){
-      ind = i*length_of_signal+j;
 
+      // hc and freqs are flattened arrays. Find correct 2d position within flattened array
+      ind = i*length_of_signal+j;
 
       // find points on the trapezoid
       strain_ratio_a = hc[ind]/hn[ind];
@@ -886,6 +901,7 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
       //Take center of the trapezoid as the frequency value
       f = (freqs[ind] + freqs[ind-1])/2.0;
 
+      //add snr based on phase
      if (f<=fmrg[i]){
       snr_ins_trans += trap_val;
      } else if (f>=fpeak[i]){
@@ -895,6 +911,7 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
      }
    }
    
+   //add snrs to arrays of return snrs
    snr_all[i] = sqrt(snr_all_trans);
    snr_ins[i] = sqrt(snr_ins_trans);
    snr_mrg[i] = sqrt(snr_mrg_trans);
