@@ -1,0 +1,74 @@
+{
+
+"general":
+    {
+    "WORKING_DIRECTORY": ".",
+    "signal_type": ["all", "ins", "mrg", "rd"],
+    "generation_type": "parallel",
+    "num_processors": 4,
+    "num_splits":2000,
+    "add_wd_noise": "False"
+    },
+
+"output_info":
+    {
+    "output_folder": "paper_data",
+    "output_file_name":"LIGO_q8_s8",
+    "output_file_type":"hdf5",
+    "x_col_name": "M_s",
+    "y_col_name": "d_L"
+    },
+
+
+"input_info":
+    {
+    "input_location": "noise_curves",
+    "freq_column_label": "f",
+    "amplitude_column_label": "ASD", 
+    "sensitivity_curves": 
+        [
+        {"name":"LIGO_ASD.txt", "type":"ASD"}
+        ],
+    "sensitivity_averaging_factor":1.0
+    },
+
+"generate_info":
+    {
+    "xscale": "log",
+    "num_x": 500,
+    "x_low": 1e0,
+    "x_high": 1e5,
+    "xval_name": "total_mass",
+    "xval_unit": "SolarMasses",
+
+    "yscale": "log",
+    "num_y": 500,
+    "y_low": 1e0,
+    "y_high": 1e6,
+    "yval_name": "luminosity_distance",
+    "yval_unit": "Mpc",
+
+    "fixed_parameter_1": 0.8,
+    "par_1_name": "spin",
+    "par_1_unit": "None",
+
+    "fixed_parameter_2": 0.8,
+    "par_2_name": "mass_ratio",
+    "par_2_unit": "None",
+
+    "fixed_parameter_3": 0.65,
+    "par_3_name": "same_spin",
+    "par_3_unit": "None",
+
+    "start_time": 1.0,
+    "end_time": 0.0,
+        
+    "freq_length": 8192,
+        
+    "snr_calculation_factors":
+        {
+        "averaging_factor": 1.0,
+        "snr_factor": 1.2649110641
+        }
+    }
+}

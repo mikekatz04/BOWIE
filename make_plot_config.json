@@ -1,0 +1,144 @@
+{
+    "general":{
+        "WORKING_DIRECTORY": "paper_data",
+
+        "SNR_CUT": 5.0,
+
+        "show_figure": true,
+
+        "save_figure": false,
+        "output_path": "gridded_sense_curves.pdf",
+
+        "file_name": "M7_z0.hdf5",
+
+        "x_column_label": "q",
+        "y_column_label": "s", 
+
+        "figure_width": 13.0,
+        "figure_height": 10.0,
+        "spacing": "tight",
+        "adjust_figure_bottom": 0.15,
+        "fig_y_label": "Spin",
+        "fig_x_label": "Mass Ratio",
+
+        "tick_label_fontsize":16,
+        
+        "num_rows": 3,
+        "num_cols": 3,
+
+        "xlims": [-4.0, 0.0],
+        "dx": 1.0,
+        "xscale": "log",
+
+        "ylims": [-1.0, 1.0],
+        "dy": 0.5,
+        "yscale": "lin"
+        },
+
+
+
+    "plot_info":
+        {
+
+        "0":{
+            "file":[
+                {"label":"LISA_prop_curve_all"}
+                ],
+            "type": "Waterfall",
+            "label":
+                {"ylabel": "PL"}
+            },
+
+        "4":{
+            "file":[
+                {"label":"Classic_LISA_all"}
+                ],
+            "type": "Waterfall"
+            },
+        "8":{
+            "file":[
+                {"label":"Classic_LISA_prop_behavior_all"}
+                ],
+            "type": "Waterfall",
+            "label":
+                {"xlabel": "CLLF"}
+            },
+
+        "1":{
+            "indices": 4,
+            "control":
+                {"index": 0},
+            "type": "Ratio",
+            "extra":
+                {"turn_off_loss_gain":true}
+            },
+        "2":{
+            "indices": 8,
+            "control":
+                {"index": 0},
+            "type": "Ratio",
+            "extra":
+                {"turn_off_loss_gain":true}
+            },
+        "5":{
+            "indices": 8,
+            "control":
+                {"index": 4},
+            "type": "Ratio",
+            "extra":
+                {"turn_off_loss_gain":true}
+            },
+
+        "3":{
+            "indices": [0,4],
+            "type": "Horizon",
+            "label":
+                {"ylabel": "CL"},
+            "legend":
+                {
+                "labels": ["PL", "CL"],
+                "loc": "lower center",
+                "size":10,
+                "ncol": 1
+                },
+            "extra":
+                {
+                "snr_contour_value":1e2    
+                }
+            },
+        "6":{
+            "indices": [0,8],
+            "type": "Horizon",
+            "label":
+                {"xlabel": "PL", "ylabel": "CLLF"},
+            "legend":
+                {
+                "labels": ["PL", "CLLF"],
+                "loc": "lower center",
+                "size":10,
+                "ncol": 1
+                },
+            "extra":
+                {
+                "snr_contour_value":1e2    
+                }
+            },
+        "7":{
+            "indices": [4,8],
+            "type": "Horizon",
+            "label":
+                {"xlabel":"CL"},
+            "legend":
+                {
+                "labels": ["CL", "CLLF"],
+                "loc": "lower center",
+                "size":10,
+                "ncol": 1
+                },
+            "extra":
+                {
+                "snr_contour_value":1e2    
+                }
+            }
+        }
+}
