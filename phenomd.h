@@ -141,8 +141,8 @@ static double FinalSpin0815_s(double eta, double s);
 static double FinalSpin0815(double eta, double chi1, double chi2);
 static double EradRational0815_s(double eta, double s);
 static double EradRational0815(double eta, double chi1, double chi2);
-static double fring(double eta, double chi1, double chi2, double finalspin);
-static double fdamp(double eta, double chi1, double chi2, double finalspin);
+static double fring(double eta, double chi1, double chi2, double finspin, gsl_interp_accel *acc_fring, gsl_spline *iFring);
+static double fdamp(double eta, double chi1, double chi2, double finspin,  gsl_interp_accel *acc_fdamp, gsl_spline *iFdamp);
 
 /******************************* Amplitude functions *******************************/
 

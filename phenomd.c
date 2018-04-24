@@ -490,17 +490,11 @@ static double EradRational0815(double eta, double chi1, double chi2) {
  * fring is the real part of the ringdown frequency
  * 1508.07250 figure 9
  */
-static double fring(double eta, double chi1, double chi2, double finspin) {
+static double fring(double eta, double chi1, double chi2, double finspin, gsl_interp_accel *acc_fring, gsl_spline *iFring) {
   double return_val;
 
-  gsl_interp_accel *acc = gsl_interp_accel_alloc();
-  gsl_spline *iFring = gsl_spline_alloc(gsl_interp_cspline, QNMData_length);
-  gsl_spline_init(iFring, QNMData_a, QNMData_fring, QNMData_length);
+  return_val = gsl_spline_eval(iFring, finspin, acc_fring)/ (1.0 - EradRational0815(eta, chi1, chi2));
 
-  return_val = gsl_spline_eval(iFring, finspin, acc)/ (1.0 - EradRational0815(eta, chi1, chi2));
-
-  gsl_spline_free(iFring);
-  gsl_interp_accel_free(acc);
   return return_val;
 }
 
@@ -508,17 +502,11 @@ static double fring(double eta, double chi1, double chi2, double finspin) {
  * fdamp is the complex part of the ringdown frequency
  * 1508.07250 figure 9
  */
-static double fdamp(double eta, double chi1, double chi2, double finspin) {
+static double fdamp(double eta, double chi1, double chi2, double finspin,  gsl_interp_accel *acc_fdamp, gsl_spline *iFdamp) {
   double return_val;
 
-  gsl_interp_accel *acc = gsl_interp_accel_alloc();
-  gsl_spline *iFdamp = gsl_spline_alloc(gsl_interp_cspline, QNMData_length);
-  gsl_spline_init(iFdamp, QNMData_a, QNMData_fdamp, QNMData_length);
+  return_val = gsl_spline_eval(iFdamp, finspin, acc_fdamp)/ (1.0 - EradRational0815(eta, chi1, chi2));
 
-  return_val = gsl_spline_eval(iFdamp, finspin, acc)/ (1.0 - EradRational0815(eta, chi1, chi2));
-
-  gsl_spline_free(iFdamp);
-  gsl_interp_accel_free(acc);
   return return_val;
 }
 
@@ -624,7 +612,8 @@ static double gamma3_fun(double eta, double chi) {
 
 /*find coefficients for the amplitude part of the waveform. Eautions 31 and 32 from arXiv:1508.07253 provide general form of each equation. */
 
-static IMRPhenomDAmplitudeCoefficients* ComputeIMRPhenomDAmplitudeCoefficients(double eta, double chi1, double chi2, double finspin) {
+static IMRPhenomDAmplitudeCoefficients* ComputeIMRPhenomDAmplitudeCoefficients(double eta, double chi1, double chi2, double finspin, gsl_interp_accel *acc_fring, gsl_spline *iFring, gsl_interp_accel *acc_fdamp, gsl_spline *iFdamp) {
+
   IMRPhenomDAmplitudeCoefficients *p = (IMRPhenomDAmplitudeCoefficients *) malloc(sizeof(IMRPhenomDAmplitudeCoefficients));
 
   p->eta = eta;
@@ -634,8 +623,8 @@ static IMRPhenomDAmplitudeCoefficients* ComputeIMRPhenomDAmplitudeCoefficients(d
   p->q = (1.0 + sqrt(1.0 - 4.0*eta) - 2.0*eta) / (2.0*eta);
   p->chi = chiPN(eta, chi1, chi2);
 
-  p->fRD = fring(eta, chi1, chi2, finspin);
-  p->fDM = fdamp(eta, chi1, chi2, finspin);
+  p->fRD = fring(eta, chi1, chi2, finspin, acc_fring, iFring);
+  p->fDM = fdamp(eta, chi1, chi2, finspin, acc_fdamp, iFdamp);
 
   // Compute gamma_i's, rho_i's
   p->gamma1 = gamma1_fun(eta, p->chi);
@@ -759,6 +748,15 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
   double finspin, eta;
   double m1_in, m2_in, chi1_in, chi2_in;
 
+  gsl_interp_accel *acc_fring = gsl_interp_accel_alloc();
+  gsl_spline *iFring = gsl_spline_alloc(gsl_interp_cspline, QNMData_length);
+  gsl_spline_init(iFring, QNMData_a, QNMData_fring, QNMData_length);
+
+  gsl_interp_accel *acc_fdamp = gsl_interp_accel_alloc();
+  gsl_spline *iFdamp = gsl_spline_alloc(gsl_interp_cspline, QNMData_length);
+  gsl_spline_init(iFdamp, QNMData_a, QNMData_fdamp, QNMData_length);
+
+
   for(j=0; j<length_of_arrays; j+=1){
 
     if (m1[j]>m2[j]){
@@ -787,7 +785,7 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
       f_max = f_CUT;
     }
   
-    IMRPhenomDAmplitudeCoefficients *p = ComputeIMRPhenomDAmplitudeCoefficients(eta, chi1_in, chi2_in, finspin);
+    IMRPhenomDAmplitudeCoefficients *p = ComputeIMRPhenomDAmplitudeCoefficients(eta, chi1_in, chi2_in, finspin, acc_fring, iFring, acc_fdamp, iFdamp);
 
     AmpInsPrefactors *prefactors = init_amp_ins_prefactors(p);
 
@@ -841,6 +839,12 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
   fmrg[j] = MF_ISCO/M_redshifted_time;
   fpeak[j] = p->fmaxCalc/M_redshifted_time;
 } 
+
+  gsl_spline_free(iFring);
+  gsl_interp_accel_free(acc_fring);
+
+  gsl_spline_free(iFdamp);
+  gsl_interp_accel_free(acc_fdamp);
 
   return 0;
 }
