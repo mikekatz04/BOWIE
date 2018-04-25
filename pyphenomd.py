@@ -7,7 +7,11 @@ author Michael Katz guided by lal implimentation of PhenomD
 
 		PhenomDWaveforms: This creates characteristic strain waveforms (amplitude only). It takes binary parameters as inputs and outputs f and hc for the waveform amplitude, and the merger frequency (fmrg) and merger-ringdown initial frequency (fpeak). 
 
-		SNRCalculation: This takes waveforms, noise amplitude, fpeak, and fmrg and outputs the SNR for each phase and for the overall waveform. 
+		SNRCalculation: This takes waveforms, noise amplitude, fpeak, and fmrg and outputs the SNR for each phase and for the overall waveform.
+
+	pyphenomd.py has one additional snr calculation function:
+
+		snr: This takes in binary inputs and outputs the snr for the phase of choice for binary black hole coalescence.
 """
 
 import ctypes
@@ -252,6 +256,78 @@ class SNRCalculation:
 		self.snr_out_dict['ins'] = snr_ins*prefactor
 		self.snr_out_dict['mrg'] = snr_mrg*prefactor
 		self.snr_out_dict['rd'] = snr_rd*prefactor
+
+
+def snr(m1, m2, chi1, chi2, z_or_dist, st, et, sensitivity_curve='PL', wd_noise=False, phase='all', prefactor=1.0, dist_type='redshift', num_points=8192):
+	"""
+	snr is a function that takes binary parameters and a sensitivity curve as inputs, and returns snr from the chosen phase. 
+
+	Inputs:
+
+	*** Warning ***: All binary parameters need to have the same shape, either scalar or 1D array. Start time (st) and end time (et) can be scalars while the rest of the binary parameters are arrays. 
+
+
+		:param m1: (float) - scalar or a 1D array  - mass 1 in Solar Masses. (>0.0)
+		:param m2: (float) - scalar or a 1D array - mass 2 in Solar Masses. (>0.0)
+
+		:param chi1: (float) - scalar or a 1D array - dimensionless spin of mass 1 aligned to orbital angular momentum. [-1.0, 1.0]
+		:param chi1: (float) - scalar or a 1D array - dimensionless spin of mass 2 aligned to orbital angular momentum. [-1.0, 1.0]
+
+		:param z_or_dist: (float) - scalar or a 1D array - a measure of distance to the binary. This can take three forms: redshift (dimensionless) (default), luminosity distance (Mpc), comoving_distance (Mpc). The type used must be specified in 'dist_type' parameter. (>0.0)
+
+		:param st: (float) - scalar or a 1D array - start time of waveform in years before end of the merger phase. This is determined using 1 PN order. (>0.0)
+
+		:param et: (float) - scalar or a 1D array - end time of waveform in years before end of the merger phase. This is determined using 1 PN order. (>=0.0)
+
+		:param sensitivity_curve: (string) - string that starts the .txt file containing the sensitivity curve in folder 'noise_curves/'. Default is 'PL' for proposed LISA. 
+
+		:param wd_noise: (boolean) - True/False to use White Dwarf background. Default is False. If True, the Hils-Bender estimation (Bender & Hils 1997) by Hiscock et al. 2000 is used.
+
+		:param phase: (string) - options are 'all' for all phases; 'ins' for inspiral; 'mrg' for merger; or 'rd' for ringdown. Default is 'all'. 
+
+		:param prefactor: (float) - scalar - factor to multiply integral values by 
+
+		:param dist_type: (str) - which type of distance is used. Default is 'redshift'. 
+
+		:param num_points: (int) - scalar - number of points to use in the waveform. The frequency points are log-spaced. Default is 8192. 
+	"""
+
+	wave = PhenomDWaveforms(m1, m2, chi1, chi2, z_or_dist, st, et, dist_type, num_points)
+	wave.create_waveforms()
+
+	ASD_data = np.genfromtxt('noise_curves/' + sensitivity_curve + '.txt', names=True)
+
+	f_n = ASD_data['f']
+	ASD = ASD_data['ASD']
+
+	hn = ASD*np.sqrt(f_n)
+
+	if wd_noise:
+		ASD_wd_data = np.genfromtxt('noise_curves/' + 'WDnoise' + '.txt', names=True)
+
+		f_n_wd = ASD_data['f']
+		ASD_wd = ASD_data['ASD']
+
+		hn_wd = ASD*np.sqrt(f_n_wd)
+
+		hn_wd_interp = interpolate.interp1d(f_n_wd, hn_wd, bounds_error=False, fill_value=1e-30)
+		hn_wd = hn_wd_interp(f_n)
+
+		hn = hn*(hn>=hn_wd) + hn_wd*(hn<hn_wd)
+
+	noise_interp = interpolate.interp1d(f_n, hn, bounds_error=False, fill_value=1e30)
+
+	hn_vals = noise_interp(wave.freqs)
+
+	snr_out = SNRCalculation(wave.freqs, wave.amplitude, hn_vals, wave.fmrg, wave.fpeak, prefactor)
+
+	return snr_out.snr_out_dict[phase]
+
+
+
+
+
+
 		
 	
 

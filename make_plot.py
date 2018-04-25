@@ -19,7 +19,6 @@ Module turns gridded datasets into helpful plots. It is designed for LISA Signal
 
 
 import json
-import pdb
 import sys
 from collections import OrderedDict
 import h5py
