@@ -17,6 +17,8 @@ Software installation/usage only requires a few specific libraries in python. Al
 ```
 pip install ctypes
 ```
+In order to properly create waveforms with ctypes, you will need complex, gsl, and math c libraries. For installing gsl, refer to https://www.gnu.org/software/gsl/. 
+
 
 ### Installing
 
