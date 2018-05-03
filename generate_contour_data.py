@@ -46,7 +46,7 @@ def parallel_func(num_proc, binaries, sig_types, sensitivity_dict):
 
 		snr: (dict) - contains all the SNR values requested. Its keys are the sig_types and sensitivity curves. Its values are the array of snr values corresponding to all the binaries in CalculateSignalClass. 
 	"""
-	print(num_proc,'start', len(binaries.M))
+	#print(num_proc,'start', len(binaries.M))
 
 	#initialize SNR dict
 	snr = OrderedDict()
@@ -62,7 +62,7 @@ def parallel_func(num_proc, binaries, sig_types, sensitivity_dict):
 	#find snr
 	snr = binaries.find_snr(snr, sig_types, sensitivity_dict)
 		
-	print(num_proc, 'end')
+	#print(num_proc, 'end')
 	return snr
 
 class CalculateSignalClass(PhenomDWaveforms):
@@ -161,7 +161,7 @@ class CalculateSignalClass(PhenomDWaveforms):
 class file_read_out:
 
 
-	def __init__(self, pid, file_type, output_string, xvals, yvals, output_dict, num_x, num_y, xval_name, yval_name, par_1_name, par_2_name, par_3_name):
+	def __init__(self, pid, file_type, output_string, xvals, yvals, output_dict, num_x, num_y):
 		"""
 		Class designed for reading out files in .txt files or hdf5 compressed files. 
 
@@ -186,7 +186,7 @@ class file_read_out:
 		"""
 
 		self.pid = pid
-		self.file_type, self.output_string, self.xvals, self.yvals, self.output_dict, self.num_x, self.num_y, self.xval_name, self.yval_name, self.par_1_name, self.par_2_name, self.par_3_name = file_type, output_string,  xvals, yvals,output_dict, num_x, num_y, xval_name, yval_name, par_1_name, par_2_name, par_3_name
+		self.file_type, self.output_string, self.xvals, self.yvals, self.output_dict, self.num_x, self.num_y = file_type, output_string,  xvals, yvals,output_dict, num_x, num_y
 
 	def prep_output(self):
 		"""
@@ -214,25 +214,26 @@ class file_read_out:
 			header.attrs['Author'] = 'Generator by: Michael Katz'
 			header.attrs['Date/Time'] = str(datetime.datetime.now())
 
-			header.attrs['xval_name'] = self.xval_name
+			header.attrs['xval_name'] = self.pid['generate_info']['xval_name']
 			header.attrs['num_x_pts'] = self.num_x
 			header.attrs['xval_unit'] = self.units_dict['xval_unit']
 
-			header.attrs['yval_name'] = self.yval_name
+			header.attrs['yval_name'] = self.pid['generate_info']['yval_name']
 			header.attrs['num_y_pts'] = self.num_y
 			header.attrs['yval_unit'] = self.units_dict['yval_unit']
 
-			header.attrs['par_1_name'] = self.par_1_name
+			header.attrs['par_1_name'] = self.pid['generate_info']['par_1_name']
 			header.attrs['par_1_unit'] = self.units_dict['par_1_unit']
 			header.attrs['par_1_value'] = self.pid['generate_info']['fixed_parameter_1']
 
-			header.attrs['par_2_name'] = self.par_2_name
+			header.attrs['par_2_name'] = self.pid['generate_info']['par_2_name']
 			header.attrs['par_2_unit'] = self.units_dict['par_2_unit']
 			header.attrs['par_2_value'] = self.pid['generate_info']['fixed_parameter_2']
 
-			header.attrs['par_3_name'] = self.par_3_name
-			header.attrs['par_3_unit'] = self.units_dict['par_3_unit']
-			header.attrs['par_3_value'] = self.pid['generate_info']['fixed_parameter_3']
+			if self.pid['generate_info']['par_3_name'] != 'same_spin':
+				header.attrs['par_3_name'] = self.pid['generate_info']['par_3_name']
+				header.attrs['par_3_unit'] = self.units_dict['par_3_unit']
+				header.attrs['par_3_value'] = self.pid['generate_info']['fixed_parameter_3']
 
 			if self.added_note != '':
 				header.attrs['Added note'] = self.added_note
@@ -281,9 +282,10 @@ class file_read_out:
 		header += '#par_2_unit: %s\n'%self.units_dict['par_2_unit']
 		header += '#par_2_value: %s\n'%self.pid['generate_info']['fixed_parameter_2']
 
-		header += '#par_3_name: %s\n'%self.par_3_name
-		header += '#par_3_unit: %s\n'%self.units_dict['par_3_unit']
-		header += '#par_3_value: %s\n'%self.pid['generate_info']['fixed_parameter_3']
+		if self.par_3_name != 'same_spin':
+			header += '#par_3_name: %s\n'%self.par_3_name
+			header += '#par_3_unit: %s\n'%self.units_dict['par_3_unit']
+			header += '#par_3_value: %s\n'%self.pid['generate_info']['fixed_parameter_3']
 
 		if self.added_note != '':
 			header+= '#Added note: ' + self.added_note + '\n'
@@ -583,6 +585,9 @@ def generate_contour_data(pid):
 
 	WORKING_DIRECTORY = '.'
 
+	#adjust for same spin
+	par_3_name = gid['par_3_name']
+
 	if 'WORKING_DIRECTORY' in pid['general'].keys():
 		WORKING_DIRECTORY = pid['general']['WORKING_DIRECTORY']
 
@@ -601,7 +606,8 @@ def generate_contour_data(pid):
 		running_process.run_single()
 
 	#read out
-	file_out = file_read_out(pid, pid['output_info']['output_file_type'], pid['output_info']['output_folder'] + '/' + pid['output_info']['output_file_name'],  running_process.xvals, running_process.yvals, running_process.final_dict, running_process.num_x, running_process.num_y, gid['xval_name'], gid['yval_name'], gid['par_1_name'], gid['par_2_name'], gid['par_3_name'])
+	pid['generate_info']['par_3_name'] = par_3_name
+	file_out = file_read_out(pid, pid['output_info']['output_file_type'], pid['output_info']['output_folder'] + '/' + pid['output_info']['output_file_name'],  running_process.xvals, running_process.yvals, running_process.final_dict, running_process.num_x, running_process.num_y)
 
 	#adding extras to output info
 	file_out.prep_output()

@@ -1,4 +1,8 @@
-# f	ASD
+#CLLF -> Classic LISA Low Frequency
+#Classic LISA curve with the low-frequency shape of Proposed LISA (PL)
+#shifted to lower frequencies and splined together with Classic LISA. 
+#CL is from Larson et al 2000. 
+f	ASD
 5.245214000000001006e-06	2.692468423719526266e-13
 1.049042999999999233e-05	3.251882170590435076e-15
 1.072450993439801762e-05	2.844121919726018555e-15
