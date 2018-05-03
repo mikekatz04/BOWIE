@@ -138,7 +138,7 @@ class PhenomDWaveforms:
 		if len(np.where(self.st<self.et)[0]) != 0:
 			raise Exception("Start Time is less than End time.")
 
-		if any(self.m1/self.m2 > 1.0) or any(self.m1/self.m2 < 9.999999e-5):
+		if any(self.m1/self.m2 > 1.0000001e4) or any(self.m1/self.m2 < 9.999999e-5):
 			raise Exception("Mass Ratio too far from unity.")
 
 		return
