@@ -18,6 +18,7 @@ import ctypes
 from astropy.cosmology import Planck15 as cosmo
 import numpy as np
 from scipy import interpolate
+from astropy.io import ascii
 
 class PhenomDWaveforms:
 	def __init__(self, m1, m2, chi1, chi2, z_or_dist, st, et, dist_type='redshift', num_points=8192):
@@ -295,7 +296,7 @@ def snr(m1, m2, chi1, chi2, z_or_dist, st, et, sensitivity_curve='PL', wd_noise=
 	wave = PhenomDWaveforms(m1, m2, chi1, chi2, z_or_dist, st, et, dist_type, num_points)
 	wave.create_waveforms()
 
-	ASD_data = np.genfromtxt('noise_curves/' + sensitivity_curve + '.txt', names=True)
+	ASD_data = ascii.read('noise_curves/' + sensitivity_curve + '.txt')
 
 	f_n = ASD_data['f']
 	ASD = ASD_data['ASD']
@@ -303,7 +304,7 @@ def snr(m1, m2, chi1, chi2, z_or_dist, st, et, sensitivity_curve='PL', wd_noise=
 	hn = ASD*np.sqrt(f_n)
 
 	if wd_noise:
-		ASD_wd_data = np.genfromtxt('noise_curves/' + 'WDnoise' + '.txt', names=True)
+		ASD_wd_data = ascii.read('noise_curves/' + 'WDnoise' + '.txt')
 
 		f_n_wd = ASD_data['f']
 		ASD_wd = ASD_data['ASD']
