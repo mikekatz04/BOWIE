@@ -377,6 +377,7 @@ class Waterfall(CreateSinglePlot):
 
 		CreateSinglePlot.__init__(self, fig, axis, xvals,yvals,zvals,
 			gen_dict, limits_dict, label_dict, extra_dict, legend_dict)
+		
 
 	def make_plot(self):
 		"""
