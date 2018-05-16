@@ -9,10 +9,8 @@
         "save_figure": false,
         "output_path": "gridded_sense_curves.pdf",
 
-        "file_name": "M7_z0.hdf5",
-
-        "x_column_label": "q",
-        "y_column_label": "s", 
+        "x_column_label": "M_s",
+        "y_column_label": "d_L", 
 
         "figure_width": 13.0,
         "figure_height": 10.0,

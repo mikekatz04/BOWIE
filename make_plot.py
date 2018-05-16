@@ -95,6 +95,8 @@ class CreateSinglePlot:
 		x_tick_label_fontsize = 14
 		if 'x_tick_label_fontsize' in self.label_dict.keys():
 			x_tick_label_fontsize = self.label_dict['x_tick_label_fontsize']
+		elif 'tick_label_fontsize' in self.label_dict.keys():
+			x_tick_label_fontsize = self.label_dict['tick_label_fontsize']
 		elif 'x_tick_label_fontsize' in self.gen_dict.keys():
 			x_tick_label_fontsize = self.gen_dict['x_tick_label_fontsize']
 		elif 'tick_label_fontsize' in self.gen_dict.keys():
@@ -103,6 +105,8 @@ class CreateSinglePlot:
 		y_tick_label_fontsize = 14
 		if 'y_tick_label_fontsize' in self.label_dict.keys():
 			y_tick_label_fontsize = self.label_dict['y_tick_label_fontsize']
+		elif 'tick_label_fontsize' in self.label_dict.keys():
+			y_tick_label_fontsize = self.label_dict['tick_label_fontsize']
 		elif 'y_tick_label_fontsize' in self.gen_dict.keys():
 			y_tick_label_fontsize = self.gen_dict['y_tick_label_fontsize']
 		elif 'tick_label_fontsize' in self.gen_dict.keys():
@@ -121,13 +125,23 @@ class CreateSinglePlot:
 			 float(self.limits_dict['dy']))
 
 		xlim = [xticks.min(), xticks.max()]
-		if 'reverse_x_axis' in self.gen_dict.keys():
+		if 'reverse_x_axis' in self.limits_dict.keys():
+			if self.limits_dict['reverse_x_axis'] == True:
+				xticks = xticks[::-1]
+				xlim = [xticks.max(), xticks.min()]
+
+		elif 'reverse_x_axis' in self.gen_dict.keys():
 			if self.gen_dict['reverse_x_axis'] == True:
 				xticks = xticks[::-1]
 				xlim = [xticks.max(), xticks.min()]
 
 		ylim = [yticks.min(), yticks.max()]
-		if 'reverse_y_axis' in self.gen_dict.keys():
+		if 'reverse_y_axis' in self.limits_dict.keys():
+			if self.limits_dict['reverse_y_axis'] == True:
+				yticks = yticks[::-1]
+				ylim = [yticks.max(), yticks.min()]
+
+		elif 'reverse_y_axis' in self.gen_dict.keys():
 			if self.gen_dict['reverse_y_axis'] == True:
 				yticks = yticks[::-1]
 				ylim = [yticks.max(), yticks.min()]
@@ -164,10 +178,10 @@ class CreateSinglePlot:
 
 		#add grid
 		add_grid = True
-		if 'remove_grid' in self.extra_dict.keys():
-			add_grid = self.extra_dict['remove_grid']
-		elif 'remove_grid' in self.gen_dict.keys():
-			add_grid = self.gen_dict['remove_grid']
+		if 'add_grid' in self.extra_dict.keys():
+			add_grid = self.extra_dict['add_grid']
+		elif 'add_grid' in self.gen_dict.keys():
+			add_grid = self.gen_dict['add_grid']
 
 		if add_grid:
 			self.axis.grid(True, linestyle='-', color='0.75')
@@ -1135,6 +1149,7 @@ class MainProcess:
 		for name in ['legend', 'limits', 'label', 'extra']:
 			if name not in trans_dict:
 				trans_dict[name] = {}
+
 		if 'xlims' in self.pid['general'].keys() and 'xlims' not in trans_dict['limits']:
 			trans_dict['limits']['xlims'] = self.pid['general']['xlims']
 		if 'dx' in self.pid['general'].keys() and 'dx' not in trans_dict['limits']:
@@ -1164,6 +1179,9 @@ def plot_main(pid, return_fig_ax=False):
 
 	"""
 	Main function for creating these plots. Reads in plot info dict from json file or dictionary in script. 
+
+	Optional Inputs:
+		:param return_fig_ax - (bool) - return figure and axes objects.
 
 	Optional Outputs:
 		fig: figure object - for customization outside of those in this program
