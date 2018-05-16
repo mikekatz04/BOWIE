@@ -13,7 +13,7 @@
 "output_info":
     {
     "output_folder": "paper_data",
-    "output_file_name":"LIGO_q8_s8",
+    "output_file_name":"LISA_small_binaries_q8_s65_20_year",
     "output_file_type":"hdf5",
     "x_col_name": "M_s",
     "y_col_name": "d_L"
@@ -27,7 +27,7 @@
     "amplitude_column_label": "ASD", 
     "sensitivity_curves": 
         [
-        {"name":"LIGO_ASD.txt", "type":"ASD"}
+        {"name":"PL.txt", "type":"ASD"}
         ],
     "sensitivity_averaging_factor":1.0
     },
@@ -44,11 +44,11 @@
     "yscale": "log",
     "num_y": 500,
     "y_low": 1e0,
-    "y_high": 1e6,
+    "y_high": 1e5,
     "yval_name": "luminosity_distance",
     "yval_unit": "Mpc",
 
-    "fixed_parameter_1": 0.8,
+    "fixed_parameter_1": 0.65,
     "par_1_name": "spin",
     "par_1_unit": "None",
 
@@ -56,19 +56,25 @@
     "par_2_name": "mass_ratio",
     "par_2_unit": "None",
 
-    "fixed_parameter_3": 0.65,
-    "par_3_name": "same_spin",
-    "par_3_unit": "None",
+    "fixed_parameter_3": 20.0,
+    "par_3_name": "start_time",
+    "par_3_unit": "Years",
 
-    "start_time": 1.0,
-    "end_time": 0.0,
+    "fixed_parameter_4": 10.0,
+    "par_4_name": "end_time",
+    "par_4_unit": "Years",
+
+    "fixed_parameter_5": 0.65,
+    "par_5_name": "same_spin",
+    "par_5_unit": "None",
+
         
-    "freq_length": 8192,
+    "num_points": 8192,
         
     "snr_calculation_factors":
         {
         "averaging_factor": 1.0,
-        "snr_factor": 1.2649110641
+        "snr_factor": 1.788854382
         }
     }
 }

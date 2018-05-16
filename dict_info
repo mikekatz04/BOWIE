@@ -1,0 +1,180 @@
+
+Main Dictionary for generate_contour_data.py:
+{
+
+general:
+    {
+    WORKING_DIRECTORY (str)
+        Default: "."
+        working directory for file export and retrieval
+
+    signal_type (str list):
+        Required
+        SNR calculations for phases of binary coalescence. 
+        Choices are "ins" (inspiral), "merg" (merger), "rd" (ringdown), and/or "all". 
+
+    generation_type (str):
+        Required
+        Calculation run on single thread or in parallel. 
+        Choices are "parallel" or "single". 
+
+    num_processors (int):
+        Default: 4
+        Number of processors to run across in parallel. 
+       
+
+    num_splits (int):
+        Default: 1000
+        Number of binaries to run on a thread. The number of processes needed are the total number of binaries  
+            divided by num_splits. 
+       
+    add_wd_noise (str): 
+        Default: "no"
+        Indicates if calculation with a galactic foreground is needed. 
+        Choices are "yes", "no", or "both". "yes" only calculates with the foreground noise. "both" does both with and without foreground noise. 
+    },
+
+output_info:
+    {
+    output_folder (str): 
+        Default: "."
+        Folder to output the gridded SNR calculation to. 
+
+    output_file_name (str):
+        Required
+        File to output SNR calculations to. DO NOT INCLUDE '.' + THE FILE EXTENSION. 
+
+    output_file_type (str):
+        Default: "hdf5"
+        File extension for output file. 
+        Choices are "hdf5" or "txt". 
+
+    x_col_name/y_col_name (str):
+        Default: "x"/"y"
+        Column name for x/y values output to file for each SNR calculation. 
+
+    added_note (str):
+        Default: None
+        If the user wants to add a note to the output file. 
+    },
+
+
+input_info:
+    {
+    input_folder (str):
+        Default: "."
+    freq_column_label (str):
+        Default: "f"
+        Column label in input file sensitivity curve frequency. 
+
+    amplitude_column_label (str):
+        Default: "ASD"
+        Column label in input file sensitivity curve amplitude. 
+
+    sensitivity_averaging_factor (float):
+        Default: 1.0
+        Value used for sky-averaging and/or polarization averaging for the sensitivity curve. LISA value is 3/20. 
+
+    sensitivity_curves (list of dictionaries):
+        Required
+        This is referred to as a file_dict.
+
+        file_dict:
+            [
+            {
+            name (str):
+                Required
+                File name of sensitivity curve. Must be in .txt format. 
+
+            type (str):
+                Default: "ASD"
+                Type of sensitivity curve used. 
+                Choices are "ASD", "PSD", or "characteristic strain".
+
+            freq_column_label (str):
+                Same as previous definition inside "input_info". This will override that value if given. This is 
+                    used if a specific sensitivity curve has a different file setup than the others. 
+
+            amplitude_column_label (str):
+                Same as previous definition inside "input_info". This will override that value if given. This is 
+                    used if a specific sensitivity curve has a different file setup than the others. 
+
+            sensitivity_averaging_factor (float):
+                Same as previous definition inside "input_info". This will override that value if given. This is 
+                    used if a specific sensitivity curve has a different file setup than the others. 
+            }
+            ]
+    galactic_background (dictionary):
+        Required if general[add_wd_noise] == yes or both
+        This is a file dictionary representing the galactic foreground. It takes the exact same form of the 
+            file_dict shown above. 
+
+    },
+
+generate_info:
+    {
+    xscale/yscale (str): 
+        Required
+        Scaling used for generation of x/y points. 
+        Choices are "log" (log base 10) or "lin" (linear). 
+
+    num_x/num_y (int): 
+        Required
+        Number of points in x/y. 
+
+    x_low/y_low (float):
+        Required
+        Low number to use for x/y points. 
+
+    x_high/y_high (float):
+        Required
+        Low number to use for x/y points.
+
+    fixed_parameter_1/fixed_parameter_2/fixed_parameter_3/fixed_parameter_4 (float):
+        Required
+        Value for the parameters fixed for each binary. 
+
+    xval_name/yval_name/par_1_name/par_2_name/par_3_name/par_4_name (str):
+        Required
+        Name of the x/y values being tested. 
+        Choices are "total_mass", "mass_ratio", "luminosity_distance", "comoving_distance", "redshift", "spin_1", 
+            "spin_2", "spin", "start_time", "end_time". To test different observation times, use specific values of "start_time" and "end_time".
+
+    par_5_name (str):
+        Required
+        Same as above names with one difference. If the same spin is desired for both black holes, par_3_name
+            should be set to "same_spin".
+
+    fixed_parameter_5 (float):
+        Required if par_5_name != "same_spin"
+        Same choices as above. 
+
+    xval_unit/yval_unit/par_1_unit/par_2_unit/par_3_unit/par_4_unit/par_5_unit (str): 
+        Required
+        This is for export to a file. It keeps track of quantities for future use of the file. Start time and end 
+            time must be given in years. Mass must be given in solar masses. If "luminosity_distance" or "comoving_distance" is used, then the units matter. Default is "Mpc". However, "Gpc" can be given. 
+        
+    num_points (int): 
+        Default: 8192
+        This represents the number of frequency points used to represent the waveform. Smaller numbers can speed up computation, but will sacrifice accuracy at some point. 
+
+    snr_calculation_factors (dictionary):
+        {
+        averaging_factor (float): 
+            Default: 1.0
+            Value for averaging of the waveform over orientation and inclination. For LISA, sqrt(12/25). 
+
+        snr_factor (float): 
+            Default: 1.0
+            Value multiplied by integral value to achieve SNR. For LISA, sqrt(2). 
+        }
+    }
+}
+
+
+
+
+
+
+
+

@@ -241,13 +241,13 @@ class file_read_out:
 			data = f.create_group('data')
 
 			#read out x,y values in compressed data set
-			x_col_name = self.pid['generate_info']['xval_name']
+			x_col_name = "x"
 			if 'x_col_name' in self.pid['output_info'].keys():
 				x_col_name = self.pid['output_info']['x_col_name']
 
 			dset = data.create_dataset(x_col_name, data = self.xvals, dtype = 'float64', chunks = True, compression = 'gzip', compression_opts = 9)
 
-			y_col_name = self.pid['generate_info']['yval_name']
+			y_col_name = "y"
 			if 'y_col_name' in self.pid['output_info'].keys():
 				y_col_name = self.pid['output_info']['y_col_name']
 
@@ -353,7 +353,7 @@ class MainProcess:
 
 		"""
 
-		data = ascii.read(self.pid['input_info']['input_location'] + '/' + file_dict['name'])
+		data = ascii.read(self.pid['input_info']['input_folder'] + '/' + file_dict['name'])
 
 		#add label to self.labels if it is not wd noise
 		if wd_noise == False:
@@ -414,13 +414,13 @@ class MainProcess:
 			f, hn = self.read_in_noise_file(file_dict, wd_noise=False)
 
 			#place interpolated functions into dict with second including WD
-			if self.pid['general']['add_wd_noise'] == 'True' or self.pid['general']['add_wd_noise'] == 'Both' or self.pid['general']['add_wd_noise'] == 'both':
+			if self.pid['general']['add_wd_noise'].lower() == 'yes' or self.pid['general']['add_wd_noise'].lower() == 'both':
 
 				#check if wd noise has been read in yet
 				try:
 					self.wd_noise
 				except AttributeError:
-					f_wd, hn_wd = self.read_in_noise_file(self.pid['input_info']['Galactic_background'], wd_noise=True)
+					f_wd, hn_wd = self.read_in_noise_file(self.pid['input_info']['galactic_background'], wd_noise=True)
 					self.wd_noise = interp1d(f_wd, hn_wd, bounds_error=False, fill_value=1e-30)
 
 				wd_up = (hn/self.wd_noise(f) <= 1.0)
@@ -428,7 +428,7 @@ class MainProcess:
 
 				self.sensitivity_dict[self.labels[i] + '_wd'] = interp1d(f, hn*wd_down+self.wd_noise(f)*wd_up, bounds_error=False, fill_value=1e30)
 
-				if self.pid['general']['add_wd_noise'] == 'Both' or self.pid['general']['add_wd_noise'] == 'both':
+				if self.pid['general']['add_wd_noise'].lower() == 'both':
 					self.sensitivity_dict[self.labels[i]] = interp1d(f, hn, bounds_error=False, fill_value=1e30)
 
 			else:
@@ -460,26 +460,28 @@ class MainProcess:
 		#other parameters
 		par_1 = float(self.gid['fixed_parameter_1'])
 		par_2 = float(self.gid['fixed_parameter_2'])
+		par_3 = float(self.gid['fixed_parameter_3'])
+		par_4 = float(self.gid['fixed_parameter_4'])
 
 		#check if spins are set to the same value. Need to fill par_3 with spin_2 if so. 
 		#then use np.meshgrid to create a full grid of parameters. 
-		if self.gid['par_3_name'] == 'same_spin':
+		if self.gid['par_5_name'] == 'same_spin':
 			self.xvals, self.yvals, par_1, par_2 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]))
 			self.xvals, self.yvals, par_1, par_2 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel()
-			for key, vals in [['xval_name', self.xvals], ['yval_name', self.yvals], ['par_1_name', par_1], ['par_2_name', par_2]]:
+			for key, vals in [['xval_name', self.xvals], ['yval_name', self.yvals], ['par_1_name', par_1], ['par_2_name', par_2], ['par_3_name', par_3], ['par_4_name', par_4]]:
 				if self.gid[key][0:4] == 'spin':
 					par_3 = vals
 					self.gid[key] = 'spin_1'
-					self.gid['par_3_name'] = 'spin_2'
+					self.gid['par_5_name'] = 'spin_2'
 
 		else:
-			par_3 = float(self.gid['fixed_parameter_3'])
+			par_5 = float(self.gid['fixed_parameter_5'])
 
-			self.xvals, self.yvals, par_1, par_2, par_3 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]), np.array([par_3]))
-			self.xvals, self.yvals, par_1, par_2, par_3 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel(), par_3.ravel()
+			self.xvals, self.yvals, par_1, par_2, par_3 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]), np.array([par_3]), np.array([par_4]), np.array([par_5]))
+			self.xvals, self.yvals, par_1, par_2, par_3, par_4, par_5 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel(), par_3.ravel(), par_4.ravel(), par_5.ravel()
 
 		#add parameters to input dict. Names must be 'total_mass', 'mass_ratio', 'redshift' or 'luminosity_distance' or 'comoving distance', 'spin_1', 'spin_2'
-		self.input_dict = {self.gid['xval_name']:self.xvals, self.gid['yval_name']:self.yvals, self.gid['par_1_name']:par_1, self.gid['par_2_name']:par_2, self.gid['par_3_name']:par_3, 'start_time': float(self.gid['start_time']), 'end_time':float(self.gid['end_time'])}
+		self.input_dict = {self.gid['xval_name']:self.xvals, self.gid['yval_name']:self.yvals, self.gid['par_1_name']:par_1, self.gid['par_2_name']:par_2, self.gid['par_3_name']:par_3, self.gid['par_4_name']:par_4, self.gid['par_5_name']:par_5}
  
 		return
 
@@ -514,9 +516,10 @@ class MainProcess:
 		Prepare the program for generating the waveforms and finding the snr. This divides the data arrays into chunks and loads them into CalculateSignalClass. This is also used with single generation, running through the chunks in a list.  
 		"""
 		st = time.time()
-		num_splits = 100
+		num_splits = 1000
 
-		num_splits = int(self.pid['general']['num_splits'])
+		if 'num_splits' in self.pid['general']:
+			num_splits = int(self.pid['general']['num_splits'])
 
 		#set up inputs for each processor
 		#based on num_splits which indicates max number of boxes per processor
@@ -539,7 +542,10 @@ class MainProcess:
 		"""
 		Runs the generation in parallel.
 		"""
-		self.num_processors = int(self.pid['general']['num_processors'])
+		self.num_processors = 4
+		
+		if 'num_processors' in self.pid['general']:
+			self.num_processors = int(self.pid['general']['num_processors'])
 
 		results = []
 		with Pool(self.num_processors) as pool:
@@ -585,6 +591,15 @@ def generate_contour_data(pid):
 
 	WORKING_DIRECTORY = '.'
 
+	if "output_folder" not in pid['output_info']:
+		pid['output_info']['output_folder'] = "."
+
+	if "input_folder" not in pid['input_info']:
+		pid['input_info']['input_folder'] = "."
+
+	if "output_file_type" not in pid['output_info']:
+		pid['output_info']['output_file_type'] = "hdf5"
+
 	#adjust for same spin
 	par_3_name = gid['par_3_name']
 
@@ -607,7 +622,7 @@ def generate_contour_data(pid):
 
 	#read out
 	pid['generate_info']['par_3_name'] = par_3_name
-	file_out = file_read_out(pid, pid['output_info']['output_file_type'], pid['output_info']['output_folder'] + '/' + pid['output_info']['output_file_name'],  running_process.xvals, running_process.yvals, running_process.final_dict, running_process.num_x, running_process.num_y)
+	file_out = file_read_out(pid, pid['output_info']['output_file_type'], WORKING_DIRECTORY + '/' + pid['output_info']['output_folder'] + '/' + pid['output_info']['output_file_name'],  running_process.xvals, running_process.yvals, running_process.final_dict, running_process.num_x, running_process.num_y)
 
 	#adding extras to output info
 	file_out.prep_output()
