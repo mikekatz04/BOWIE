@@ -477,7 +477,7 @@ class MainProcess:
 		else:
 			par_5 = float(self.gid['fixed_parameter_5'])
 
-			self.xvals, self.yvals, par_1, par_2, par_3 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]), np.array([par_3]), np.array([par_4]), np.array([par_5]))
+			self.xvals, self.yvals, par_1, par_2, par_3, par_4, par_5 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]), np.array([par_3]), np.array([par_4]), np.array([par_5]))
 			self.xvals, self.yvals, par_1, par_2, par_3, par_4, par_5 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel(), par_3.ravel(), par_4.ravel(), par_5.ravel()
 
 		#add parameters to input dict. Names must be 'total_mass', 'mass_ratio', 'redshift' or 'luminosity_distance' or 'comoving distance', 'spin_1', 'spin_2'
