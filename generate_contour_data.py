@@ -470,9 +470,11 @@ class MainProcess:
 			self.xvals, self.yvals, par_1, par_2 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel()
 			for key, vals in [['xval_name', self.xvals], ['yval_name', self.yvals], ['par_1_name', par_1], ['par_2_name', par_2], ['par_3_name', par_3], ['par_4_name', par_4]]:
 				if self.gid[key][0:4] == 'spin':
-					par_3 = vals
+					par_5 = vals
 					self.gid[key] = 'spin_1'
 					self.gid['par_5_name'] = 'spin_2'
+
+		
 
 		else:
 			par_5 = float(self.gid['fixed_parameter_5'])
