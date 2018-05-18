@@ -21,7 +21,7 @@ from scipy import interpolate
 from astropy.io import ascii
 
 class PhenomDWaveforms:
-	def __init__(self, m1, m2, chi1, chi2, z_or_dist, st, et, dist_type='redshift', num_points=8192):
+	def __init__(self, m1, m2, chi1, chi2, z_or_dist, st, et, dist_type='redshift', num_points=8192, exec_call="phenomd/phenomd.so"):
 
 		"""
 		PhenomDWaveforms is a class that takes binary parameters as inputs, and returns characteristic strain waveforms. 
@@ -59,7 +59,7 @@ class PhenomDWaveforms:
 
 		"""
 
-		exec_call="phenomd.so"
+		
 
 		#check if the binary inputs are scalar or 1D
 		self.remove_axis = False
@@ -184,7 +184,7 @@ class PhenomDWaveforms:
 		return
 
 class SNRCalculation:
-	def __init__(self, freqs, hc, hn, fmrg, fpeak, prefactor=1.0):
+	def __init__(self, freqs, hc, hn, fmrg, fpeak, prefactor=1.0, exec_call="phenomd/phenomd.so"):
 
 		"""
 		SNRCalculation is a class that takes waveforms (frequencies and amplitudes) and a noise curve, and returns SNRs for all binary phases and the whole waveform. 
