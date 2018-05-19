@@ -466,8 +466,8 @@ class MainProcess:
 		#check if spins are set to the same value. Need to fill par_3 with spin_2 if so. 
 		#then use np.meshgrid to create a full grid of parameters. 
 		if self.gid['par_5_name'] == 'same_spin':
-			self.xvals, self.yvals, par_1, par_2 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]))
-			self.xvals, self.yvals, par_1, par_2 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel()
+			self.xvals, self.yvals, par_1, par_2, par_3, par_4, = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]), np.array([par_3]), np.array([par_4]))
+			self.xvals, self.yvals, par_1, par_2, par_3, par_4 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel(), par_3.ravel(), par_4.ravel()
 			for key, vals in [['xval_name', self.xvals], ['yval_name', self.yvals], ['par_1_name', par_1], ['par_2_name', par_2], ['par_3_name', par_3], ['par_4_name', par_4]]:
 				if self.gid[key][0:4] == 'spin':
 					par_5 = vals
@@ -483,6 +483,7 @@ class MainProcess:
 			self.xvals, self.yvals, par_1, par_2, par_3, par_4, par_5 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel(), par_3.ravel(), par_4.ravel(), par_5.ravel()
 
 		#add parameters to input dict. Names must be 'total_mass', 'mass_ratio', 'redshift' or 'luminosity_distance' or 'comoving distance', 'spin_1', 'spin_2'
+
 		self.input_dict = {self.gid['xval_name']:self.xvals, self.gid['yval_name']:self.yvals, self.gid['par_1_name']:par_1, self.gid['par_2_name']:par_2, self.gid['par_3_name']:par_3, self.gid['par_4_name']:par_4, self.gid['par_5_name']:par_5}
  
 		return
