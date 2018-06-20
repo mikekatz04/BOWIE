@@ -306,10 +306,10 @@ def snr(m1, m2, chi1, chi2, z_or_dist, st, et, sensitivity_curve='PL', wd_noise=
 	if wd_noise:
 		ASD_wd_data = ascii.read('noise_curves/' + 'WDnoise' + '.txt')
 
-		f_n_wd = ASD_data['f']
-		ASD_wd = ASD_data['ASD']
+		f_n_wd = ASD_wd_data['f']
+		ASD_wd = ASD_wd_data['ASD']
 
-		hn_wd = ASD*np.sqrt(f_n_wd)
+		hn_wd = ASD_wd*np.sqrt(f_n_wd)
 
 		hn_wd_interp = interpolate.interp1d(f_n_wd, hn_wd, bounds_error=False, fill_value=1e-30)
 		hn_wd = hn_wd_interp(f_n)
