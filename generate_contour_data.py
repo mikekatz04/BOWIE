@@ -353,7 +353,7 @@ class MainProcess:
 
 		"""
 
-		data = ascii.read(self.pid['input_info']['input_folder'] + '/' + file_dict['name'])
+		data = ascii.read(self.pid['input_info']['input_location'] + '/' + file_dict['name'])
 
 		#add label to self.labels if it is not wd noise
 		if wd_noise == False:
@@ -597,8 +597,8 @@ def generate_contour_data(pid):
 	if "output_folder" not in pid['output_info']:
 		pid['output_info']['output_folder'] = "."
 
-	if "input_folder" not in pid['input_info']:
-		pid['input_info']['input_folder'] = "."
+	if "input_location" not in pid['input_info']:
+		pid['input_info']['input_location'] = "."
 
 	if "output_file_type" not in pid['output_info']:
 		pid['output_info']['output_file_type'] = "hdf5"
