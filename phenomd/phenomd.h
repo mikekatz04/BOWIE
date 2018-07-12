@@ -1,5 +1,7 @@
 /* 
-  This code was constructed by Michael Katz using LALSimIMRPhenomD.c, LALSimIMRPhenomD.h, LALSimIMRPhenomD_internals.c, and LALSimIMRPhenomD_internals.h from LALsuite as templates. Here, only the amplitude is implemented so far. The phase may be added in the future. The top part of the code (break will be made clear below) was originally authored by Michael Puerrer, Sebastian Khan, Frank Ohme, Ofek Birnholtz, Lionel London. Below is their license for the redistribution of the LAL codes mentioned above. This code was strategically copied to remove any dependencies on other LAL programs. Below the break, the code was authored by Michael Katz, using the original LAL codes as a guide. PhenomD can be found in Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253). 
+  This code was constructed by Michael Katz using LALSimIMRPhenomD.c, LALSimIMRPhenomD.h, LALSimIMRPhenomD_internals.c, and LALSimIMRPhenomD_internals.h from LALsuite as templates. Here, only the amplitude is implemented so far. The phase may be added in the future. The top part of the code (break will be made clear below) was originally authored by Michael Puerrer, Sebastian Khan, Frank Ohme, Ofek Birnholtz, Lionel London. Below is their license for the redistribution of the LAL codes mentioned above. This code was strategically copied to remove any dependencies on other LAL programs. Below the break, the code was authored by Michael Katz, using the original LAL codes as a guide. PhenomD can be found in Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253).
+
+  This was used in "Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253). 
 */
 
 /*

@@ -1,5 +1,5 @@
 """
-author Michael Katz guided by lal implimentation of PhenomD
+author Michael Katz guided by lal implimentation of PhenomD. This was used in "Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253).
 
 	This python code impliments PhenomD waveforms from Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253). It wraps the accompanying c code, phenomd.c, with ctypes. phenomd.c is mostly from LALsuite. See phenomd.c for specifics. 
 

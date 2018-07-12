@@ -1,11 +1,12 @@
 """
-Generate gridded data for contour plots with PhenomD waveform. It is part of the BOWIE analysis tool. Author: Michael Katz. Paper: (arxiv: ******)
+Generate gridded data for contour plots with PhenomD waveform. It is part of the BOWIE analysis tool. Author: Michael Katz. Please cite "Evaluating Black Hole Detectability with LISA" (arXiv:1807.02511) for usage of this code. 
+
+PhenomD waveforms are generated according to Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253). Please cite these papers if the PhenomD waveform is used. 
 
 generate_contour_data produces gridded data sets based on an input dict from a script or .json configuration file. It can take any basic set of parameters for binary black holes and produce waveforms and SNR calculations for each phase of binary black hole coalescence. It reads in sensitivity curves from .txt files. The outputs can either be .txt or .hdf5. It can run in parallel or on a single processor. See generate_contour_data_guide.ipynb for examples on how to use this code. See generate_data_for_paper.ipynb for the generation of the data used in the paper. 
 
 This code is licensed under the GNU public license. 
 
-PhenomD waveforms are generated according to Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253). 
 """
 
 import sys

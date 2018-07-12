@@ -1,5 +1,5 @@
 """
-Module turns gridded datasets into helpful plots. It is designed for LISA Signal-to-Noise (SNR) comparisons across sennsitivity curves and parameters, but is flexible to other needs. It is part of the BOWIE analysis tool. Author: Michael Katz. Paper: (arxiv: ******)
+Module turns gridded datasets into helpful plots. It is designed for LISA Signal-to-Noise (SNR) comparisons across sennsitivity curves and parameters, but is flexible to other needs. It is part of the BOWIE analysis tool. Author: Michael Katz. Please cite "Evaluating Black Hole Detectability with LISA" (arXiv:1807.02511) for usage of this code. 
 
 	This code is licensed under the GNU public license. 
 	
