@@ -199,7 +199,7 @@ class SNRCalculation:
 			:param fmrg: (float) - scalar or 1D array - shape (num binaries) - merger frequency of each binary separating inspiral from merger phase.
 			:param fpeak: (float) - scalar or 1D array - shape (num binaries) - peak frequency of each binary separating merger from ringdown phase.
 
-			:param prefactor: (float) - scalar - factor to multiply integral values by 
+			:param prefactor: (float) - scalar - factor to multiply snr (not snr^2) integral values by 
 
 		Outputs (attributes):
 
