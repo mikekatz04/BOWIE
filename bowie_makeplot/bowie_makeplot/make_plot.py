@@ -30,9 +30,9 @@ from matplotlib  import cm
 from matplotlib import colors
 from astropy.io import ascii
 
-from plotutils.makeprocess import MakePlotProcess
-from plotutils.readdata import PlotVals, ReadInData
-from plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon
+from bowie_makeplot.plotutils.makeprocess import MakePlotProcess
+from bowie_makeplot.plotutils.readdata import PlotVals, ReadInData
+from bowie_makeplot.plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon
 
 SNR_CUT = 5.0
 

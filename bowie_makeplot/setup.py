@@ -7,4 +7,5 @@ setup(name='BOWIE Makeplot',
 	author_email='mikekatz04@gmail.com',
 	url='https://github.com/mikekatz04/BOWIE',
 	packages=['bowie_makeplot', 'bowie_makeplot.plotutils'],
+	py_modules=['bowie_makeplot.make_plot']
 	)
