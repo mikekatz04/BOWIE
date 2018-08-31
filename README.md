@@ -1,14 +1,12 @@
 # BOWIE - Binary Observability With Illustrative Exploration
 
-BOWIE is a tool designed for graphical analysis of binary signals from gravitational waves. It takes gridded data sets produces different types of plots in customized arrangements for detailed analysis of gravitational wave sensitivity curves and/or binary signals. The paper detailing this tool and examples of its usage can be found at arXiv:1807.02511 (Evaluating Black Hole Detectability with LISA).  There are three main portions of the code: a gridded data generator, a plotting tool, and waveform generator for general use. The waveform generator creates PhenomD waveforms for binary black hole inspiral, merger, and ringdown. PhenomD is from Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253). Gridded data sets are created using the PhenomD generator for signal-to-noise (SNR) analysis. Using the gridded data sets, customized configurations of plots are made for analysis. 
+BOWIE is a tool designed for graphical analysis of binary signals from gravitational waves. It takes gridded data sets and produces different types of plots in customized arrangements for detailed analysis of gravitational wave sensitivity curves and/or binary signals. The paper detailing this tool and examples of its usage can be found at arXiv:1807.02511 (Evaluating Black Hole Detectability with LISA).  There are three main portions of the code: a gridded data generator (bowie_gencondata.generate_contour_data), a plotting tool (bowie_makeplot.make_plot), and waveform generator for general use (pyphenomd.pyphenomd). The waveform generator creates PhenomD waveforms for binary black hole inspiral, merger, and ringdown. PhenomD is from Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253). Gridded data sets are created using the PhenomD generator for signal-to-noise (SNR) analysis. Using the gridded data sets, customized configurations of plots are created with the plotting package. 
 
-The three plots to choose from are Waterfall, Ratio, and Horizon. A Waterfall plot is a filled contour plots similar to figure 3 in the LISA Mission Proposal (arxiv:1702.00786). Ratio shows the ratio of SNRs between two different binary and sensitivity configurations. Horizon plots show line contours of multiple configurations for a given SNR value. See BOWIE documentation and examples for more information. 
-
-Currently, the program is designed for unix and linux where the directories are divided by ```/```. 
+The three plots to choose from are Waterfall, Ratio, and Horizon. A Waterfall plot is a filled contour plot similar to figure 3 in the LISA Mission Proposal (arxiv:1702.00786). Ratio plots show the ratio of SNRs between two different binary and sensitivity configurations. Horizon plots show line contours of multiple configurations for a given SNR value. See BOWIE documentation, paper, and examples for more information. 
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+These instructions will get you a copy of the project up and running on your local machine for usage and testing purposes.
 
 ### Prerequisites
 
@@ -17,28 +15,35 @@ Software installation/usage only requires a few specific libraries in python. Al
 ```
 pip install ctypes
 ```
-In order to properly create waveforms with ctypes, you will need complex, gsl, and math c libraries. For installing gsl, refer to https://www.gnu.org/software/gsl/. 
+In order to properly create waveforms with ctypes, you will need complex, gsl, and math c libraries. For installing gsl, refer to https://www.gnu.org/software/gsl/ or install it through anaconda. 
 
 
 ### Installing
 
-Installation is done by cloning the git repo on the command line, or downloading it from github. This is for all the modules, example jupyter notebooks, and extra files for installation (makefile) and for the example notebooks (sensitivity curve files and datasets). 
+Installation is done two ways: 
 
-The repo includes compiled c files into a .so shared file read with ctypes. However, you may need to compile the c codes locally. The installation instructions include this step. You will need the gsl library which comes preinstalled with most c environments and the gcc compiler. 
+1) using pip
 
-1) navigate to the directory of your choice. 
+```
+pip install bowie
+```
+This will download the all necessary packages to your current environment. It will not download the notebooks for testing and example usage.
 
-2) clone the git repo on the command line. 
+2) Clone the git repo on the command line, or downloading it from github. This is for all the modules, example jupyter notebooks, and extra files.
+
+a) navigate to the directory of your choice. 
+
+b) clone the git repo on the command line. 
 
 ```
 git clone https://github.com/mikekatz04/BOWIE.git 
 ```
-
-3) compile the c codes into a .so file. Four files are needed: phenomd.c, phenomd.h, ringdown_spectrum_fitting.h, and makefile. Just run 'make'. 
+c) run setup.py to add the modules to your environment and compile the c codes.
 
 ```
-make
+python ./setup.py install
 ```
+
 
 ## Testing and Running an Example
 
@@ -54,13 +59,15 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 ## Versioning
 
-Current version is 0.1.0.
+Current version is 1.1.0.
 
 We use [SemVer](http://semver.org/) for versioning.
 
 ## Authors
 
 * **Michael Katz** - [mikekatz04](https://github.com/mikekatz04/)
+
+Please email the author with any bugs or requests. 
 
 ## License
 
