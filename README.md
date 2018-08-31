@@ -31,18 +31,18 @@ This will download the all necessary packages to your current environment. It wi
 
 2) Clone the git repo on the command line, or downloading it from github. This is for all the modules, example jupyter notebooks, and extra files.
 
-a) navigate to the directory of your choice. 
+	a) navigate to the directory of your choice. 
 
-b) clone the git repo on the command line. 
+	b) clone the git repo on the command line. 
 
-```
-git clone https://github.com/mikekatz04/BOWIE.git 
-```
-c) run setup.py to add the modules to your environment and compile the c codes.
+	```
+	git clone https://github.com/mikekatz04/BOWIE.git 
+	```
+	c) run setup.py to add the modules to your environment and compile the c codes.
 
-```
-python ./setup.py install
-```
+	```
+	python ./setup.py install
+	```
 
 
 ## Testing and Running an Example
