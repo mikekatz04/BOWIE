@@ -164,7 +164,13 @@ class PhenomDWaveforms:
 		"""
 
 		cfd  = os.path.dirname(os.path.abspath(__file__))
-		exec_call = cfd + '/phenomd.cpython-35m-darwin.so'
+		if 'phenomd.cpython-35m-darwin.so' in os.listdir(cfd):
+			exec_call = cfd + '/phenomd.cpython-35m-darwin.so'
+
+		else:
+			exec_call = cfd + '/phenomd/phenomd.so'
+
+		c_obj = ctypes.CDLL(exec_call)
 
 		#prepare ctypes arrays
 		freq_amp_cast=ctypes.c_double*self.num_points*self.length
@@ -176,8 +182,8 @@ class PhenomDWaveforms:
 		fpeak = fmrg_fpeak_cast()
 
 
+		
 
-		c_obj = ctypes.CDLL(exec_call)
 
 		#Find amplitude
 		c_obj.Amplitude(ctypes.byref(freqs), ctypes.byref(amplitude), ctypes.byref(fmrg), ctypes.byref(fpeak), self.m1.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), self.m2.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), self.chi1.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), self.chi2.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), self.dist.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), self.z.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), self.st.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), self.et.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), ctypes.c_int(self.length), ctypes.c_int(self.num_points))
@@ -222,7 +228,14 @@ class SNRCalculation:
 		"""
 
 		cfd  = os.path.dirname(os.path.abspath(__file__))
-		exec_call = cfd + '/phenomd.cpython-35m-darwin.so'
+		if 'phenomd.cpython-35m-darwin.so' in os.listdir(cfd):
+			exec_call = cfd + '/phenomd.cpython-35m-darwin.so'
+
+		else:
+			exec_call = cfd + '/phenomd/phenomd.so'
+
+		c_obj = ctypes.CDLL(exec_call)
+
 		self.snr_out_dict = {}
 
 		#check dimensionality
@@ -233,7 +246,6 @@ class SNRCalculation:
 			remove_axis = True
 			freqs, hc, hn, fmrg, fpeak = np.array([freqs]), np.array([hc]), np.array([hn]), np.array([fmrg]), np.array([fpeak])
 
-		c_obj = ctypes.CDLL(exec_call)
 
 		#this implimentation in ctypes works with 1D arrays
 		freqs_in = freqs.flatten()

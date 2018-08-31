@@ -490,7 +490,7 @@ class Ratio(CreateSinglePlot):
 		control_zout = self.zvals[1]
 
 		#set comparison value. Default is SNR_CUT
-		comparison_value = SNR_CUT
+		comparison_value = self.gen_dict['SNR_CUT']
 		if 'snr_contour_value' in self.extra_dict.keys():
 			comparison_value = self.extra_dict['snr_contour_value']
 
@@ -564,7 +564,7 @@ class Horizon(CreateSinglePlot):
 			'gold','magenta']
 
 		#set contour value. Default is SNR_CUT.
-		self.contour_val = SNR_CUT
+		self.contour_val = self.gen_dict['SNR_CUT']
 		if 'snr_contour_value' in self.extra_dict.keys():
 			self.contour_val = float(self.extra_dict['snr_contour_value'])
 		

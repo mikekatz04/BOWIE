@@ -45,12 +45,12 @@ def plot_main(pid, return_fig_ax=False):
 	global WORKING_DIRECTORY, SNR_CUT
 
 	WORKING_DIRECTORY = '.'
-	if 'WORKING_DIRECTORY' in pid['general'].keys():
-		WORKING_DIRECTORY = pid['general']['WORKING_DIRECTORY']
+	if 'WORKING_DIRECTORY' not in pid['general'].keys():
+		pid['general']['WORKING_DIRECTORY'] = '.'
 
 	SNR_CUT = 5.0
-	if 'SNR_CUT' in pid['general'].keys():
-		SNR_CUT = pid['general']['SNR_CUT']
+	if 'SNR_CUT' not in pid['general'].keys():
+		pid['general']['SNR_CUT'] = SNR_CUT
 
 	if "switch_backend" in pid['general'].keys():
 		plt.switch_backend(pid['general']['switch_backend'])

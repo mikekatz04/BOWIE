@@ -69,7 +69,7 @@ class FileReadOut:
 		Read out an hdf5 file. 
 		"""
 
-		with h5py.File(WORKING_DIRECTORY + '/' + self.output_string + '.' + self.file_type, 'w') as f:
+		with h5py.File(self.pid['general']['WORKING_DIRECTORY'] + '/' + self.output_string + '.' + self.file_type, 'w') as f:
 
 			header = f.create_group('header')
 			header.attrs['Title'] = 'Generated SNR Out'
@@ -177,5 +177,5 @@ class FileReadOut:
 
 		data_out = np.concatenate([x_and_y.T, snr_out], axis=1)
 
-		np.savetxt(WORKING_DIRECTORY + '/' + self.output_string + '.' + self.file_type, data_out, delimiter = '\t',header = header, comments='')
+		np.savetxt(pid['general']['WORKING_DIRECTORY'] + '/' + self.output_string + '.' + self.file_type, data_out, delimiter = '\t',header = header, comments='')
 		return

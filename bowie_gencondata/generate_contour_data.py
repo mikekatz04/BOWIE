@@ -46,13 +46,11 @@ def generate_contour_data(pid):
 
 	gid = pid['generate_info']
 
-	WORKING_DIRECTORY = '.'
-
 	if "output_folder" not in pid['output_info']:
 		pid['output_info']['output_folder'] = "."
-
-	if "input_location" not in pid['input_info']:
-		pid['input_info']['input_location'] = "."
+		
+	if "input_folder" not in pid['input_info']:
+		pid['input_info']['input_folder'] = "."
 
 	if "output_file_type" not in pid['output_info']:
 		pid['output_info']['output_file_type'] = "hdf5"
@@ -60,8 +58,9 @@ def generate_contour_data(pid):
 	#adjust for same spin
 	par_3_name = gid['par_3_name']
 
-	if 'WORKING_DIRECTORY' in pid['general'].keys():
-		WORKING_DIRECTORY = pid['general']['WORKING_DIRECTORY']
+	WORKING_DIRECTORY = '.'
+	if 'WORKING_DIRECTORY' not in pid['general'].keys():
+		pid['general']['WORKING_DIRECTORY'] = WORKING_DIRECTORY
 
 	#instantiate
 	running_process = GenProcess(pid)

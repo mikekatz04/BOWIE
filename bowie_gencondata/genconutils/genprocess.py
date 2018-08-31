@@ -63,7 +63,7 @@ class GenProcess:
 
 		"""
 
-		data = ascii.read(self.pid['input_info']['input_location'] + '/' + file_dict['name'])
+		data = ascii.read(self.pid['general']['WORKING_DIRECTORY'] + '/' + self.pid['input_info']['input_folder'] + '/' + file_dict['name'])
 
 		#add label to self.labels if it is not wd noise
 		if wd_noise == False:
@@ -124,13 +124,13 @@ class GenProcess:
 			f, hn = self.read_in_noise_file(file_dict, wd_noise=False)
 
 			#place interpolated functions into dict with second including WD
-			if self.pid['general']['add_wd_noise'].lower() == 'yes' or self.pid['general']['add_wd_noise'].lower() == 'both':
+			if self.pid['general']['add_wd_noise'].lower() == 'yes' or self.pid['general']['add_wd_noise'].lower() == 'both' or self.pid['general']['add_wd_noise'].lower() == 'true':
 
 				#check if wd noise has been read in yet
 				try:
 					self.wd_noise
 				except AttributeError:
-					f_wd, hn_wd = self.read_in_noise_file(self.pid['input_info']['galactic_background'], wd_noise=True)
+					f_wd, hn_wd = self.read_in_noise_file(self.pid['input_info']['Galactic_background'], wd_noise=True)
 					self.wd_noise = interp1d(f_wd, hn_wd, bounds_error=False, fill_value=1e-30)
 
 				wd_up = (hn/self.wd_noise(f) <= 1.0)

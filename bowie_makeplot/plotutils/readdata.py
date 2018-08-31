@@ -6,6 +6,8 @@ This module houses the data read in classes for plotting within the BOWIE packag
 	This code is licensed under the GNU public license. 
 """
 
+import h5py
+from astropy.io import ascii
 import numpy as np
 
 class PlotVals:
@@ -56,6 +58,7 @@ class ReadInData:
 					dx, dy - float - x-change and y-change
 					xscale, yscale - string - scaling for axes. Either 'log' or 'lin'.
 		"""
+		self.pid = pid
 
 		if 'name' in file_dict.keys():
 			self.file_name = file_dict['name']
@@ -113,13 +116,15 @@ class ReadInData:
 
 		self.z_append_value = self.zvals
 
+
+
 	def txt_read_in(self):
 		"""
 		Method for reading in text or csv files. This uses ascii class from astropy.io for flexible input. It is slower than numpy, but has greater flexibility with less input.
 		"""
 
 		#read in
-		data = ascii.read(WORKING_DIRECTORY + '/' + self.file_name)
+		data = ascii.read(self.pid['general']['WORKING_DIRECTORY'] + '/' + self.file_name)
 
 		#find number of distinct x and y points.
 		num_x_pts = len(np.unique(data[self.x_col_name]))
@@ -138,7 +143,7 @@ class ReadInData:
 
 		"""
 		
-		with h5py.File(WORKING_DIRECTORY + '/' + self.file_name) as f:
+		with h5py.File(self.pid['general']['WORKING_DIRECTORY'] + '/' + self.file_name) as f:
 
 			#read in
 			data = f['data']

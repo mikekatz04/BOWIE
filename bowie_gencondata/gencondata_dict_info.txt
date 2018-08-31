@@ -45,7 +45,7 @@ general:
     add_wd_noise (str): 
         Default: "no"
         Indicates if calculation with a galactic foreground is needed. 
-        Choices are "yes", "no", or "both". "yes" only calculates with the foreground noise. "both" does both with and without foreground noise. 
+        Choices are "yes" (or "True" (string)), "no" (or False" (string)), or "both". "yes" only calculates with the foreground noise. "both" does both with and without foreground noise. 
     },
 
 output_info:
