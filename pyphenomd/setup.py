@@ -6,7 +6,7 @@ module1 = Extension('pyphenomd.phenomd',
 	sources=['pyphenomd/phenomd/phenomd.c'])
 
 setup(name='PhenomD in Python',
-	version='1.0.0',
+	version='1.0.1',
 	description='This is a python implimentation that calls PhenomD in C.',
 	author='Michael Katz + PhenomD original authors from arXiv:1508.07250, arXiv:1508.07253',
 	author_email='mikekatz04@gmail.com',

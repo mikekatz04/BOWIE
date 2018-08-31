@@ -1,7 +1,11 @@
 """
-author Michael Katz guided by lal implimentation of PhenomD. This was used in "Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253).
+Author: Michael Katz guided by lal implimentation of PhenomD. This was used in "Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253), as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE).
+
+	This code is licensed with the GNU public license. 
 
 	This python code impliments PhenomD waveforms from Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253). It wraps the accompanying c code, phenomd.c, with ctypes. phenomd.c is mostly from LALsuite. See phenomd.c for specifics. 
+
+	Please cite all of the arXiv papers above if you use this code in a publication. 
 
 	pyphenomd.py has two main classes:
 
