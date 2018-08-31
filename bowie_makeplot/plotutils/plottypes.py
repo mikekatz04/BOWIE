@@ -19,6 +19,12 @@ This module houses the main classes for plotting for the BOWIE package.
 		SNR contour plots comparing multipile inputs. User can specify contour value. The default is the user specified SNR cut.
 """
 
+import numpy as np
+from scipy.interpolate import griddata
+import matplotlib.pyplot as plt
+from matplotlib  import cm
+from matplotlib import colors
+
 class CreateSinglePlot:
 
 	def __init__(self, fig, axis, xvals,yvals,zvals, gen_dict={}, limits_dict={}, 

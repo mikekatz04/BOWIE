@@ -6,6 +6,8 @@ This module houses the data read in classes for plotting within the BOWIE packag
 	This code is licensed under the GNU public license. 
 """
 
+import numpy as np
+
 class PlotVals:
 
 

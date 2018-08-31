@@ -21,18 +21,10 @@ Module turns gridded datasets into helpful plots. It is designed for LISA Signal
 import json
 import sys
 from collections import OrderedDict
-import h5py
 
-import numpy as np
-from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
-from matplotlib  import cm
-from matplotlib import colors
-from astropy.io import ascii
 
 from bowie_makeplot.plotutils.makeprocess import MakePlotProcess
-from bowie_makeplot.plotutils.readdata import PlotVals, ReadInData
-from bowie_makeplot.plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon
 
 SNR_CUT = 5.0
 

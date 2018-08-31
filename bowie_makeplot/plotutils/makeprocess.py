@@ -6,6 +6,11 @@ This module houses the main class for plotting within the BOWIE package. It runs
 	This code is licensed under the GNU public license. 
 """
 
+import numpy as np
+import matplotlib.pyplot as plt
+
+from bowie_makeplot.plotutils.readdata import PlotVals, ReadInData
+from bowie_makeplot.plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon
 
 class MakePlotProcess:
 	def __init__(self, pid):
