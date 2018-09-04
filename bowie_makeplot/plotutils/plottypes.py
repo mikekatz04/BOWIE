@@ -594,8 +594,6 @@ class CodetectionPotential(CreateSinglePlot):
 		levels2 = np.linspace(-normval2, normval2,num_contours2)
 		norm2 = colors.Normalize(-normval2, normval2)
 
-		print(codect_pot.max())
-
 		#plot ratio contours
 		sc3=self.axis.contourf(self.xvals[0],self.yvals[0],codect_pot,
 			levels = levels2, norm=norm2, extend='both', cmap=cmap2, alpha=1.0)
@@ -604,19 +602,9 @@ class CodetectionPotential(CreateSinglePlot):
 		num_contours3 = 40 #must be even
 		levels3 = np.linspace(-normval3, normval3,num_contours3)
 		norm3 = colors.Normalize(-normval3, normval3)
-		#sc4=self.axis.contourf(self.xvals[0],self.yvals[0],single,
-			#levels = levels3, norm=norm3, extend='both', cmap=cmap_single, alpha=1.0)
-		colors1 = ['None','darkblue', 'blue', 'deepskyblue', 'aqua',
-			'greenyellow', 'orange', 'red','darkred']
+		sc4=self.axis.contourf(self.xvals[0],self.yvals[0],single,
+			levels = levels3, norm=norm3, extend='both', cmap=cmap_single, alpha=1.0)
 
-		levels = np.array([0.,10,20,50,100,200,500,1000,3000,1e10])
-
-		if 'contour_vals' in self.extra_dict.keys():
-			levels = np.asarray(self.extra_dict['contour_vals'])
-		
-		#produce filled contour of SNR
-		sc4=self.axis.contourf(self.xvals[0],self.yvals[0],self.zvals[1],
-			levels = levels, colors=colors1)
 
 		#toggle line contours of orders of magnitude of ratio comparisons
 		if 'ratio_contour_lines' in self.extra_dict.keys():
