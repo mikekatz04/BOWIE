@@ -468,7 +468,7 @@ class Ratio(CreateSinglePlot):
 		if loss_gain_status == True:
 			#if there is no loss/gain contours, this will produce an error, so we catch the exception. 
 			try:
-				self.axis.contour(self.xvals[0],self.yvals[0],loss_gain_contour,np.array([-1.5, -.5, 0.5, 1.0]),colors = 'grey', linewidths = 2.5)
+				self.axis.contour(self.xvals[0],self.yvals[0],loss_gain_contour,2,colors = 'grey', linewidths = 2)
 			except ValueError:
 				pass
 
