@@ -257,10 +257,6 @@ class MakePlotProcess:
 			if name not in trans_dict:
 				trans_dict[name] = {}
 
-		if i == 4:
-			import pdb
-			pdb.set_trace()
-
 		if 'xlims' in self.pid['general'].keys() and 'xlims' not in trans_dict['limits']:
 			trans_dict['limits']['xlims'] = self.pid['general']['xlims']
 		if 'dx' in self.pid['general'].keys() and 'dx' not in trans_dict['limits']:
