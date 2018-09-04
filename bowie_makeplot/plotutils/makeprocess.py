@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from bowie_makeplot.plotutils.readdata import PlotVals, ReadInData
-from bowie_makeplot.plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon
+from bowie_makeplot.plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon, CodetectionPotential
 
 class MakePlotProcess:
 	def __init__(self, pid):

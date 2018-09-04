@@ -649,12 +649,12 @@ class CodetectionPotential(CreateSinglePlot):
 		control_zout = self.zvals[1]
 
 		#set comparison value. Default is SNR_CUT
-		comparison_value = SNR_CUT
+		comparison_value = self.gen_dict['SNR_CUT']
 		if 'snr_contour_value' in self.extra_dict.keys():
 			comparison_value = self.extra_dict['snr_contour_value']
 
 		#ONLY FOR TESTING
-		comparison_value = SNR_CUT
+		comparison_value = self.gen_dict['SNR_CUT']
 
 		inds_up = ((zout>=comparison_value) & (control_zout>= comparison_value) & (zout >= control_zout))
 		inds_down = ((zout>=comparison_value) & (control_zout>= comparison_value) & (zout < control_zout))
