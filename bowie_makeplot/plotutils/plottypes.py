@@ -494,12 +494,16 @@ class Ratio(CreateSinglePlot):
 		if 'snr_contour_value' in self.extra_dict.keys():
 			comparison_value = self.extra_dict['snr_contour_value']
 
+		ratio_comp_value = comparison_value
+		if 'ratio_comp_value' in self.extra_dict.keys():
+			ratio_comp_value = self.extra_dict['ratio_comp_value']
+
 		#indices of loss,gained.
 		inds_gained = np.where((zout>=comparison_value) & (control_zout< comparison_value))
 		inds_lost = np.where((zout<comparison_value) & (control_zout>=comparison_value))
 
 		#Also set rid for when neither curve measures gets SNR of 1.0. 
-		inds_rid = np.where((zout<1.0) | (control_zout<1.0))
+		inds_rid = np.where((zout<ratio_comp_value) | (control_zout<ratio_comp_value))
 
 		#set diff to ratio for purposed of determining raito differences
 		diff = zout/control_zout
