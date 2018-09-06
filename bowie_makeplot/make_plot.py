@@ -67,7 +67,7 @@ def plot_main(pid, return_fig_ax=False):
 			dpi=200
 			if 'dpi' in pid['general'].keys():
 				dpi = pid['general']['dpi']
-			running_process.fig.savefig(WORKING_DIRECTORY + '/' + 
+			running_process.fig.savefig(pid['general']['WORKING_DIRECTORY'] + '/' + 
 				pid['general']['output_path'], dpi=dpi)
 	
 	if 'show_figure' in pid['general'].keys():
