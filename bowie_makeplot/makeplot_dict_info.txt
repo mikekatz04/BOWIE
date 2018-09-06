@@ -8,6 +8,7 @@ Listed here will be all possible choices for the dictionary, including which cho
 
 These dictionaries can be used in a python code or jupyter notebook by importing the main functions from each script. They can also be implemented with .json files similar to those included in the repository. If .json is used, the function call is make_plot.py make_plot_config.json.
 
+It is part of the BOWIE analysis tool. Author: Michael Katz. Please see "Evaluating Black Hole Detectability with LISA" (arXiv:1807.02511) for example usage. 
 
 **********
 One thing to notice is that there is a lot of overlap between the general dictionary and dictionaries for specific plots. The general dictionary describes general setup of all plots, but can be overridden by dictionaries for specific plots. 
@@ -288,7 +289,11 @@ plot_info (dictionary):
 
             show_loss_gain (boolean):
                 Default: True
-                Toggle loss/gain contours on and off. Only applies to Ratio plots. 
+                Toggle loss/gain contours on and off. Only applies to Ratio plots.
+
+            ratio_comp_value (float):
+                Default: Same value as loss/gain contour (which defaults to SNR_CUT)
+                This sets the minimum SNR necessary for both configurations in a ratio plot to show the ratio contours. (rho_1>ratio_comp_value & rho_2>ratio_comp_value) in order to display the contour.
             },
     
         },

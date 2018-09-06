@@ -1,6 +1,6 @@
-********************************
-*** Dictionary Documentation ***
-********************************
+*****************************************************
+*** Main Dictionary for generate_contour_data.py: ***
+*****************************************************
 
 
 Documentation is provided for main dictionaries in "generate_contour_data.py" and "make_plot.py". In both codes, dictionaries are passed into the main function of the code, providing the preferences of the user. 
@@ -9,11 +9,10 @@ Listed here will be all possible choices for each dictionary, including which ch
 
 These dictionaries can be used in a python code or jupyter notebook by importing the main functions from each script. They can also be implemented with .json files similar to those included in the repository. If .json is used, the function call is code.py confi.json. For example, generate_contour_data.py generate_config.json. 
 
+It is part of the BOWIE analysis tool. Author: Michael Katz. Please see "Evaluating Black Hole Detectability with LISA" (arXiv:1807.02511) for example usage. 
 
 
-*****************************************************
-*** Main Dictionary for generate_contour_data.py: ***
-*****************************************************
+
 {
 
 general:
