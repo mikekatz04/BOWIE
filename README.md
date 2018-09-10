@@ -1,4 +1,4 @@
-# BOWIE - Binary Observability With Illustrative Exploration
+# B.O.W.I.E. - Binary Observability With Illustrative Exploration
 
 <p align="center">
   <img width="200" height="200" src="logo/Bowie_logo.png">
