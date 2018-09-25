@@ -63,7 +63,7 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 ## Versioning
 
-Current version is 1.2.3.
+Current version is 1.2.5.
 
 We use [SemVer](http://semver.org/) for versioning.
 
