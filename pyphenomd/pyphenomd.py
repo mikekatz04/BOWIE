@@ -121,7 +121,7 @@ class PhenomDWaveforms:
 		if any(self.m1<0.0):
 			raise Exception("Mass 1 is negative.")
 		if any(self.m2<0.0):
-			raise Exception("Mass 1 is negative.")
+			raise Exception("Mass 2 is negative.")
 
 		if any(self.chi1<-1.0) or any(self.chi1>1.0):
 			raise Exception("Chi 1 is outside [-1.0, 1.0].")
