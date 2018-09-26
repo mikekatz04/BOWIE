@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='pyphenomd',
-	version='1.0.0',
+	version='1.0.1',
 	description='Python implementation of phenomd amplitude calculation for fast SNR determination',
 	long_description=long_description,
 	long_description_content_type="text/markdown",
