@@ -33,12 +33,15 @@ def read_noise_curve(noise_curve, wd_noise=False, noise_type='ASD'):
 		"""
 
 
+	# find the noise curve file
 	cfd  = os.path.dirname(os.path.abspath(__file__))
 	noise = ascii.read(cfd + '/noise_curves/' + noise_curve + '.txt')
 
+	#read it in 
 	f_n = np.asarray(noise['f'])
 	ASD = np.asarray(noise['ASD'])
 
+	#add wd_noise if true
 	if wd_noise:
 		cfd  = os.path.dirname(os.path.abspath(__file__))
 		file_string = cfd + '/noise_curves/' + 'WDnoise' + '.txt'
@@ -53,6 +56,8 @@ def read_noise_curve(noise_curve, wd_noise=False, noise_type='ASD'):
 
 		ASD = ASD*(ASD>=ASD_wd) + ASD_wd*(ASD<ASD_wd)
 
+
+	#output preferred noise type
 	if noise_type == 'ASD':
 		out_amp = ASD
 

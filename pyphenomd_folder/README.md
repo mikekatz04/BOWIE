@@ -3,7 +3,7 @@
 
 pyphenomd is a tool designed to support the BOWIE package. The paper detailing this tool and examples of its usage can be found at arXiv:1807.02511 (Evaluating Black Hole Detectability with LISA).  This piece of the package is a waveform generator for general use (pyphenomd.pyphenomd). The waveform generator creates PhenomD waveforms for binary black hole inspiral, merger, and ringdown. PhenomD is from Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253). Please refer to these papers for information on the waveform construction.
 
-pyphenomd also includes a fast signal-to-noise ratio calculator for these waveforms based stock or input sensitivity curves. 
+pyphenomd also includes a fast signal-to-noise ratio calculator for these waveforms based on stock or input sensitivity curves. The package also includes a code to read out the sensitivity curves from the text files provided. 
 
 For usage of this tool, please cite all three papers mentioned above (arXiv:1807.02511, arXiv:1508.07250, arXiv:1508.07253).
 
