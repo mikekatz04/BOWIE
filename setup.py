@@ -14,7 +14,7 @@ setup(name='bowie',
 	url='https://github.com/mikekatz04/BOWIE',
 	packages=['bowie_makeplot', 'bowie_makeplot.plotutils', 'bowie_gencondata', 'bowie_gencondata.genconutils'],
 	py_modules=['bowie_makeplot.make_plot','bowie_gencondata.generate_contour_data'],
-	install_requires=['pyphenomd',],
+	install_requires=['pyphenomd','numpy', 'scipy', 'collections', 'sys', 'json', 'multiprocessing', 'datetime', 'time', 'astropy', 'h5py', 'matplotlib', and 'ctypes'],
 	include_package_data=True,
 	classifiers=[
         "Programming Language :: Python :: 3",
