@@ -19,6 +19,7 @@ setup(name='pyphenomd',
 	packages=['pyphenomd', 'pyphenomd.noise_curves'],
 	ext_modules=[extmodule1],
 	py_modules=['pyphenomd.pyphenomd', 'pyphenomd.read_noise_curves'],
+	install_requires=['numpy', 'scipy', 'astropy','ctypes'],
 	include_package_data=True,
 	classifiers=[
         "Programming Language :: Python :: 3",
