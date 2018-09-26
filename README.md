@@ -14,7 +14,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Software installation/usage only requires a few specific libraries in python. If you install with pip, all of these libraries should be automatically installed if you do not have them. All libraries are included with Anaconda. If you do not run python in an anaconda environment, you  will need the following libraries and modules to run with all capabilities: Numpy, Scipy, collections, sys, json, multiprocessing, datetime, time, astropy, h5py, matplotlib, and ctypes. All can be installed with pip. For example, within your python environment of choice:
+Software installation/usage only requires a few specific libraries in python. If you install with pip, all of these libraries should be automatically installed if you do not have them (this includes pyphenomd, which is required). All libraries are included with Anaconda. If you do not run python in an anaconda environment, you  will need the following libraries and modules to run with all capabilities: Numpy, Scipy, collections, sys, json, multiprocessing, datetime, time, astropy, h5py, matplotlib, and ctypes. All can be installed with pip. For example, within your python environment of choice:
 
 ```
 pip install ctypes
