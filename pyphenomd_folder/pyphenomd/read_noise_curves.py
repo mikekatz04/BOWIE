@@ -67,6 +67,9 @@ def read_noise_curve(noise_curve, wd_noise=False, noise_type='ASD'):
 	elif noise_type == 'PSD':
 		out_amp = ASD**2
 
+	else:
+		raise Exception('Noise type provided is {}. Must be ASD, PSD, or characteristic_strain.'.format(noise_type))
+
 
 	return f_n, out_amp
 
