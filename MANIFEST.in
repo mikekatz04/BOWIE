@@ -1,0 +1,2 @@
+include bowie_makeplot/makeplot_dict_info.txt
+include bowie_gencondata/gencondata_dict_info.txt
