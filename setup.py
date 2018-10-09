@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='bowie',
-	version='1.2.6',
+	version='1.2.7',
 	description='Binary Observability with Illustrative Exploration (BOWIE)',
 	long_description=long_description,
 	long_description_content_type="text/markdown",

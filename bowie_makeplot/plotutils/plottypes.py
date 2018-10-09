@@ -209,7 +209,8 @@ class CreateSinglePlot:
 		"""
 		Interpolate data if two data sets have different shapes. This method is mainly used on ratio plots to allow for direct comparison of snrs. The higher resolution array is reduced to the lower resolution. 
 		"""
-
+		import pdb
+		pdb.set_trace()
 		#check the number of points in the two arrays and select max and min
 		points = [np.shape(x_arr)[0]*np.shape(x_arr)[1]
 			for x_arr in self.xvals]
@@ -222,9 +223,9 @@ class CreateSinglePlot:
 			self.xvals[min_points].max(),
 			np.shape(self.xvals[min_points])[1])
 
-		new_y = np.logspace(np.log10(self.yvals[min_points]).min(),
-			np.log10(self.yvals[min_points]).max(),
-			np.shape(self.xvals[min_points])[0])
+		new_y = np.linspace(self.yvals[min_points].min(),
+			self.yvals[min_points].max(),
+			np.shape(self.yvals[min_points])[1])
 
 		#grid new arrays
 		new_x, new_y = np.meshgrid(new_x, new_y)
@@ -239,7 +240,7 @@ class CreateSinglePlot:
 		
 		return
 
-	def setup_colorbars(self, colorbar_pos, plot_call_sign, plot_type, colorbar_label, levels=[], ticks_fontsize=17, label_fontsize=20, colorbar_axes=[]):
+	def setup_colorbars(self, colorbar_pos, plot_call_sign, plot_type, colorbar_label, levels=[], ticks_fontsize=17, label_fontsize=20, colorbar_axes=[], colorbar_ticks=[], colorbar_tick_labels=[]):
 		"""
 		Setup colorbars for each type of plot. 
 
@@ -265,23 +266,29 @@ class CreateSinglePlot:
 			ticks = [-3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0]
 			tick_labels = [r'$10^{%i}$'%i for i in [-2.0,-1.0,0.0, 1.0,2.0]]
 
-		elif plot_type == 'CodetectionPotential':
-			#ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
-			#tick_labels = [r'$-10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + [r'$10^{%i}$'%i for i in [0.0, 1.0,2.0, 3.0, 4.0]]
+		elif plot_type == 'CodetectionPotential' or 'SingleDetection':
+			ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
+			tick_labels = [r'$\downarrow 10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + [r'    $10^{%i}$'%i for i in [0.0]] + [r'$\uparrow 10^{%i}$'%i for i in [1.0,2.0, 3.0, 4.0]]
 
-			ticks = np.arange(-8, 10, 2)
-			tick_labels = ['%i'%(-i) for i in ticks if i<0.0] + ['%i'%i for i in ticks if i>=0.0]
-
+			#ticks = np.arange(-8, 10, 2)
+			#tick_labels = ['%i'%(-i) for i in ticks if i<0.0] + ['%i'%i for i in ticks if i>=0.0]
+		"""
 		elif plot_type == 'SingleDetection':
-			#ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
-			#tick_labels = [r'$-10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + [r'$10^{%i}$'%i for i in [0.0, 1.0,2.0, 3.0, 4.0]]
+			ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
+			tick_labels = [r'$-10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + [r'$10^{%i}$'%i for i in [0.0, 1.0,2.0, 3.0, 4.0]]
 
-			ticks = np.arange(-4, 5, 1)
-			tick_labels = ['%i'%(-i) for i in ticks if i<0.0] + ['%i'%i for i in ticks if i>=0.0]
+			#ticks = np.arange(-4, 5, 1)
+			#tick_labels = ['%i'%(-i) for i in ticks if i<0.0] + ['%i'%i for i in ticks if i>=0.0]
+		"""
 
+		if colorbar_ticks != []:
+			ticks = colorbar_ticks
+
+		if colorbar_tick_labels != []:
+			tick_labels = colorbar_tick_labels
 
 		#dict with axes locations
-		cbar_axes_dict = {'1': [0.83, 0.52, 0.03, 0.38], '2': [0.83, 0.08, 0.03, 0.38], '3': [0.05, 0.9, 0.4, 0.03], '4': [0.55, 0.9, 0.4, 0.03], '5': [0.83, 0.1, 0.03, 0.8]}
+		cbar_axes_dict = {'1': [0.83, 0.49, 0.03, 0.38], '2': [0.83, 0.05, 0.03, 0.38], '3': [0.05, 0.92, 0.38, 0.03], '4': [0.47, 0.92, 0.38, 0.03], '5': [0.83, 0.1, 0.03, 0.8]}
 
 		#check if custom colorbar desired
 		if colorbar_axes == []:
@@ -294,7 +301,7 @@ class CreateSinglePlot:
 		#check if colorbar is horizontal or vertical 
 		if cbar_ax_list[2]>cbar_ax_list[3]:
 			orientation = 'horizontal'
-			label_pad = -60
+			label_pad = +10
 			var = 'x'
 		else:
 			orientation = 'vertical'
@@ -307,6 +314,8 @@ class CreateSinglePlot:
 		#setup colorbar ticks
 		getattr(cbar_ax, 'set_' + var + 'ticklabels')(tick_labels, fontsize = ticks_fontsize)
 		getattr(cbar_ax, 'set_' + var + 'label')(colorbar_label, fontsize = label_fontsize, labelpad=label_pad)
+		if cbar_ax_list[2]>cbar_ax_list[3]:
+		 	cbar_ax.xaxis.set_ticks_position('top')
 
 		return
 
@@ -329,7 +338,7 @@ class CreateSinglePlot:
 		if 'label' in cbar_info_dict.keys():
 			cbar_label = cbar_info_dict['label']
 
-		ticks_fontsize=17
+		ticks_fontsize=15
 		if 'ticks_fontsize' in cbar_info_dict.keys():
 			ticks_fontsize = cbar_info_dict['ticks_fontsize']
 
@@ -340,6 +349,14 @@ class CreateSinglePlot:
 		colorbar_axes = []
 		if 'colorbar_axes' in cbar_info_dict.keys():
 			colorbar_axes = cbar_info_dict['colorbar_axes'] 
+
+		colorbar_ticks = []
+		if 'colorbar_ticks' in cbar_info_dict.keys():
+			colorbar_ticks = cbar_info_dict['colorbar_ticks'] 
+
+		colorbar_tick_labels = []
+		if 'colorbar_tick_labels' in cbar_info_dict.keys():
+			colorbar_tick_labels = cbar_info_dict['colorbar_tick_labels'] 
 
 		#check if pos is specified. If not set to defaults. 
 		if 'pos' in cbar_info_dict.keys():
@@ -352,7 +369,7 @@ class CreateSinglePlot:
 			colorbar_defaults = {'Waterfall':1, 'Ratio':2, 'CodetectionPotential':1, 'SingleDetection':2}
 			colorbar_pos = colorbar_defaults[plot_type]
 
-		return colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes
+		return colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels
 
 
 
@@ -402,13 +419,13 @@ class Waterfall(CreateSinglePlot):
 			if 'Waterfall' in self.gen_dict['colorbars'].keys():
 				cbar_info_dict = self.gen_dict['colorbars']['Waterfall']
 
-		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes = super(Waterfall, self).find_colorbar_information(cbar_info_dict, 'Waterfall')
+		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(Waterfall, self).find_colorbar_information(cbar_info_dict, 'Waterfall')
 
 		#default label for Waterfall colorbar
 		if cbar_label == 'None':
 			cbar_label = r"$\rho_i$"
 
-		super(Waterfall, self).setup_colorbars(colorbar_pos, sc, 'Waterfall', cbar_label, levels = levels, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes)
+		super(Waterfall, self).setup_colorbars(colorbar_pos, sc, 'Waterfall', cbar_label, levels = levels, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
 
 		return
 
@@ -477,13 +494,13 @@ class Ratio(CreateSinglePlot):
 			if 'Ratio' in self.gen_dict['colorbars'].keys():
 				cbar_info_dict = self.gen_dict['colorbars']['Ratio']
 		
-		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes = super(Ratio, self).find_colorbar_information(cbar_info_dict, 'Ratio')
+		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(Ratio, self).find_colorbar_information(cbar_info_dict, 'Ratio')
 
 		#default Ratio colorbar label
 		if cbar_label == 'None':
 			cbar_label = r"$\rho_i/\rho_0$"
 
-		super(Ratio, self).setup_colorbars(colorbar_pos, sc3, 'Ratio', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes)
+		super(Ratio, self).setup_colorbars(colorbar_pos, sc3, 'Ratio', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
 
 		return
 
@@ -621,24 +638,24 @@ class CodetectionPotential(CreateSinglePlot):
 			if 'CodetectionPotential' in self.gen_dict['colorbars'].keys():
 				cbar_info_dict = self.gen_dict['colorbars']['CodetectionPotential']
 
-		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes = super(CodetectionPotential, self).find_colorbar_information(cbar_info_dict, 'CodetectionPotential')
+		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(CodetectionPotential, self).find_colorbar_information(cbar_info_dict, 'CodetectionPotential')
 
 		if cbar_label == 'None':
 			cbar_label = 'Codetection Potential'
 
-		super(CodetectionPotential, self).setup_colorbars(colorbar_pos, sc3, 'CodetectionPotential', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes)
-
+		super(CodetectionPotential, self).setup_colorbars(colorbar_pos, sc3, 'CodetectionPotential', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
+		
 		cbar_info_dict = {}
 		if 'colorbars' in self.gen_dict.keys():
 			if 'SingleDetection' in self.gen_dict['colorbars'].keys():
 				cbar_info_dict = self.gen_dict['colorbars']['SingleDetection']
 
-		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes = super(CodetectionPotential, self).find_colorbar_information(cbar_info_dict, 'SingleDetection')
+		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(CodetectionPotential, self).find_colorbar_information(cbar_info_dict, 'SingleDetection')
 
 		if cbar_label == 'None':
 			cbar_label = 'Single Detection'
 
-		super(CodetectionPotential, self).setup_colorbars(colorbar_pos, sc4, 'SingleDetection', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes)
+		super(CodetectionPotential, self).setup_colorbars(colorbar_pos, sc4, 'SingleDetection', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
 
 
 		return

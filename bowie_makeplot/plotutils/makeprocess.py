@@ -159,7 +159,7 @@ class MakePlotProcess:
 			adjust_bottom = self.pid['general']['adjust_figure_bottom']
 
 		adjust_right = 0.9
-		if 'Ratio' in plot_types or 'Waterfall' in plot_types:
+		if 'Ratio' in plot_types or 'Waterfall' in plot_types or 'CodetectionPotential' in plot_types:
 			adjust_right = 0.79
 		
 		if 'adjust_figure_right' in self.pid['general'].keys():
