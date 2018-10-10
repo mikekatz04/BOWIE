@@ -209,8 +209,6 @@ class CreateSinglePlot:
 		"""
 		Interpolate data if two data sets have different shapes. This method is mainly used on ratio plots to allow for direct comparison of snrs. The higher resolution array is reduced to the lower resolution. 
 		"""
-		import pdb
-		pdb.set_trace()
 		#check the number of points in the two arrays and select max and min
 		points = [np.shape(x_arr)[0]*np.shape(x_arr)[1]
 			for x_arr in self.xvals]
@@ -257,7 +255,6 @@ class CreateSinglePlot:
 		"""
 
 		#setup tick labels depending on plot
-
 		if plot_type == 'Waterfall':
 			ticks = levels 
 			tick_labels = [int(i) for i in np.delete(levels,-1)]
@@ -266,9 +263,13 @@ class CreateSinglePlot:
 			ticks = [-3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0]
 			tick_labels = [r'$10^{%i}$'%i for i in [-2.0,-1.0,0.0, 1.0,2.0]]
 
-		elif plot_type == 'CodetectionPotential' or 'SingleDetection':
+		elif plot_type == 'CodetectionPotential' or plot_type == 'SingleDetection':
 			ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
 			tick_labels = [r'$\downarrow 10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + [r'    $10^{%i}$'%i for i in [0.0]] + [r'$\uparrow 10^{%i}$'%i for i in [1.0,2.0, 3.0, 4.0]]
+
+		elif plot_type == 'CodetectionPotential2':
+			ticks = [0.0,1.0, 2.0, 3.0, 4.0]
+			tick_labels = ['$10^{%i}$'%i for i in [0.0, 1.0,2.0, 3.0, 4.0]]	
 
 			#ticks = np.arange(-8, 10, 2)
 			#tick_labels = ['%i'%(-i) for i in ticks if i<0.0] + ['%i'%i for i in ticks if i>=0.0]
@@ -366,7 +367,7 @@ class CreateSinglePlot:
 			colorbar_pos = 5 
 
 		else:
-			colorbar_defaults = {'Waterfall':1, 'Ratio':2, 'CodetectionPotential':1, 'SingleDetection':2}
+			colorbar_defaults = {'Waterfall':1, 'Ratio':2, 'CodetectionPotential':1, 'SingleDetection':2, 'CodetectionPotential2':5}
 			colorbar_pos = colorbar_defaults[plot_type]
 
 		return colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels
@@ -696,6 +697,170 @@ class CodetectionPotential(CreateSinglePlot):
 		out_vals_single = np.reshape(out_vals_single, np.shape(zout))
 
 		return out_vals_codect, out_vals_single
+
+
+class CodetectionPotential2(CreateSinglePlot):
+	
+
+	def __init__(self, fig, axis, xvals,yvals,zvals, gen_dict={}, limits_dict={},
+		label_dict={}, extra_dict={}, legend_dict={}):
+		"""
+		Ratio is a subclass of CreateSinglePlot. Refer to CreateSinglePlot class docstring for input information. 
+
+		Ratio creates an filled contour plot comparing snrs from two different data sets. Typically, it is used to compare sensitivty curves and/or varying binary parameters. It takes the snr of the first dataset and divides it by the snr from the second dataset. The log10 of this ratio is ploted. Additionally, a loss/gain contour is plotted. Loss/gain contour is based on SNR_CUT but can be overridden with 'snr_contour_value' in extra_dict. A gain indicates the first dataset reaches the snr threshold while the second does not. A loss is the opposite.  
+		"""
+		CreateSinglePlot.__init__(self, fig, axis, xvals, yvals, zvals, gen_dict,
+			limits_dict, label_dict, extra_dict, legend_dict)
+
+	def make_plot(self):
+		"""
+		This methd creates the ratio plot. 
+		"""
+		colormaps=['Purples', 'Blues', 'Greens', 'Reds']
+		cmap_keys = [map_name.lower()[:-1] for map_name in colormaps]
+
+		codet_cmap = 'Greys'
+		codet_cmap_key = codet_cmap.lower()[:-1]
+
+		#check to make sure ratio plot has 2 arrays to compare. 
+		if len(self.xvals) < 2:
+			raise Exception("Length of vals less than 2. No need for codetection.")
+
+		if len(self.xvals) >4:
+			raise NotImplementedError
+
+		#check and interpolate data so that the dimensions of each data set are the same
+		#check this
+		for i in np.arange(len(self.xvals)-1):
+			if np.shape(self.xvals[0]) != np.shape(self.xvals[i+1]):
+				raise Exception("Need the same shape for this plot.")
+
+		#if np.shape(self.xvals[0]) != np.shape(self.xvals[1]):
+		#	self.interpolate_data()
+
+		#set comparison value. Default is SNR_CUT
+		comparison_value = self.gen_dict['SNR_CUT']
+		if 'snr_contour_value' in self.extra_dict.keys():
+			comparison_value = self.extra_dict['snr_contour_value']
+
+		#find loss/gain contour and ratio contour
+		codet_pot, singles = self.find_codetection_potential(comparison_value)
+
+		codet_pot = np.ma.masked_where((codet_pot<np.log10(comparison_value)), codet_pot)
+		singles = np.ma.masked_where((singles<np.log10(comparison_value)), singles)
+	
+		normval = 4.0
+		num_contours = 17 #must be even
+		levels = np.linspace(0.0, normval,num_contours)
+		norm = colors.Normalize(0.0, normval)
+
+		for i, single in enumerate(singles):
+			cmap_single = getattr(cm, colormaps[i])
+			self.axis.contourf(self.xvals[0],self.yvals[0],single,
+				levels = levels, norm=norm, extend='both', cmap=cmap_single, alpha=1.0)
+
+		cmap_comb = getattr(cm, codet_cmap)
+		codet_sc = self.axis.contourf(self.xvals[0],self.yvals[0],codet_pot,
+				levels = levels, norm=norm, extend='both', cmap=cmap_comb, alpha=1.0)
+
+
+		#toggle line contours of orders of magnitude of ratio comparisons
+		if 'ratio_contour_lines' in self.extra_dict.keys():
+			if self.extra_dict['ratio_contour_lines'] == True:
+				self.axis.contour(self.xvals[0],self.yvals[0],codet_pot, np.arange(-8, 9, 1), colors = 'black', linewidths = 1.0)
+				self.axis.contour(self.xvals[0],self.yvals[0],single, np.array([-3.0, -2.0, -1.0, 1.0, 2.0, 3.0]), colors = 'black', linewidths = 1.0)
+
+		for i in range(len(self.zvals)):
+			self.axis.scatter([-1e10, -1e10], [-1e1, -2e1], color=cmap_keys[i], label=self.legend_dict['labels'][i])
+
+		self.axis.scatter([-1e10, -1e10], [-1e1, -2e1], color=codet_cmap_key, label='Codetection')
+
+		#Add legend. Defaults followed by change.
+		loc = 'upper left'
+		if 'loc' in self.legend_dict.keys():
+			loc = self.legend_dict['loc']
+
+		size = 10
+		if 'size' in self.legend_dict.keys():
+			size = float(self.legend_dict['size'])
+
+		bbox_to_anchor = None
+		if 'bbox_to_anchor' in self.legend_dict.keys():
+			bbox_to_anchor = self.legend_dict['bbox_to_anchor']
+
+		ncol = 1
+		if 'ncol' in self.legend_dict.keys():
+			ncol = int(self.legend_dict['ncol'])	
+
+		self.axis.legend(loc=loc, markerscale=3.0, bbox_to_anchor=bbox_to_anchor,
+				ncol=ncol, prop={'size':size})
+
+
+		
+		cbar_info_dict = {}
+		if 'colorbars' in self.gen_dict.keys():
+			if 'CodetectionPotential2' in self.gen_dict['colorbars'].keys():
+				cbar_info_dict = self.gen_dict['colorbars']['CodetectionPotential2']
+
+		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(CodetectionPotential2, self).find_colorbar_information(cbar_info_dict, 'CodetectionPotential2')
+
+		if cbar_label == 'None':
+			cbar_label = r'$\rho$'
+		
+		super(CodetectionPotential2, self).setup_colorbars(colorbar_pos, codet_sc, 'CodetectionPotential2', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
+		"""
+		cbar_info_dict = {}
+		if 'colorbars' in self.gen_dict.keys():
+			if 'SingleDetection' in self.gen_dict['colorbars'].keys():
+				cbar_info_dict = self.gen_dict['colorbars']['SingleDetection']
+		
+		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(CodetectionPotential2, self).find_colorbar_information(cbar_info_dict, 'SingleDetection')
+		
+		if cbar_label == 'None':
+			cbar_label = 'Single Detection'
+
+		super(CodetectionPotential2, self).setup_colorbars(colorbar_pos, sc4, 'SingleDetection', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
+		"""		
+
+		return
+
+	def find_codetection_potential(self, comparison_value):
+		"""
+		This method finds the ratio contour and the loss gain contour values. Its inputs are the two datasets for comparison where the second is the control to compare against the first. 
+
+			The input data sets need to be the same shape. CreateSinglePlot.interpolate_data corrects for two datasets of different shape.
+
+			Returns: loss_gain_contour, ratio contour (diff)
+			
+		"""
+
+		#ONLY FOR TESTING
+		comparison_value = self.gen_dict['SNR_CUT']
+		compare_snrs = []
+		for zval in self.zvals:
+			compare_snrs.append(1*(zval>=comparison_value) + 0*(zval<comparison_value))
+
+		compare_snrs = np.asarray(compare_snrs)
+		how_many_detectors = np.sum(np.asarray(compare_snrs), axis=0).astype(int)
+
+		inds_codet = np.asarray(how_many_detectors>1,dtype=int)
+		single_det = np.asarray(how_many_detectors==1,dtype=int)
+
+		snr_single = []
+		for i in range(len(self.zvals)):
+			snr_single.append(self.zvals[i]*compare_snrs[i]*single_det)
+
+		snr_single = np.asarray(snr_single)
+
+		combined_det = []
+		for i in range(len(self.zvals)):
+			combined_det.append(self.zvals[i]*compare_snrs[i]*inds_codet)
+
+		combined_snr = np.sqrt(np.sum(np.asarray(combined_det)**2, axis=0))
+
+		return np.log10(combined_snr), np.log10(snr_single)
+
+
 
 
 class Horizon(CreateSinglePlot):

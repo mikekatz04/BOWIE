@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from bowie_makeplot.plotutils.readdata import PlotVals, ReadInData
-from bowie_makeplot.plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon, CodetectionPotential
+from bowie_makeplot.plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon, CodetectionPotential, CodetectionPotential2
 
 class MakePlotProcess:
 	def __init__(self, pid):
@@ -159,7 +159,7 @@ class MakePlotProcess:
 			adjust_bottom = self.pid['general']['adjust_figure_bottom']
 
 		adjust_right = 0.9
-		if 'Ratio' in plot_types or 'Waterfall' in plot_types or 'CodetectionPotential' in plot_types:
+		if 'Ratio' in plot_types or 'Waterfall' in plot_types or 'CodetectionPotential' or 'CodetectionPotential2' in plot_types:
 			adjust_right = 0.79
 		
 		if 'adjust_figure_right' in self.pid['general'].keys():
@@ -199,7 +199,7 @@ class MakePlotProcess:
 		#labels for figure
 		fig_label_fontsize = 20
 		if 'fig_label_fontsize' in self.pid['general'].keys():
-			fig_label_fontsize = float(pid['general']['fig_label_fontsize'])
+			fig_label_fontsize = float(self.pid['general']['fig_label_fontsize'])
 
 		if 'fig_x_label' in self.pid['general'].keys():
 			fig.text(0.01, 0.51, r'%s'%(self.pid['general']['fig_y_label']),
