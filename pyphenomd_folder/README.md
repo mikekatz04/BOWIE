@@ -17,10 +17,10 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Software installation/usage only requires a few specific libraries in python. All libraries are included with Anaconda. If you do not run python in an anaconda environment, you  will need the following libraries and modules to run with all capabilities: Numpy, Scipy, astropy, and ctypes. All can be installed with pip. For example, within your python environment of choice:
+Software installation/usage only requires a few specific libraries in python. All libraries are included with Anaconda. If you do not run python in an anaconda environment, you  will need the following libraries and modules to run with all capabilities: Numpy, Scipy, and astropy. All can be installed with pip. For example, within your python environment of choice:
 
 ```
-pip install ctypes
+pip install astropy
 ```
 In order to properly create waveforms with ctypes, you will need complex, gsl, and math c libraries. For installing gsl, refer to https://www.gnu.org/software/gsl/ or install it through anaconda. 
 

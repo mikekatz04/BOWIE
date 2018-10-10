@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='pyphenomd',
-	version='1.0.1',
+	version='1.0.2',
 	description='Python implementation of phenomd amplitude calculation for fast SNR determination',
 	long_description=long_description,
 	long_description_content_type="text/markdown",
@@ -19,7 +19,7 @@ setup(name='pyphenomd',
 	packages=['pyphenomd', 'pyphenomd.noise_curves'],
 	ext_modules=[extmodule1],
 	py_modules=['pyphenomd.pyphenomd', 'pyphenomd.read_noise_curves'],
-	install_requires=['numpy', 'scipy', 'astropy','ctypes'],
+	install_requires=['numpy', 'scipy', 'astropy'],
 	include_package_data=True,
 	classifiers=[
         "Programming Language :: Python :: 3",
