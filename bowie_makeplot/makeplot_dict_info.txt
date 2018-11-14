@@ -150,7 +150,7 @@ general:
 
 plot_info (dictionary):
     Required
-    Dictionary will all plot info and keys corresponding to index of the plot in the configuration, starting at zero (see examples). 
+    Dictionary with all plot info and keys corresponding to index of the plot in the configuration, starting at zero (see examples). 
 
     {
     (plot index as key):

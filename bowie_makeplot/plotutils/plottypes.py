@@ -204,6 +204,7 @@ class CreateSinglePlot:
         return
 
     def interpolate_data(self):
+        #TODO think about getting rid of this or fixing this
         """
         Interpolate data if two data sets have different shapes. This method is mainly used on ratio plots to allow for direct comparison of snrs. The higher resolution array is reduced to the lower resolution.
         """
@@ -266,7 +267,7 @@ class CreateSinglePlot:
             tick_labels = [r'$\downarrow 10^{%i}$' % i for i in [4.0, 3.0, 2.0, 1.0]] + [
                 r'    $10^{%i}$' % i for i in [0.0]] + [r'$\uparrow 10^{%i}$' % i for i in [1.0, 2.0, 3.0, 4.0]]
 
-        elif plot_type == 'CodetectionPotential2':
+        elif plot_type == 'CodetectionPotential1':
             ticks = [0.0, 1.0, 2.0, 3.0, 4.0]
             tick_labels = ['$10^{%i}$' % i for i in [0.0, 1.0, 2.0, 3.0, 4.0]]
 
@@ -370,7 +371,7 @@ class CreateSinglePlot:
 
         else:
             colorbar_defaults = {'Waterfall': 1, 'Ratio': 2, 'CodetectionPotential': 1,
-                                 'SingleDetection': 2, 'CodetectionPotential2': 5}
+                                 'SingleDetection': 2, 'CodetectionPotential1': 5}
             colorbar_pos = colorbar_defaults[plot_type]
 
         return colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels
@@ -433,7 +434,7 @@ class Waterfall(CreateSinglePlot):
 
 
 class Ratio(CreateSinglePlot):
-
+    #TODO make colormaps adjustable
     def __init__(self, fig, axis, xvals, yvals, zvals, gen_dict={}, limits_dict={},
                  label_dict={}, extra_dict={}, legend_dict={}):
         """
@@ -458,7 +459,9 @@ class Ratio(CreateSinglePlot):
             self.interpolate_data()
 
         # sets colormap for ratio comparison plot
-        cmap2 = cm.seismic
+        #cmap2 = cm.seismic
+        cmap2 = cm.coolwarm
+
 
         # set values of ratio comparison contour
         normval2 = 2.0
@@ -469,6 +472,7 @@ class Ratio(CreateSinglePlot):
         # find Loss/Gain contour and Ratio contour
         diff_out, loss_gain_contour = self.find_difference_contour()
 
+        cmap2.set_bad(color='white', alpha=0.001)
         # plot ratio contours
         sc3 = self.axis.contourf(self.xvals[0], self.yvals[0], diff_out,
                                  levels=levels2, norm=norm2, extend='both', cmap=cmap2)
@@ -487,10 +491,16 @@ class Ratio(CreateSinglePlot):
         if loss_gain_status == True:
             # if there is no loss/gain contours, this will produce an error, so we catch the exception.
             try:
+                cs = self.axis.contourf(self.xvals[0], self.yvals[0],
+                                  loss_gain_contour, levels=[-2, -0.5, 0.5, 2], colors='none',hatches=['x',None, '.'])
                 self.axis.contour(self.xvals[0], self.yvals[0],
-                                  loss_gain_contour, 2, colors='grey', linewidths=2)
+                                  loss_gain_contour, 3, colors='black', linewidths=2)
+
+                # TODO: add legend ability for Ratio plots
             except ValueError:
                 pass
+
+
 
         cbar_info_dict = {}
         if 'colorbars' in self.gen_dict.keys():
@@ -538,8 +548,7 @@ class Ratio(CreateSinglePlot):
         inds_gained = np.where((zout >= comparison_value) & (control_zout < comparison_value))
         inds_lost = np.where((zout < comparison_value) & (control_zout >= comparison_value))
 
-        # Also set rid for when neither curve measures gets SNR of 1.0.
-        inds_rid = np.where((zout < ratio_comp_value) | (control_zout < ratio_comp_value))
+
 
         # set diff to ratio for purposed of determining raito differences
         diff = zout/control_zout
@@ -555,17 +564,18 @@ class Ratio(CreateSinglePlot):
         diff = np.reshape(diff, np.shape(zout))
 
         # change inds rid
-        diff[inds_rid] = 0.0
+        # Also set rid for when neither curve measures gets SNR of 1.0.
+        #inds_rid = np.where((zout < ratio_comp_value) | (control_zout < ratio_comp_value))
+        #diff[inds_rid] = 0.0
+        diff = np.ma.masked_where((zout < ratio_comp_value) | (control_zout < ratio_comp_value), diff)
 
         # initialize loss/gain
         loss_gain_contour = np.zeros(np.shape(zout))
 
         # fill out loss/gain
-        j = -1
-        for i in (inds_lost, inds_gained):
-            # change all of inds at one time to j
-            loss_gain_contour[i] = j
-            j += 2
+        loss_gain_contour[inds_lost] = -1
+        loss_gain_contour[inds_gained] = 1
+
 
         return diff, loss_gain_contour
 
@@ -673,12 +683,12 @@ class CodetectionPotential1(CreateSinglePlot):
                 cbar_info_dict = self.gen_dict['colorbars']['CodetectionPotential2']
 
         colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(
-            CodetectionPotential1, self).find_colorbar_information(cbar_info_dict, 'CodetectionPotential2')
+            CodetectionPotential1, self).find_colorbar_information(cbar_info_dict, 'CodetectionPotential1')
 
         if cbar_label == 'None':
             cbar_label = r'$\rho$'
 
-        super(CodetectionPotential1, self).setup_colorbars(colorbar_pos, codet_sc, 'CodetectionPotential2', cbar_label, ticks_fontsize=ticks_fontsize,
+        super(CodetectionPotential1, self).setup_colorbars(colorbar_pos, codet_sc, 'CodetectionPotential1', cbar_label, ticks_fontsize=ticks_fontsize,
                                                            label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
         """
 		cbar_info_dict = {}

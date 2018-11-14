@@ -9,7 +9,7 @@ class SinglePlot:
 
     def add_dataset(self, name=None, label=None, x_column_label=None, y_column_label=None, index=None, control=False):
 
-        if index is not None:
+        if index is None:
             if 'file' not in self.plot_info and control != True:
                 self.plot_info['file'] = []
 
@@ -27,9 +27,9 @@ class SinglePlot:
                 y_column_label['name'] = y_column_label
 
             if control:
-
-            else:
                 self.plot_info['control'] = trans_dict
+            else:
+                self.plot_info['file'].append(trans_dict)
 
         else:
             if control:
@@ -43,7 +43,7 @@ class SinglePlot:
 
         return
 
-    def define_type(self, plot_type):
+    def set_type(self, plot_type):
         self.plot_info['type'] = plot_type
         return
 
@@ -90,7 +90,7 @@ class SinglePlot:
         self.set_axis_limits('y', xlims, dx, xscale, reverse)
         return
 
-    def legend(labels, loc=None, bbox_to_anchor=None, size=None):
+    def legend(self, labels, loc=None, bbox_to_anchor=None, size=None):
         #TODO: try to pass kwargs
         self.plot_info['legend']['labels'] = labels
         if loc is not None:
@@ -159,7 +159,7 @@ class GeneralDict:
         self.general_dict['file_name'] = name
         return
 
-    def column_labels(self, xlabel=None, ylabel=None):
+    def file_column_labels(self, xlabel=None, ylabel=None):
         if xlabel is not None:
             self.general_dict['x_column_label'] = xlabel
         if ylabel is not None:
@@ -214,20 +214,20 @@ class GeneralDict:
             self.general_dict['fig_title_fontsize'] = fontsize
         return
 
-    def set_fig_xlims(self, xlim, dx, scale, fontsize=None):
-        self.general_dict['xlims'] = xlim
-        self.general_dict['dx'] = dx
-        self.general_dict['scale'] = scale
-        if tick_fontsize is not None:
-            self.general_dict['x_tick_label_fontsize'] = fontsize
+    def set_fig_lims(self, which, lim, d, scale, fontsize=None):
+        self.general_dict[which + 'lims'] = lim
+        self.general_dict['d' + which] = d
+        self.general_dict[which + 'scale'] = scale
+        if fontsize is not None:
+            self.general_dict[which + '_tick_label_fontsize'] = fontsize
         return
 
-    def set_fig_ylims(self, ylim, dy, scale, fontsize=None):
-        self.general_dict['ylims'] = ylim
-        self.general_dict['dy'] = dy
-        self.general_dict['scale'] = scale
-        if tick_fontsize is not None:
-            self.general_dict['x_tick_label_fontsize'] = fontsize
+    def set_fig_xlims(self, xlim, dx, xscale, fontsize=None):
+        self.set_fig_lims('x', xlim, dx, xscale, fontsize)
+        return
+
+    def set_fig_ylims(self, ylim, dy, yscale, fontsize=None):
+        self.set_fig_lims('y', ylim, dy, yscale, fontsize)
         return
 
     def set_ticklabel_fontsize(self, fontsize):
@@ -248,7 +248,7 @@ class GeneralDict:
         return
 
     def set_colorbar(self, plot_type, label=None, label_fontsize=None, ticks_fontsize=None, pos=None, colorbar_axes=None):
-        if 'colorbars' is not in self.general_dict:
+        if 'colorbars' not in self.general_dict:
             self.general_dict['colorbars'] = {}
 
         self.general_dict['colorbars'][plot_type] = {}
@@ -257,25 +257,36 @@ class GeneralDict:
             self.general_dict['colorbars'][plot_type]['label_fontsize'] = label_fontsize
 
         if ticks_fontsize is not None:
-            self.general_dict['ticks_fontsize'] = ticks_fontsize
+            self.general_dict['colorbars'][plot_type]['ticks_fontsize'] = ticks_fontsize
 
         if pos is not None:
-            self.general_dict['pos'] = pos
+            self.general_dict['colorbars'][plot_type]['pos'] = pos
 
         if colorbar_axes is not None:
-            self.general_dict['colorbar_axes'] = colorbar_axes
+            self.general_dict['colorbars'][plot_type]['colorbar_axes'] = colorbar_axes
 
         return
 
 
 
-class GeneralContainer(GeneralDict, Plot):
+class GeneralContainer(GeneralDict):
     def __init__(self, nrows, ncols, sharex=False, sharey=False, print_input=False):
-        self.print_output = print_input
+        self.print_input = print_input
+        self.total_plots = nrows*ncols
+        GeneralDict.__init__(self, nrows, ncols, sharex, sharey)
 
-        GeneralDict.__init__(self, nrows, ncols, sharex=False, sharey=False)
-        self.ax = [SinglePlot(i) for i in range(nrows*ncols)]
+        if self.total_plots > 1:
+            self.ax = [SinglePlot(i) for i in range(self.total_plots)]
+        else:
+            self.ax = SinglePlot(0)
 
     def return_overall_dictionary(self):
-        plot_dicts = [str(i):self.ax[i].plot_info for i in range(nrows*ncols)]
-        return {'general': self.general_dict, 'plot_info': self.plot_dict}
+        if self.total_plots > 1:
+            plot_dicts = {str(i):self.ax[i].plot_info for i in range(self.total_plots)}
+        else:
+            plot_dicts = {str(0):self.ax.plot_info}
+
+        input = {'general': self.general_dict, 'plot_info': plot_dicts}
+        if self.print_input:
+            print(input)
+        return input
