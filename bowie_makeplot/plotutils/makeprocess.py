@@ -1,9 +1,9 @@
 """
 This module houses the main class for plotting within the BOWIE package. It runs through the whole plot creation process.
-	
-	It is part of the BOWIE analysis tool. Author: Michael Katz. Please cite "Evaluating Black Hole Detectability with LISA" (arXiv:1807.02511) for usage of this code. 
 
-	This code is licensed under the GNU public license. 
+	It is part of the BOWIE analysis tool. Author: Michael Katz. Please cite "Evaluating Black Hole Detectability with LISA" (arXiv:1807.02511) for usage of this code.
+
+	This code is licensed under the GNU public license.
 """
 
 from collections import OrderedDict
@@ -12,15 +12,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from bowie_makeplot.plotutils.readdata import PlotVals, ReadInData
-from bowie_makeplot.plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon, CodetectionPotential, CodetectionPotential2
+from bowie_makeplot.plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon, CodetectionPotential1, CodetectionPotential2, CodetectionPotential3
 
 class MakePlotProcess:
 	def __init__(self, pid):
 		"""
-		Class that carries the input dictionary (pid) and directs the program to accomplish plotting tasks. 
+		Class that carries the input dictionary (pid) and directs the program to accomplish plotting tasks.
 
 		Inputs:
-			:param pid: (dict) - carries all arguments for the program from a dictionary in a script or .json configuration file. 
+			:param pid: (dict) - carries all arguments for the program from a dictionary in a script or .json configuration file.
 		"""
 
 		self.pid = pid
@@ -28,7 +28,7 @@ class MakePlotProcess:
 
 	def input_data(self):
 		"""
-		Function to extract data from files according to pid. 
+		Function to extract data from files according to pid.
 
 		"""
 
@@ -42,7 +42,7 @@ class MakePlotProcess:
 			trans_cont_dict[str(i)] = control_dict[str(i)]
 
 		control_dict = trans_cont_dict
-		
+
 		#set empty lists for x,y,z
 		x = [[]for i in np.arange(len(control_dict.keys()))]
 		y = [[] for i in np.arange(len(control_dict.keys()))]
@@ -68,7 +68,7 @@ class MakePlotProcess:
 
 		#add data from plots to current plot based on index
 		for k, axis_string in enumerate(control_dict.keys()):
-			
+
 			#takes first file from plot
 			if 'indices' in control_dict[axis_string]:
 				if type(control_dict[axis_string]['indices']) == int:
@@ -81,7 +81,7 @@ class MakePlotProcess:
 					x[k].append(x[index][0])
 					y[k].append(y[index][0])
 					z[k].append(z[index][0])
-		
+
 		#read or append control values for ratio plots
 		for k, axis_string in enumerate(control_dict.keys()):
 			if 'control' in control_dict[axis_string]:
@@ -110,11 +110,11 @@ class MakePlotProcess:
 			value_classes.append(PlotVals(x[k],y[k],z[k]))
 
 		self.value_classes = value_classes
-		return 
+		return
 
 	def setup_figure(self):
 		"""
-		Sets up the initial figure on which every plot is added. 
+		Sets up the initial figure on which every plot is added.
 		"""
 		#defaults for sharing axes
 		sharex = True
@@ -161,7 +161,7 @@ class MakePlotProcess:
 		adjust_right = 0.9
 		if 'Ratio' in plot_types or 'Waterfall' in plot_types or 'CodetectionPotential' or 'CodetectionPotential2' in plot_types:
 			adjust_right = 0.79
-		
+
 		if 'adjust_figure_right' in self.pid['general'].keys():
 			adjust_right = self.pid['general']['adjust_figure_right']
 
@@ -223,7 +223,7 @@ class MakePlotProcess:
 
 	def create_plots(self):
 		"""
-		Creates plots according to each plotting class. 
+		Creates plots according to each plotting class.
 		"""
 		for i, axis in enumerate(self.ax):
 
@@ -249,7 +249,7 @@ class MakePlotProcess:
 
 	def setup_trans_dict(self, i):
 		"""
-		Take necessary parameters from 'general' if they are not in plot specific dictionaries. 
+		Take necessary parameters from 'general' if they are not in plot specific dictionaries.
 		"""
 
 		trans_dict = self.pid['plot_info'][str(i)]
