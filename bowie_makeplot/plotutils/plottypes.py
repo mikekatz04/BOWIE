@@ -1,24 +1,3 @@
-"""
-This module houses the main classes for plotting for the BOWIE package.
-
-	It is part of the BOWIE analysis tool. Author: Michael Katz. Please cite "Evaluating Black Hole Detectability with LISA" (arXiv:1807.02511) for usage of this code.
-
-	This code is licensed under the GNU public license.
-
-	CreateSinglePlot is the base class inherited by actual classes that output a plot type.
-
-	The three main classes are plot types: Waterfall, Horizon, and Ratio.
-
-	Waterfall:
-		SNR contour plot based on plots from LISA Mission proposal.
-
-	Ratio:
-		Comparison plot of the ratio of SNRs for two different inputs. This plot also contains Loss/Gain contours, which describe when sources are gained or lost compared to one another based on a user specified SNR cut. See paper above for further explanation.
-
-	Horizon:
-		SNR contour plots comparing multipile inputs. User can specify contour value. The default is the user specified SNR cut.
-"""
-
 import numpy as np
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
@@ -30,25 +9,23 @@ class CreateSinglePlot:
 
     def __init__(self, fig, axis, xvals, yvals, zvals, gen_dict={}, limits_dict={},
                  label_dict={}, extra_dict={}, legend_dict={}):
-        """
-        This is the base class for the subclasses designed for creating the plots.
+        """This is the base class for the subclasses designed for creating the plots.
 
-                Mandatory Inputs:
-                        :param fig: - figure object - Figure environment for the plots.
-                        :param axis: - axes object - Axis object representing specific plot.
+        Parameters:
+                fig (figure object): Figure environment for the plots.
+                axis (axes object): Axis object representing specific plot.
+                xvals, yvals, zvals (2D array of float): List of x,y,z-value arrays for the plot.
 
-                        :param xvals, yvals, zvals: (float) - list of 2d arrays - list of x,y,z-value arrays for the plot.
+        Optional Inputs (options for the dictionaries will be given in the documentation):
+                gen_dict - dict containing extra kwargs for plot
 
-                Optional Inputs (options for the dictionaries will be given in the documentation):
-                        gen_dict - dict containing extra kwargs for plot
+                limits_dict - dict containing axis limits and axes labels information. Inputs/keys:
 
-                        limits_dict - dict containing axis limits and axes labels information. Inputs/keys:
+                label_dict - dict containing label information for x labels, y labels, and title. Inputs/keys:
 
-                        label_dict - dict containing label information for x labels, y labels, and title. Inputs/keys:
+                extra_dict - dict containing extra plot information to aid in customization. Inputs/keys:
 
-                        extra_dict - dict containing extra plot information to aid in customization. Inputs/keys:
-
-                        legend_dict - dict describing legend labels and properties. This is used for horizon plots.
+                legend_dict - dict describing legend labels and properties. This is used for horizon plots.
 
         """
         self.gen_dict = gen_dict
@@ -274,14 +251,14 @@ class CreateSinglePlot:
             # ticks = np.arange(-8, 10, 2)
             # tick_labels = ['%i'%(-i) for i in ticks if i<0.0] + ['%i'%i for i in ticks if i>=0.0]
         """
-		elif plot_type == 'SingleDetection':
-			ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
-			tick_labels = [r'$-10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + \
-			    [r'$10^{%i}$'%i for i in [0.0, 1.0,2.0, 3.0, 4.0]]
+        elif plot_type == 'SingleDetection':
+            ticks = [-4.0, -3.0,-2.0,-1.0,0.0, 1.0,2.0, 3.0, 4.0]
+            tick_labels = [r'$-10^{%i}$'%i for i in [4.0, 3.0, 2.0, 1.0]] + \
+                [r'$10^{%i}$'%i for i in [0.0, 1.0,2.0, 3.0, 4.0]]
 
-			# ticks = np.arange(-4, 5, 1)
-			# tick_labels = ['%i'%(-i) for i in ticks if i<0.0] + ['%i'%i for i in ticks if i>=0.0]
-		"""
+            # ticks = np.arange(-4, 5, 1)
+            # tick_labels = ['%i'%(-i) for i in ticks if i<0.0] + ['%i'%i for i in ticks if i>=0.0]
+        """
 
         if colorbar_ticks != []:
             ticks = colorbar_ticks
@@ -616,7 +593,7 @@ class CodetectionPotential1(CreateSinglePlot):
                 raise Exception("Need the same shape for this plot.")
 
         # if np.shape(self.xvals[0]) != np.shape(self.xvals[1]):
-        #	self.interpolate_data()
+        #    self.interpolate_data()
 
         # set comparison value. Default is SNR_CUT
         comparison_value = self.gen_dict['SNR_CUT']
@@ -691,20 +668,20 @@ class CodetectionPotential1(CreateSinglePlot):
         super(CodetectionPotential1, self).setup_colorbars(colorbar_pos, codet_sc, 'CodetectionPotential1', cbar_label, ticks_fontsize=ticks_fontsize,
                                                            label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
         """
-		cbar_info_dict = {}
-		if 'colorbars' in self.gen_dict.keys():
-			if 'SingleDetection' in self.gen_dict['colorbars'].keys():
-				cbar_info_dict = self.gen_dict['colorbars']['SingleDetection']
+        cbar_info_dict = {}
+        if 'colorbars' in self.gen_dict.keys():
+            if 'SingleDetection' in self.gen_dict['colorbars'].keys():
+                cbar_info_dict = self.gen_dict['colorbars']['SingleDetection']
 
-		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(
-		    CodetectionPotential2, self).find_colorbar_information(cbar_info_dict, 'SingleDetection')
+        colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(
+            CodetectionPotential2, self).find_colorbar_information(cbar_info_dict, 'SingleDetection')
 
-		if cbar_label == 'None':
-			cbar_label = 'Single Detection'
+        if cbar_label == 'None':
+            cbar_label = 'Single Detection'
 
-		super(CodetectionPotential2, self).setup_colorbars(colorbar_pos, sc4, 'SingleDetection', cbar_label, ticks_fontsize=ticks_fontsize,
-		      label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
-		"""
+        super(CodetectionPotential2, self).setup_colorbars(colorbar_pos, sc4, 'SingleDetection', cbar_label, ticks_fontsize=ticks_fontsize,
+              label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
+        """
 
         return
 
@@ -941,65 +918,65 @@ class CodetectionPotential3(CodetectionPotential, CreateSinglePlot):
         ratio_plot.make_plot()
 
         """
-		# TODO: remove this section
-		codect_pot = np.ma.masked_where((codect_pot>-np.log10(comparison_value)) & (codect_pot<np.log10(comparison_value)), codect_pot)
-		single = np.ma.masked_where((single>-np.log10(comparison_value)) & (single<np.log10(comparison_value)), single)
+        # TODO: remove this section
+        codect_pot = np.ma.masked_where((codect_pot>-np.log10(comparison_value)) & (codect_pot<np.log10(comparison_value)), codect_pot)
+        single = np.ma.masked_where((single>-np.log10(comparison_value)) & (single<np.log10(comparison_value)), single)
 
 
-		# sets colormap for ratio comparison plot
-		cmap2 = cm.BrBG
-		cmap_single = cm.PiYG
+        # sets colormap for ratio comparison plot
+        cmap2 = cm.BrBG
+        cmap_single = cm.PiYG
 
-		cmap2.set_bad(color='white', alpha=0.001)
-		cmap_single.set_bad(color='white', alpha=0.001)
+        cmap2.set_bad(color='white', alpha=0.001)
+        cmap_single.set_bad(color='white', alpha=0.001)
 
-		normval2 = 4.0
-		num_contours2 = 40 #must be even
-		levels2 = np.linspace(-normval2, normval2,num_contours2)
-		norm2 = colors.Normalize(-normval2, normval2)
+        normval2 = 4.0
+        num_contours2 = 40 #must be even
+        levels2 = np.linspace(-normval2, normval2,num_contours2)
+        norm2 = colors.Normalize(-normval2, normval2)
 
-		# plot ratio contours
-		sc3=self.axis.contourf(self.xvals[0],self.yvals[0],codect_pot,
-			levels = levels2, norm=norm2, extend='both', cmap=cmap2, alpha=1.0)
+        # plot ratio contours
+        sc3=self.axis.contourf(self.xvals[0],self.yvals[0],codect_pot,
+            levels = levels2, norm=norm2, extend='both', cmap=cmap2, alpha=1.0)
 
-		normval3 = 4.0
-		num_contours3 = 40 #must be even
-		levels3 = np.linspace(-normval3, normval3,num_contours3)
-		norm3 = colors.Normalize(-normval3, normval3)
-		sc4=self.axis.contourf(self.xvals[0],self.yvals[0],single,
-			levels = levels3, norm=norm3, extend='both', cmap=cmap_single, alpha=1.0)
+        normval3 = 4.0
+        num_contours3 = 40 #must be even
+        levels3 = np.linspace(-normval3, normval3,num_contours3)
+        norm3 = colors.Normalize(-normval3, normval3)
+        sc4=self.axis.contourf(self.xvals[0],self.yvals[0],single,
+            levels = levels3, norm=norm3, extend='both', cmap=cmap_single, alpha=1.0)
 
 
-		# toggle line contours of orders of magnitude of ratio comparisons
-		if 'ratio_contour_lines' in self.extra_dict.keys():
-			if self.extra_dict['ratio_contour_lines'] == True:
-				self.axis.contour(self.xvals[0],self.yvals[0],codect_pot, np.arange(-8, 9, 1), colors = 'black', linewidths = 1.0)
-				self.axis.contour(self.xvals[0],self.yvals[0],single, np.array([-3.0, -2.0, -1.0, 1.0, 2.0, 3.0]), colors = 'black', linewidths = 1.0)
+        # toggle line contours of orders of magnitude of ratio comparisons
+        if 'ratio_contour_lines' in self.extra_dict.keys():
+            if self.extra_dict['ratio_contour_lines'] == True:
+                self.axis.contour(self.xvals[0],self.yvals[0],codect_pot, np.arange(-8, 9, 1), colors = 'black', linewidths = 1.0)
+                self.axis.contour(self.xvals[0],self.yvals[0],single, np.array([-3.0, -2.0, -1.0, 1.0, 2.0, 3.0]), colors = 'black', linewidths = 1.0)
 
-		cbar_info_dict = {}
-		if 'colorbars' in self.gen_dict.keys():
-			if 'CodetectionPotential' in self.gen_dict['colorbars'].keys():
-				cbar_info_dict = self.gen_dict['colorbars']['CodetectionPotential']
+        cbar_info_dict = {}
+        if 'colorbars' in self.gen_dict.keys():
+            if 'CodetectionPotential' in self.gen_dict['colorbars'].keys():
+                cbar_info_dict = self.gen_dict['colorbars']['CodetectionPotential']
 
-		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(CodetectionPotential, self).find_colorbar_information(cbar_info_dict, 'CodetectionPotential')
+        colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(CodetectionPotential, self).find_colorbar_information(cbar_info_dict, 'CodetectionPotential')
 
-		if cbar_label == 'None':
-			cbar_label = 'Codetection Potential'
+        if cbar_label == 'None':
+            cbar_label = 'Codetection Potential'
 
-		super(CodetectionPotential, self).setup_colorbars(colorbar_pos, sc3, 'CodetectionPotential', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
+        super(CodetectionPotential, self).setup_colorbars(colorbar_pos, sc3, 'CodetectionPotential', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
 
-		cbar_info_dict = {}
-		if 'colorbars' in self.gen_dict.keys():
-			if 'SingleDetection' in self.gen_dict['colorbars'].keys():
-				cbar_info_dict = self.gen_dict['colorbars']['SingleDetection']
+        cbar_info_dict = {}
+        if 'colorbars' in self.gen_dict.keys():
+            if 'SingleDetection' in self.gen_dict['colorbars'].keys():
+                cbar_info_dict = self.gen_dict['colorbars']['SingleDetection']
 
-		colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(CodetectionPotential, self).find_colorbar_information(cbar_info_dict, 'SingleDetection')
+        colorbar_pos, cbar_label, ticks_fontsize, label_fontsize, colorbar_axes, colorbar_ticks, colorbar_tick_labels = super(CodetectionPotential, self).find_colorbar_information(cbar_info_dict, 'SingleDetection')
 
-		if cbar_label == 'None':
-			cbar_label = 'Single Detection'
+        if cbar_label == 'None':
+            cbar_label = 'Single Detection'
 
-		super(CodetectionPotential, self).setup_colorbars(colorbar_pos, sc4, 'SingleDetection', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
-		"""
+        super(CodetectionPotential, self).setup_colorbars(colorbar_pos, sc4, 'SingleDetection', cbar_label, ticks_fontsize=ticks_fontsize, label_fontsize=label_fontsize, colorbar_axes=colorbar_axes, colorbar_ticks=colorbar_ticks, colorbar_tick_labels=colorbar_tick_labels)
+        """
 
         return
 
