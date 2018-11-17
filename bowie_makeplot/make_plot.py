@@ -38,8 +38,9 @@ def plot_main(pid, return_fig_ax=False):
         return_fig_ax (bool, optional): Return figure and axes objects.
 
     Returns:
-        Figure object for customization outside of those in this program.
-        Axes object for customization outside of those in this program.
+        2-element tuple containing
+            - **fig** (*obj*): Figure object for customization outside of those in this program.
+            - **ax** (*obj*): Axes object for customization outside of those in this program.
 
     """
 
