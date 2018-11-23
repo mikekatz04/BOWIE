@@ -553,7 +553,7 @@ class DataImport:
                 trans_dict.x_column_label = x_column_label
 
             if y_column_label is not None:
-                y_column_label.y_column_label = y_column_label
+                trans_dict.y_column_label = y_column_label
 
             if control:
                 self.control = trans_dict
