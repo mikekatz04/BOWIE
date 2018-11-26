@@ -1,9 +1,0 @@
-include pyphenomd/noise_curves/PL.txt
-include pyphenomd/noise_curves/LPA.txt
-include pyphenomd/noise_curves/CL.txt
-include pyphenomd/noise_curves/CLLF.txt
-include pyphenomd/noise_curves/PLHB.txt
-include pyphenomd/noise_curves/PLCS.txt
-include pyphenomd/noise_curves/WDnoise.txt
-include pyphenomd/phenomd/phenomd.h
-include pyphenomd/phenomd/ringdown_spectrum_fitting.h
