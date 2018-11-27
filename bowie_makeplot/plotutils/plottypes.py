@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib import colors
 
+# TODO: remove requirement for axis limits
 
 class CreateSinglePlot:
 
