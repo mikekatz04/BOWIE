@@ -11,7 +11,33 @@ from scipy import interpolate
 import os
 import numpy as np
 
-def read_noise_curve(noise_curve, use_wd_noise=False, wd_noise='HB_wd_noise', noise_type='ASD'):
+
+def char_strain_to_asd(f, amp):
+    return amp/np.sqrt(f)
+
+
+def asd_to_char_strain(f, amp):
+    return amp*np.sqrt(f)
+
+
+def psd_to_asd(f, amp):
+    return np.sqrt(amp)
+
+
+def asd_to_psd(f, amp):
+    return amp**2
+
+
+def psd_to_char_strain(f, amp):
+    return np.sqrt(amp*f)
+
+
+def char_strain_to_psd(f, amp):
+    return amp**2/f
+
+
+def read_noise_curve(noise_curve, noise_type_in='ASD', noise_type_out='ASD',
+                     use_wd_noise=False, wd_noise='HB_wd_noise', wd_noise_type_in='ASD'):
     """
     This is simple auxillary function that can read noise curves accompanying this package. All noise curves are in the form of an amplitude spectral density. Information on each one is found in each specific file.
 
@@ -32,48 +58,55 @@ def read_noise_curve(noise_curve, use_wd_noise=False, wd_noise='HB_wd_noise', no
                 amplitude: (float) - 1D array - amplitude spectral density of the noise.
         """
 
+    possible_noise_types = ['ASD', 'PSD', 'char_strain']
+    if noise_type_in not in possible_noise_types:
+        raise ValueError('noise_type_in must be either ASD, PSD, or char_strain.')
+    if noise_type_out not in possible_noise_types:
+        raise ValueError('noise_type_out must be either ASD, PSD, or char_strain.')
 
     # find the noise curve file
-    cfd  = os.path.dirname(os.path.abspath(__file__))
-    noise = ascii.read(cfd + '/noise_curves/' + noise_curve + '.txt')
+    if noise_curve[-4:] == '.txt':
+        noise = ascii.read(noise_curve)
+    else:
+        cfd = os.path.dirname(os.path.abspath(__file__))
+        noise = ascii.read(cfd + '/noise_curves/' + noise_curve + '.txt')
 
     #read it in
     f_n = np.asarray(noise['f'])
-    asd = np.asarray(noise['ASD'])
+    amp_n = np.asarray(noise[noise_type_in])
+
+    if noise_type_in != noise_type_out:
+        exec('amp_n = ' + noise_type_in.lower() + '_to_' + noise_type_out.lower() + '(f_n, amp_n)')
 
     #add wd_noise if true
     if use_wd_noise:
-        cfd  = os.path.dirname(os.path.abspath(__file__))
-        file_string = cfd + '/noise_curves/' + 'HB_wd_noise' + '.txt'
+        if wd_noise_type_in not in possible_noise_types:
+            raise ValueError('wd_noise_type_in must be either ASD, PSD, or char_strain.')
 
-        asd_wd_data = ascii.read(file_string)
+        if wd_noise[-4:] == '.txt':
+            noise = ascii.read(wd_noise)
+        else:
+            cfd = os.path.dirname(os.path.abspath(__file__))
+            noise = ascii.read(cfd + '/noise_curves/' + wd_noise + '.txt')
 
-        f_n_wd = np.asarray(asd_wd_data['f'])
-        asd_wd = np.asarray(asd_wd_data['ASD'])
+        wd_data = ascii.read(file_string)
 
-        asd = add_wd_noise(f_n, asd, f_n_wd, asd_wd)
+        f_n_wd = np.asarray(wd_data['f'])
+        amp_n_wd = np.asarray(wd_data[wd_noise_type_in])
 
-    #output preferred noise type
-    if noise_type == 'ASD':
-        out_amp = asd
-
-    elif noise_type == 'char_strain':
-        out_amp = np.sqrt(f_n)*asd
-
-    elif noise_type == 'PSD':
-        out_amp = asd**2
-
-    else:
-        raise Exception('Noise type provided is {}. Must be ASD, PSD, or characteristic_strain.'.format(noise_type))
+        if wd_noise_type_in != noise_type_out:
+            exec('amp_n_wd = ' + noise_type_in.lower() + '_to_' + noise_type_out.lower() + '(f_n, amp_n_wd)')
 
 
-    return f_n, out_amp
+        amp_n = combine_with_wd_noise(f_n, amp_n, f_n_wd, amp_n_wd)
+
+    return f_n, amp_n
 
 
-def add_wd_noise(f_n, amp_n, f_n_wd, amp_n_wd):
-    amp_n_wd_interp = interpolate.interp1d(fn_wd, amp_n_wd, bounds_error=False, fill_value=1e-30)
+def combine_with_wd_noise(f_n, amp_n, f_n_wd, amp_n_wd):
+    amp_n_wd_interp = interpolate.interp1d(f_n_wd, amp_n_wd, bounds_error=False, fill_value=1e-30)
     amp_n_wd = amp_n_wd_interp(f_n)
-    amp_n = amp_n*(amp_n >= ampn_wd) + amp_n_wd*(amp_n < amp_n_wd)
+    amp_n = amp_n*(amp_n >= amp_n_wd) + amp_n_wd*(amp_n < amp_n_wd)
     return f_n, amp_n
 
 # TODO add function to show noise curve choices

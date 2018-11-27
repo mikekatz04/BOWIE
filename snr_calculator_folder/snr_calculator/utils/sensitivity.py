@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import interpolate
-from pyphenomd.utils.readnoisecurves import read_noise_curve
+from snr_calculator.utils.readnoisecurves import read_noise_curve, combine_with_wd_noise
 
 class SensitivityContainer:
 
@@ -8,12 +8,14 @@ class SensitivityContainer:
 
         prop_defaults = {
             'sensitivity_curves': ['LPA'],
-            'wd_noise': None,
+            'add_wd_noise': 'Both',
+            'wd_noise': 'HB_wd_noise',
             'phases': 'all',
             # TODO: add 'all' and 'full' capabilities
             'prefactor': 1.0,
             'num_points': 8192,
-            'noise_type': 'char_strain',
+            'noise_type_in': 'ASD',
+            'wd_noise_type_in': 'ASD',
         }
 
         for (prop, default) in prop_defaults.items():
@@ -33,40 +35,50 @@ class SensitivityContainer:
         #    if len(np.shape(self.sensitivity_curves)) == 1:
         #        self.sensitivity_curves = [self.sensitivity_curves]
 
+        if isinstance(self.noise_type_in, list):
+            if len(self.noise_type_in) != len(self.sensitivity_curves):
+                raise ValueError('noise_type_in must have same shape as sensitivity_curves if it is'
+                                 + 'provided as a list.'
+                                 + 'If all curves are of the same type, provide a string.')
+
+        else:
+            assert isinstance(self.noise_type_in, str)
+            self.noise_type_in = [self.noise_type_in for _ in self.sensitivity_curves]
+
         if isinstance(self.phases, str):
             self.phases = [self.phases]
 
         for num, sc in enumerate(self.sensitivity_curves):
             if isinstance(sc, str):
-                f, amp = read_noise_curve(sc, noise_type='char_strain')
+                f, h_n = read_noise_curve(sc, noise_type_in=self.noise_type_in[num],
+                                          noise_type_out='char_strain')
                 key = sc
             elif isinstance(sc, list):
-                f, amp = sc
+                # TODO: add to docs if inputing special noise curve, make sure its char_strain/ use converter provided
+                f, h_n = sc
                 key = str(num)
             else:
                 raise ValueError('Sensitivity curves must either be string'
                                  + 'or list containing f_n and asd_n.')
-            if self.noise_type != 'char_strain':
-                h_n = self.adjust_noise_type(f, amp)
-            else:
-                h_n = amp
 
             noise_lists[key] = [f, h_n]
 
-        if self.wd_noise is not None:
-            if self.wd_noise is True:
-                f_n_wd, h_n_wd = read_noise_curve('HB_wd_noise', noise_type=self.noise_type)
-            elif isinstance(wd_noise, str):
-                f_n_wd, h_n_wd = read_noise_curve(wd_noise, noise_type='char_strain')
-            elif isinstance(wd_noise, list):
-                f_n_wd, amp_n_wd = wd_noise[0], wd_noise[1]
-                if self.wd_noise_type != 'char_strain':
-                    h_n_wd = self.adjust_noise_type(f, amp_n_wd)
+        if self.add_wd_noise.lower() == 'true' or self.add_wd_noise.lower() == 'both' or self.add_wd_noise.lower() == 'yes':
+            if isinstance(self.wd_noise, str):
+                f_n_wd, h_n_wd = read_noise_curve(self.wd_noise, noise_type_in=self.wd_noise_type_in, noise_type_out='char_strain')
+            elif isinstance(self,wd_noise, list):
+                f_n_wd, h_n_wd = self.wd_noise
 
-            for sc in noise_lists:
+            trans_dict = {}
+            for sc in noise_lists.keys():
                 f_n, h_n = noise_lists[sc]
-                f_n, h_n = add_wd_noise(f_n, h_n, f_n_wd, h_n_wd)
-                noise_lists[sc] = [f_n, asd_n]
+                if self.add_wd_noise.lower() == 'both':
+                    trans_dict[sc] = [f_n, h_n]
+
+                f_n, h_n = combine_with_wd_noise(f_n, h_n, f_n_wd, h_n_wd)
+                trans_dict[sc + '_wd'] = [f_n, h_n]
+
+            noise_lists = trans_dict
 
         for sc in noise_lists:
             f_n, h_n = noise_lists[sc]

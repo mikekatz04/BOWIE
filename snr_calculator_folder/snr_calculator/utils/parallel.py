@@ -20,8 +20,6 @@ class ParallelContainer:
     def _prep_parallel(self, length, binary_args, sensitivity_args, verbose):
         if self.num_processors == -1:
             self.num_processors = mp.cpu_count()
-        else:
-            self.num_processors = num_processors
 
         split_val = int(np.ceil(length/self.num_splits))
         split_inds = [self.num_splits*i for i in np.arange(1, split_val)]
