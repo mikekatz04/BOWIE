@@ -1,5 +1,5 @@
-/* 
-  This code was constructed by Michael Katz using LALSimIMRPhenomD.c, LALSimIMRPhenomD.h, LALSimIMRPhenomD_internals.c, and LALSimIMRPhenomD_internals.h from LALsuite as templates. Here, only the amplitude is implemented so far. The phase may be added in the future. The top part of the code (break will be made clear below) was originally authored by Michael Puerrer, Sebastian Khan, Frank Ohme, Ofek Birnholtz, Lionel London. Below is their license for the redistribution of the LAL codes mentioned above. This code was strategically copied to remove any dependencies on other LAL programs. Below the break, the code was authored by Michael Katz, using the original LAL codes as a guide. PhenomD can be found in Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253). 
+/*
+  This code was constructed by Michael Katz using LALSimIMRPhenomD.c, LALSimIMRPhenomD.h, LALSimIMRPhenomD_internals.c, and LALSimIMRPhenomD_internals.h from LALsuite as templates. Here, only the amplitude is implemented so far. The phase may be added in the future. The top part of the code (break will be made clear below) was originally authored by Michael Puerrer, Sebastian Khan, Frank Ohme, Ofek Birnholtz, Lionel London. Below is their license for the redistribution of the LAL codes mentioned above. This code was strategically copied to remove any dependencies on other LAL programs. Below the break, the code was authored by Michael Katz, using the original LAL codes as a guide. PhenomD can be found in Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253).
 
   This was used in "Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253), as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE).
 */
@@ -23,9 +23,9 @@
  *  MA  02111-1307  USA
  */
 
-/* 
-  Michael Katz affirms the shame redistributive license under the GNU General Public License. It is recommended to use the original LAL documentation and source code rather than this copy. Any questions regarding this code specifically, email Michael Katz at mikekatz04@gmail.com 
- */ 
+/*
+  Michael Katz affirms the shame redistributive license under the GNU General Public License. It is recommended to use the original LAL documentation and source code rather than this copy. Any questions regarding this code specifically, email Michael Katz at mikekatz04@gmail.com
+ */
 
 
 #include <stdlib.h>
@@ -635,12 +635,12 @@ static IMRPhenomDAmplitudeCoefficients* ComputeIMRPhenomDAmplitudeCoefficients(d
 
   p->fmaxCalc = fmaxCalc(p);
 
-  
+
   p->rho1 = rho1_fun(eta, p->chi);
   p->rho2 = rho2_fun(eta, p->chi);
   p->rho3 = rho3_fun(eta, p->chi);
 
-  //In LAL, the delta's are computed here. 
+  //In LAL, the delta's are computed here.
   return p;
 }
 
@@ -665,7 +665,7 @@ static AmpInsPrefactors * init_amp_ins_prefactors(IMRPhenomDAmplitudeCoefficient
   double eta3 = eta*eta2;
 
 
-  
+
   double Pi2 = pow(Pi, 2);
   double Seta = sqrt(1.0 - 4.0*eta);
 
@@ -710,7 +710,7 @@ static double Amp0_from_dist_mass (double M, double distance){
 
 /**
 
-THE BREAK FROM LAL OCCURS HERE. The rest is authored by Michael Katz with the LAL source codes as guides. 
+THE BREAK FROM LAL OCCURS HERE. The rest is authored by Michael Katz with the LAL source codes as guides.
 
 **/
 
@@ -743,7 +743,7 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
   double f, f_min_log10, f_max_log10, df, AmpPreFac, Amp0_dist_mass, PhenomD_amplitude;
   double M, M_redshifted, M_redshifted_time;
   double MF_ISCO = 1.0/(pow(6.0, 3.0/2.0)*Pi);
-  
+
   int i,j;
   double f_max;
   double f_min=1e-4;
@@ -797,7 +797,7 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
     } else {
       f_max = f_CUT;
     }
-  
+
     // initialize all the PhenomD amplitude coefficients
     IMRPhenomDAmplitudeCoefficients *p = ComputeIMRPhenomDAmplitudeCoefficients(eta, chi1_in, chi2_in, finspin, acc_fring, iFring, acc_fdamp, iFdamp);
 
@@ -819,13 +819,19 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
    // The frequencies are log-spaced
    f_min_log10 = log10(f_min);
    f_max_log10 = log10(f_max);
-   df = (f_max_log10-f_min_log10)/(num_points-1);  
+   df = (f_max_log10-f_min_log10)/(num_points-1);
 
   for(i=0; i<num_points; i+=1){
 
+     if (df < 0.0){
+         freqs[j*num_points+i] = 1.0e-30;
+         amplitude[j*num_points+i] = 1.0e-60;
+         continue;
+     }
+
     //find next frequency
      f = pow(10.0, f_min_log10 + (i*df));
-     
+
     //numerical prefactor for amplitude at this frequency
      AmpPreFac = Amp0_dist_mass*prefactors->amp0 / pow(f, 7.0/6.0);
 
@@ -839,20 +845,20 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
      }
 
       /*
-      THIS RETURNS THE CHARACTERISTIC AMPLITUDE. 
+      THIS RETURNS THE CHARACTERISTIC AMPLITUDE.
       NEEDS TO BE CHANGED WHEN PHASE IS INCLUDED DUE TO IMAGINARY TERMS.
      */
 
       freqs[j*num_points+i] = f/M_redshifted_time;
 
       amplitude[j*num_points+i] = 2.0*PhenomD_amplitude*freqs[j*num_points+i];
-  
+
   }
 
   //Add merger and peak frequency to know where joining points are.
   fmrg[j] = MF_ISCO/M_redshifted_time;
   fpeak[j] = p->fmaxCalc/M_redshifted_time;
-} 
+}
 
   //free spline memory
   gsl_spline_free(iFring);
@@ -912,7 +918,7 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
       snr_mrg_trans += trap_val;
      }
    }
-   
+
    //add snrs to arrays of return snrs
    snr_all[i] = sqrt(snr_all_trans);
    snr_ins[i] = sqrt(snr_ins_trans);
@@ -923,12 +929,3 @@ int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, dou
 
   return 0;
 }
-
-
-
-
-
-
-
-
-
