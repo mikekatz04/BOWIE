@@ -2,7 +2,7 @@
 BOWIE: Binary Observability With Illustrative Exploration
 #########################################################
 
-.. image:: ../logo/Bowie_logo.png
+.. image:: logo/Bowie_logo.png
    :width: 300px
    :height: 300px
    :scale: 50 %
