@@ -3,9 +3,9 @@ BOWIE: Binary Observability With Illustrative Exploration
 #########################################################
 
 .. image:: logo/Bowie_logo.png
-   :width: 100px
-   :height: 100px
-   :scale: 50 %
+   :width: 300px
+   :height: 300px
+   :scale: 20 %
    :alt: alternate text
    :align: center
 
