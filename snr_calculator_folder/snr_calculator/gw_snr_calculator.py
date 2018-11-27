@@ -21,11 +21,11 @@ from astropy.io import ascii
 import os
 
 
-from pyphenomd.utils.readnoisecurves import read_noise_curve
-from pyphenomd.utils.pyphenomd import PhenomDWaveforms
-from pyphenomd.utils.csnr import csnr
-from pyphenomd.utils.sensitivity import SensitivityContainer
-from pyphenomd.utils.parallel import ParallelContainer
+from snr_calculator.utils.readnoisecurves import read_noise_curve
+from snr_calculator.utils.pyphenomd import PhenomDWaveforms
+from snr_calculator.utils.csnr import csnr
+from snr_calculator.utils.sensitivity import SensitivityContainer
+from snr_calculator.utils.parallel import ParallelContainer
 
 
 class SNR(SensitivityContainer, ParallelContainer):
@@ -104,6 +104,7 @@ def parallel_snr_func(num, m1, m2, z_or_dist, st, et, chi1, chi2, dist_type,
         hn_vals = noise_interpolants[key](wave.freqs)
         snr_out = csnr(wave.freqs, wave.hc, hn_vals,
                                   wave.fmrg, wave.fpeak, prefactor=prefactor)
+
         if len(phases) == 1:
             out_vals[key + '_' + phases[0]] = snr_out[phases[0]]
         else:
@@ -111,7 +112,7 @@ def parallel_snr_func(num, m1, m2, z_or_dist, st, et, chi1, chi2, dist_type,
                 out_vals[key + '_' + phase] = snr_out[phase]
     if verbose > 0 and (num+1) % verbose == 0:
         print('Process ', num, 'is finished.')
-
+    
     return out_vals
 
 
