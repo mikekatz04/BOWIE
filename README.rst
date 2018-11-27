@@ -4,7 +4,7 @@ BOWIE: Binary Observability With Illustrative Exploration
 
 .. raw:: html
 
-    <img src="logo/Bowie_logo.png/" height="20px">
+    <img src="logo/Bowie_logo.png/" height="20px" align="center">
 
 .. image:: logo/Bowie_logo.png
    :width: 300px
