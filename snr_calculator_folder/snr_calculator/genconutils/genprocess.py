@@ -94,7 +94,8 @@ class GenProcess:
         self.input_dict['m2'] = (self.input_dict['total_mass']
                                  * self.input_dict['mass_ratio'] /
                                  (1. + self.input_dict['mass_ratio']))
-        self.input_dict['prefacor'] = self.gid['prefactor']
+
+        self.input_dict['prefactor'] = self.gid['prefactor']
         return
 
     def run_snr(self):

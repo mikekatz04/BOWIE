@@ -112,7 +112,7 @@ def parallel_snr_func(num, m1, m2, z_or_dist, st, et, chi1, chi2, dist_type,
                 out_vals[key + '_' + phase] = snr_out[phase]
     if verbose > 0 and (num+1) % verbose == 0:
         print('Process ', num, 'is finished.')
-    
+
     return out_vals
 
 

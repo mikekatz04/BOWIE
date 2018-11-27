@@ -46,19 +46,7 @@ class Generate:
     The GenerateContainer class is contained in the generate_info attribute
     in the MainContainer class.
 
-    Args:
-        fixed_par_limit (int, optional): Maximum number of fixed parameters allowed.
-            Default is 5. This should not be changed unless code is changed.
-
-    Attributes:
-        fixed_par_limit (int): Maximum number of fixed parameters allowed.
-        par_num (int): Current value of fixed parameter being added.
-
     """
-    def __init__(self, fixed_par_limit=5):
-        self.fixed_par_limit = fixed_par_limit
-        self.par_num = 0
-
     def _set_grid_info(self, which, low, high, num, scale, name, unit):
         """Set the grid values for x or y.
 
@@ -89,7 +77,7 @@ class Generate:
         setattr(self.generate_info, which + 'scale', scale)
         return
 
-    def set_y_for_grid(self, y_low, y_high, num_y, yscale, yval_name, yval_unit):
+    def set_y_grid_info(self, y_low, y_high, num_y, yscale, yval_name, yval_unit):
         """Set the grid values for y.
 
         Create information for the grid of y values.
@@ -107,7 +95,7 @@ class Generate:
         self._set_grid_info('y', y_low, y_high, num_y, yscale, yval_name, yval_unit)
         return
 
-    def set_x_for_grid(self, x_low, x_high, num_x, xscale, xval_name, xval_unit):
+    def set_x_grid_info(self, x_low, x_high, num_x, xscale, xval_name, xval_unit):
         """Set the grid values for x.
 
         Create information for the grid of x values.
@@ -125,7 +113,7 @@ class Generate:
         self._set_grid_info('x', x_low, x_high, num_x, xscale, xval_name, xval_unit)
         return
 
-    def add_fixed_parameter(self, val, name, unit):
+    def add_fixed_parameter(self, par_num, val, name, unit):
         """Add the fixed parameters for SNR calculation.
 
         The fixed parameters represent those that a fixed for the entire 2D grid.
@@ -140,13 +128,10 @@ class Generate:
                 for options for the units.
 
         """
-        self.par_num += 1
-        par_num = str(self.par_num)
+        par_num = str(par_num)
         setattr(self.generate_info, 'fixed_parameter_' + par_num, val)
         setattr(self.generate_info, 'par_' + par_num + '_name', name)
         setattr(self.generate_info, 'par_' + par_num + '_unit', unit)
-
-        print(par_num, 'of', self.fixed_par_limit, 'is set to', val, 'for', name)
         return
 
     def set_num_waveform_points(self, num_wave_points):
@@ -424,7 +409,7 @@ class General:
         self.general.signal_type = sig_type
         return
 
-    def set_generation_type(self, num_processors=-1, num_splits=1000):
+    def set_generation_type(self, num_processors=-1, num_splits=1000, verbose=-1):
         """Change generation type.
 
         Choose weather to generate the data in parallel or on a single processor.
@@ -440,6 +425,7 @@ class General:
         """
         self.general.num_processors = num_processors
         self.general.num_splits = num_splits
+        self.general.verbose = verbose
         return
 
     def set_wd_noise(self, wd_noise):

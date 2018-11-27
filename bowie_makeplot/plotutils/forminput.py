@@ -1157,10 +1157,10 @@ class MainContainer(General):
     # TODO: make default on sharing to False?
 
     Args:
-        nrows, ncols (int): Number of rows/columns of plots present in the figure.
+        nrows/ncols (int): Number of rows/columns of plots present in the figure.
             This is passed into the general dictionary. These determine the number of
             plots to create.
-        sharex, sharey (bool, optional): Applies sharex, sharey as used in ``plt.subplots()``.
+        sharex/sharey (bool, optional): Applies sharex, sharey as used in ``plt.subplots()``.
             See https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots.html
             Default is True.
         print_input (bool, optional): If True, print the dictionary created by MainContainer

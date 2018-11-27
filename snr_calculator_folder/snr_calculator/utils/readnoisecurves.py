@@ -76,7 +76,7 @@ def read_noise_curve(noise_curve, noise_type_in='ASD', noise_type_out='ASD',
     amp_n = np.asarray(noise[noise_type_in])
 
     if noise_type_in != noise_type_out:
-        exec('amp_n = ' + noise_type_in.lower() + '_to_' + noise_type_out.lower() + '(f_n, amp_n)')
+        amp_n = globals()[noise_type_in.lower() + '_to_' + noise_type_out.lower()](f_n, amp_n)
 
     #add wd_noise if true
     if use_wd_noise:
