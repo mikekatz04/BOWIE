@@ -4,14 +4,8 @@ BOWIE: Binary Observability With Illustrative Exploration
 
 .. raw:: html
 
-    <p style="text-align:center;"><img src="logo/Bowie_logo.png" alt="Logo"></p>
+    <img src="logo/Bowie_logo.png" height="300px" width="300px">
 
-.. image:: logo/Bowie_logo.png
-   :width: 300px
-   :height: 300px
-   :scale: 5 %
-   :alt: alternate text
-   :align: center
 
 BOWIE is a tool designed for graphical analysis of binary signals from gravitational waves. It takes gridded data sets and produces different types of plots in customized arrangements for detailed analysis of gravitational wave sensitivity curves and/or binary signals. The paper detailing this tool and examples of its usage can be found at `arXiv:1807.02511`_ (Evaluating Black Hole Detectability with LISA). There are three main portions of the code: a gridded data generator (``bowie_gencondata.generate_contour_data.py``), a plotting tool (``bowie_makeplot.make_plot.py``), and waveform generator for general use (``pyphenomd.pyphenomd.py``). The waveform generator creates PhenomD waveforms for binary black hole inspiral, merger, and ringdown. PhenomD is from Husa et al 2016 (`arXiv:1508.07250`_) and Khan et al 2016 (`arXiv:1508.07253`_). Gridded data sets are created using the PhenomD generator for signal-to-noise (SNR) analysis. Using the gridded data sets, customized configurations of plots are created with the plotting package.
 
