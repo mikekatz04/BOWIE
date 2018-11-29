@@ -37,6 +37,8 @@ Software installation/usage only requires a few specific libraries in python. If
 
 In order to properly create waveforms with ctypes, you will need complex, gsl, and math c libraries. For installing gsl, refer to https://www.gnu.org/software/gsl/ or install it through anaconda.
 
+``gwsnrcalc`` is also required. This will install automatically with pip install or setup.py.
+
 
 Installation
 =============

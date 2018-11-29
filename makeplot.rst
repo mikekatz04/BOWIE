@@ -1,5 +1,5 @@
-bowie_makeplot package
-======================
+bowie_makeplot package documentation:
+=====================================
 
 make_plot module
 ----------------

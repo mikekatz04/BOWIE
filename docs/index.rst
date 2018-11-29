@@ -24,14 +24,12 @@ Welcome to bowie's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 5
    :caption: Contents:
 
-   readme_link.rst
+   makeplot_link.rst
 
    snrcalc_link.rst
-
-   makeplot.rst
 
 Indices and tables
 ==================
