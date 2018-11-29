@@ -1,12 +1,29 @@
+"""
+Author: Michael Katz
+This was used in "Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253),
+as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE).
+
+This code is licensed with the GNU public license.
+
+This python code impliments a fast SNR calculator for binary black hole waveforms in c. It wraps the
+accompanying c code, `phenomd/phenomd.c`, with ``ctypes``.
+`phenomd/phenomd.c` is mostly from LALsuite. See `phenomd/phenomd.c` for specifics.
+
+Please cite all of the arXiv papers above if you use this code in a publication.
+
+"""
+
 import numpy as np
 import ctypes
 import os
+
+# TODO: Update SNR calculators
 
 
 def csnr(freqs, hc, hn, fmrg, fpeak, prefactor=1.0):
     """Calculate the SNR of a frequency domain waveform.
 
-    SNRCalculation is a class that takes waveforms (frequencies and hcs)
+    SNRCalculation is a function that takes waveforms (frequencies and hcs)
     and a noise curve, and returns SNRs for all binary phases and the whole waveform.
 
     Arguments:
@@ -28,31 +45,10 @@ def csnr(freqs, hc, hn, fmrg, fpeak, prefactor=1.0):
         prefactor (float, optional): Factor to multiply snr (not snr^2) integral values by.
             Default is 1.0.
 
-    Attributes:
+    Returns:
+        (dict): Dictionary with SNRs from each phase.
 
-        snr_all (scalar float or 1D array): SNR from full waveform.
-        snr_ins (scalar float or 1D array): SNR from inspiral portion of waveform.
-        snr_mrg (scalar float or 1D array): SNR from merger portion of waveform.
-        snr_rd (scalar float or 1D array): SNR from ringdown portion of waveform.
-        freqs (1D or 2D array of floats): Frequencies corresponding to the waveforms.
-            Shape is (num binaries, num_points) if 2D.
-            Shape is (num_points,) if 1D for one binary.
-        hc (1D or 2D array of floats): Characteristic strain of the waveforms.
-            Shape is (num binaries, num_points) if 2D.
-            Shape is (num_points,) if 1D for one binary.
-        fmrg: (scalar float or 1D array of floats): Merger frequency of each binary separating
-            inspiral from merger phase. (0.014/M) Shape is (num binaries,)
-            if more than one binary.
-        fpeak: (scalar float or 1D array of floats): Peak frequency of each binary separating
-            merger from ringdown phase. (0.014/M) Shape is (num binaries,)
-            if more than one binary.
-        hn: (1D or 2D array of floats): Characteristic strain of the noise.
-            Shape is (num binaries, num_points) if 2D.
-            Shape is (num_points,) if 1D for one binary.
-        prefactor (float): Factor to multiply snr (not snr^2) integral values by.
-            Default is 1.0.
     """
-
     cfd = os.path.dirname(os.path.abspath(__file__))
     if 'phenomd.cpython-35m-darwin.so' in os.listdir(cfd):
         exec_call = cfd + '/phenomd.cpython-35m-darwin.so'

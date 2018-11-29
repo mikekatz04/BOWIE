@@ -1,32 +1,33 @@
 """
-Author: Michael Katz guided by lal implimentation of PhenomD. This was used in
-"Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253), as a part of the BOWIE package
-(https://github.com/mikekatz04/BOWIE).
+Author: Michael Katz guided by lal implimentation of PhenomD.
+This was used in "Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253),
+as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE).
 
-    This code is licensed with the GNU public license.
+This code is licensed with the GNU public license.
 
-    This python code impliments PhenomD waveforms from Husa et al 2016 (arXiv:1508.07250)
-    and Khan et al 2016 (arXiv:1508.07253). It wraps the accompanying c code, ``phenomd.c``,
-    with ``ctypes``. ``phenomd.c`` is mostly from LALsuite. See ``phenomd.c`` for specifics.
+This python code impliments PhenomD waveforms from Husa et al 2016 (arXiv:1508.07250)
+and Khan et al 2016 (arXiv:1508.07253). It wraps the accompanying c code, `phenomd/phenomd.c`,
+with ``ctypes``. `phenomd/phenomd.c` is mostly from LALsuite. See `phenomd/phenomd.c` for specifics.
 
-    Please cite all of the arXiv papers above if you use this code in a publication.
+Please cite all of the arXiv papers above if you use this code in a publication.
 
 """
 
 import ctypes
 from astropy.cosmology import Planck15 as cosmo
 import numpy as np
-from scipy import interpolate
-from astropy.io import ascii
 import os
 
-class PhenomDWaveforms:
-    """PhenomDWaveforms is a class that takes binary parameters as inputs, and returns
-    characteristic strain waveforms.
 
-    ** Warning **: All binary parameters need to have the same shape, either scalar or 1D array.
-    Start time (st) and end time (et) can be scalars while the rest of the binary parameters
-    are arrays.
+class PhenomDWaveforms:
+    """Generate phenomd waveforms
+
+    PhenomDWaveforms is a class that takes binary parameters as inputs, and adds
+    characteristic strain waveforms as attributes to self.
+
+    **Warning**: All binary parameters need to have the same shape, either scalar or 1D array.
+    Start time (st), end time (et), and/or chi values can be scalars while the rest of
+    the binary parameters are arrays.
 
     Arguments:
         m1 (float or 1D array of floats): Mass 1 in Solar Masses. (>0.0)
@@ -103,7 +104,35 @@ class PhenomDWaveforms:
             chi1, chi2 = np.array([chi1]), np.array([chi2])
             z_or_dist, st, et = np.array([z_or_dist]), np.array([st]), np.array([et])
 
-        # TODO: adjust phenomd with scalar chi values
+        if ((chi_1 is None) & (chi_2 is not None)) or ((chi_1 is not None) & (chi_2 is None)):
+            raise UserError("Either supply `chi`, or supply both `chi_1` and `chi_2`."
+                            + "You supplied only `chi_1` or `chi_2`.")
+
+        if chi_1 is None:
+            if type(chi) == float:
+                try:
+                    chi = np.full((len(m1),), chi)
+                except TypeError:
+                    pass
+
+            chi_1 = chi
+            chi_2 = chi
+        else:
+            if type(chi_1) == float:
+                try:
+                    chi_1 = np.full((len(m1),), chi_1)
+                except TypeError:
+                    pass
+
+            if type(chi_2) == float:
+                try:
+                    chi_2 = np.full((len(m1),), chi_2)
+                except TypeError:
+                    pass
+
+            chi_1 = chi_1
+            chi_2 = chi_2
+
         # based on distance inputs, need to find redshift and luminosity distance.
         if dist_type == 'redshift':
             z = z_or_dist
@@ -139,6 +168,7 @@ class PhenomDWaveforms:
 
         self.num_points = num_points
 
+        # get path to c code
         cfd = os.path.dirname(os.path.abspath(__file__))
         if 'phenomd.cpython-35m-darwin.so' in os.listdir(cfd):
             self.exec_call = cfd + '/phenomd.cpython-35m-darwin.so'
@@ -146,6 +176,7 @@ class PhenomDWaveforms:
         else:
             self.exec_call = cfd + '/phenomd/phenomd.so'
 
+        # create waveforms
         self.create_waveforms()
 
     def sanity_check(self):
@@ -195,8 +226,6 @@ class PhenomDWaveforms:
         It adds waveform information in the form of attributes.
 
         """
-
-
 
         c_obj = ctypes.CDLL(self.exec_call)
 
