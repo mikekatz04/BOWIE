@@ -156,5 +156,4 @@ class ReadInData:
             self.xvals = np.reshape(data[self.x_col_name][:], (num_y_pts, num_x_pts))
             self.yvals = np.reshape(data[self.y_col_name][:], (num_y_pts, num_x_pts))
             self.zvals = np.reshape(data[self.z_col_name][:], (num_y_pts, num_x_pts))
-
         return

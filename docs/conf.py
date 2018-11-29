@@ -16,6 +16,8 @@ import os
 import sys
 #os.path.abspath('./bowie_makeplot/plotutils/form_input_dict.py')
 sys.path.insert(0, os.path.abspath('/Users/michaelkatz/Documents/Research/PythonCodes/bowie_analysis/'))
+sys.path.insert(1, os.path.abspath('/Users/michaelkatz/Documents/Research/PythonCodes/bowie_analysis/snr_calculator_folder/'))
+
 
 
 # -- Project information -----------------------------------------------------

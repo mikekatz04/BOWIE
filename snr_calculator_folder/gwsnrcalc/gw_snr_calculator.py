@@ -90,7 +90,21 @@ class SNR(SensitivityContainer, ParallelContainer):
             chi_1 = chi_1
             chi_2 = chi_2
 
-        return self.run(len(m1), m1, m2, z_or_dist, st, et, chi_1, chi_2, dist_type)
+        try:
+            len(m1)
+            return self.run(len(m1), m1, m2, z_or_dist, st, et, chi_1, chi_2, dist_type)
+        except TypeError:
+            m1 = np.array([m1])
+            m2 = np.array([m2])
+            z_or_dist = np.array([z_or_dist])
+            st = np.array([st])
+            et = np.array([et])
+            chi_1 = np.array([chi_1])
+            chi_2 = np.array([chi_2])
+
+            snr_out = self.run(len(m1), m1, m2, z_or_dist, st, et, chi_1, chi_2, dist_type)
+            snr_out = {key: float(np.squeeze(snr_out[key])) for key in snr_out}
+            return snr_out
 
 
 def parallel_snr_func(num, m1, m2, z_or_dist, st, et, chi1, chi2, dist_type,
@@ -111,7 +125,7 @@ def parallel_snr_func(num, m1, m2, z_or_dist, st, et, chi1, chi2, dist_type,
             for phase in phases:
                 out_vals[key + '_' + phase] = snr_out[phase]
     if verbose > 0 and (num+1) % verbose == 0:
-        print('Process ', num, 'is finished.')
+        print('Process ', (num+1), 'is finished.')
 
     return out_vals
 

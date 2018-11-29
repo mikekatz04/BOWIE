@@ -68,7 +68,7 @@ def generate_contour_data(pid):
     #adding extras to output info
     file_out.prep_output()
 
-    print('outputing file')
+    print('outputing file:', WORKING_DIRECTORY + '/' + pid['output_info']['output_file_name'])
     getattr(file_out, pid['output_info']['output_file_type'] + '_read_out')()
 
     print(time.time()-begin_time)

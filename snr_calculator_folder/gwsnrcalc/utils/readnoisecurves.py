@@ -57,7 +57,6 @@ def read_noise_curve(noise_curve, noise_type_in='ASD', noise_type_out='ASD',
 
                 amplitude: (float) - 1D array - amplitude spectral density of the noise.
         """
-
     possible_noise_types = ['ASD', 'PSD', 'char_strain']
     if noise_type_in not in possible_noise_types:
         raise ValueError('noise_type_in must be either ASD, PSD, or char_strain.')

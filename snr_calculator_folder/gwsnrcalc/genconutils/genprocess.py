@@ -28,6 +28,7 @@ from snr_calculator.gw_snr_calculator import snr
 
 from snr_calculator.genconutils.readout import FileReadOut
 
+
 class GenProcess:
     def __init__(self, pid):
         """
@@ -39,19 +40,18 @@ class GenProcess:
 
         self.pid = pid
 
-        #separate 'generate_info' for ease in code
+        # separate 'generate_info' for ease in code
         self.gid = pid['generate_info']
-
 
     def set_parameters(self):
         """
         Setup all the parameters for the binaries to be evaluated.
         """
-        #dimensions of generation
+        # dimensions of generation
         self.num_x = int(self.gid['num_x'])
         self.num_y = int(self.gid['num_y'])
 
-        #declare 1D arrays of both paramters
+        # declare 1D arrays of both paramters
         if self.gid['xscale'] != 'lin':
             self.xvals = np.logspace(np.log10(float(self.gid['x_low'])),np.log10(float(self.gid['x_high'])), self.num_x)
 
@@ -64,15 +64,35 @@ class GenProcess:
         else:
             self.yvals = np.linspace(float(self.gid['y_low']),float(self.gid['y_high']), self.num_y)
 
+        if 'spin' in [self.gid['xval_name'], self.gid['yval_name']]:
+            sub_par_5 = True
+        else:
+            sub_par_5 = False
+
         #other parameters
         par_1 = float(self.gid['fixed_parameter_1'])
         par_2 = float(self.gid['fixed_parameter_2'])
         par_3 = float(self.gid['fixed_parameter_3'])
         par_4 = float(self.gid['fixed_parameter_4'])
-        par_5 = float(self.gid['fixed_parameter_5'])
 
-        self.xvals, self.yvals, par_1, par_2, par_3, par_4, par_5 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]), np.array([par_3]), np.array([par_4]), np.array([par_5]))
-        self.xvals, self.yvals, par_1, par_2, par_3, par_4, par_5 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel(), par_3.ravel(), par_4.ravel(), par_5.ravel()
+        if sub_par_5 is False:
+            par_5 = float(self.gid['fixed_parameter_5'])
+            self.xvals, self.yvals, par_1, par_2, par_3, par_4, par_5 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]), np.array([par_3]), np.array([par_4]), np.array([par_5]))
+            self.xvals, self.yvals, par_1, par_2, par_3, par_4, par_5 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel(), par_3.ravel(), par_4.ravel(), par_5.ravel()
+
+        else:
+            self.xvals, self.yvals, par_1, par_2, par_3, par_4 = np.meshgrid(self.xvals, self.yvals, np.array([par_1]), np.array([par_2]), np.array([par_3]), np.array([par_4]))
+            self.xvals, self.yvals, par_1, par_2, par_3, par_4 = self.xvals.ravel(),self.yvals.ravel(), par_1.ravel(), par_2.ravel(), par_3.ravel(), par_4.ravel()
+
+            self.gid['par_5_name'] = 'spin_2'
+            self.gid['par_5_unit'] = 'None'
+            if self.gid['xval_name'] == 'spin':
+                self.gid['xval_name'] = 'spin_1'
+                par_5 = self.xvals
+            if self.gid['yval_name'] == 'spin':
+                self.gid['yval_name'] = 'spin_1'
+                par_5 = self.yvals
+
 
         #add parameters to input dict. Names must be 'total_mass', 'mass_ratio', 'redshift' or 'luminosity_distance' or 'comoving distance', 'spin_1', 'spin_2'
 

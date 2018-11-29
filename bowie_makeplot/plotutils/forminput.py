@@ -48,7 +48,7 @@ class Label:
 
     """
 
-    def _set_labels(self, which, label, fontsize=None):
+    def _set_label(self, which, label, fontsize=None):
         """Private method for setting labels.
 
         Args:
@@ -91,7 +91,7 @@ class Label:
                 is None.
 
         """
-        self._set_labels('ylabel', label, fontsize)
+        self._set_label('ylabel', label, fontsize)
         return
 
     def set_title(self, title, fontsize=None):
@@ -298,7 +298,7 @@ class Legend:
     in the SinglePlot class.
 
     """
-    def legend(self, labels, loc=None, bbox_to_anchor=None, size=None):
+    def add_legend(self, labels, loc=None, bbox_to_anchor=None, size=None, ncol=None):
         """Specify legend for a plot.
 
         Adds labels and basic legend specifications for specific plot.
@@ -329,6 +329,7 @@ class Legend:
             size (float, optional): Set size of legend using call to `prop`
                 dict in legend call. See matplotlib documentaiton for more
                 detail. Default is None.
+            ncol (int, optional): Number of columns in the legend.
 
         """
         self.legend.labels = labels
@@ -340,7 +341,12 @@ class Legend:
 
         if size is not None:
             self.legend.size = size
+
+        if ncol is not None:
+            self.legend.ncol = ncol
         return
+
+# TODO: make sure set is in front of all general stuff
 
 
 class LegendContainer:
@@ -614,6 +620,8 @@ class SinglePlot(Label, Limits, Legend, Extra, DataImport):
     Attributes:
         type (str): Which type of plot. Currently supporting `Ratio`, `Watefall`,
             `Horizon`, `Codetection1`, `Codetection2`, `Codetection3`.
+        file (list of obj): List of DataImportContainer objects with information on which
+            dataset to use.
         label (obj): LabelContainer holding informaiton pertaining to labels of the plot.
             Default is empty container or ``{}``.
         limits (obj): LimitsContainer holding information pertaining to limits of the plot.

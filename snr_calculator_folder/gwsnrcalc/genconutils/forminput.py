@@ -337,7 +337,7 @@ class Output:
         self._set_column_name('x', x_col_name)
         return
 
-    def added_note(self, note):
+    def add_note(self, note):
         """Add a note to output file.
 
         This will add a note of user input to the output file.
@@ -380,7 +380,7 @@ class General:
     can be overriden with methods in SinglePlot.
 
     """
-    def working_directory(self, wd):
+    def set_working_directory(self, wd):
         """Set the WORKING_DIRECTORY variable.
 
         Sets the WORKING_DIRECTORY. The code will then use all paths as relative paths
@@ -445,11 +445,11 @@ class General:
 
         """
         if isinstance(wd_noise, bool):
-            wd_noise = str(bool)
+            wd_noise = str(wd_noise)
 
-        elif wd_noise.lower() == 'yes' or wd_noise == 'True':
+        if wd_noise.lower() == 'yes' or wd_noise.lower() == 'true':
             wd_noise = 'True'
-        elif wd_noise.lower() == 'no' or wd_noise == 'True':
+        elif wd_noise.lower() == 'no' or wd_noise.lower() == 'false':
             wd_noise = 'False'
         elif wd_noise.lower() == 'both':
             wd_noise = 'Both'
@@ -482,32 +482,6 @@ class GeneralContainer:
         num_splits (int, optional): Number of binaries to run during each process.
             Default is 1000.
         wd (str): Absolute or relative path to working directory.
-
-    """
-    def __init__(self):
-        pass
-
-
-class ColorbarContainer:
-    """Holds all of the attributes related to the colorbar dictionary.
-
-    This class is used to store the information when ``set_colorbar`` is called
-    by the MainContainer class.
-
-    Attributes:
-        label (str, optional): Label for the colorbar. Default for Waterfall is `rho_i`.
-            Default for Ratio: `rho_i/rho_0`.
-        ticks_fontsize (float, optional): Fontsize for tick marks on colorbar.
-            The ticks are set based on the plot type. Default is 17.
-        label_fontsize (float, optional): Colorbar label fontsize. Default is 20.
-        pos (int, optional): Preset positions for the colorbars. 1 - top right, 2 - lower right,
-            3 - top left (horizontal), 4 - top right (horizontal),
-            5 - stretched to fill right side (effectively 1 & 2 combined).
-            Defaults are Waterfall-1, Ratio -2. If plot is alone on figure, default is 5.
-        colorbar_axes (len-4 list of floats, optional): List for custom axes placement
-            of the colorbar. See ``fig.add_axes`` from matplotlib.
-            url: https://matplotlib.org/2.0.0/api/figure_api.html
-            Default is placement based on `pos` attribute.
 
     """
     def __init__(self):

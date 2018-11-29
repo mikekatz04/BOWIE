@@ -48,7 +48,6 @@ class ParallelContainer:
         # import pdb
         # pdb.set_trace()
 
-        print('numprocs', self.num_processors)
         with mp.Pool(self.num_processors) as pool:
             print('start pool with {} processors: {} total processes.\n'.format(
                     self.num_processors, len(self.args)))

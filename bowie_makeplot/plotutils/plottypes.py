@@ -427,7 +427,6 @@ class Ratio(CreateSinglePlot):
         """
         This methd creates the ratio plot.
         """
-
         # check to make sure ratio plot has 2 arrays to compare.
         if len(self.zvals) != 2:
             raise Exception("Length of vals not equal to 2. Ratio plots must have 2 inputs.")
@@ -470,7 +469,7 @@ class Ratio(CreateSinglePlot):
             # if there is no loss/gain contours, this will produce an error, so we catch the exception.
             try:
                 cs = self.axis.contourf(self.xvals[0], self.yvals[0],
-                                  loss_gain_contour, levels=[-2, -0.5, 0.5, 2], colors='none',hatches=['x',None, '.'])
+                                  loss_gain_contour, levels=[-2, -0.5, 0.5, 2], colors='none',hatches=['x',None, '+'])
                 self.axis.contour(self.xvals[0], self.yvals[0],
                                   loss_gain_contour, 3, colors='black', linewidths=2)
 

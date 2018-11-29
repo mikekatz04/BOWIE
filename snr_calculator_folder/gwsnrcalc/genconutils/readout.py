@@ -82,9 +82,12 @@ class FileReadOut:
                 header.attrs[which + 'val_unit'] = self.units_dict[which + 'val_unit']
 
             for which in np.arange(1,6).astype(str):
-                header.attrs['par_' + which + '_name'] = self.pid['generate_info']['par_' + which + '_name']
-                header.attrs['par_' + which + '_unit'] = self.units_dict['par_' + which + '_unit']
-                header.attrs['par_' + which + '_value'] = self.pid['generate_info']['fixed_parameter_' + which]
+                try:
+                    header.attrs['par_' + which + '_name'] = self.pid['generate_info']['par_' + which + '_name']
+                    header.attrs['par_' + which + '_unit'] = self.units_dict['par_' + which + '_unit']
+                    header.attrs['par_' + which + '_value'] = self.pid['generate_info']['fixed_parameter_' + which]
+                except KeyError:
+                    pass
 
             if self.added_note != '':
                 header.attrs['Added note'] = self.added_note
@@ -123,9 +126,12 @@ class FileReadOut:
             header += '#' + which + 'val_unit: %s\n'%self.units_dict[which + 'val_unit']
 
         for which in np.arange(1,6).astype(str):
-            header += '#par_' + which + '_name: %s\n'%self.pid['generate_info']['par_' + which + '_name']
-            header += '#par_' + which + '_unit: %s\n'%self.units_dict['par_' + which + '_unit']
-            header += '#par_' + which + '_value: %s\n'%self.pid['generate_info']['fixed_parameter_' + which]
+            try:
+                header += '#par_' + which + '_name: %s\n'%self.pid['generate_info']['par_' + which + '_name']
+                header += '#par_' + which + '_unit: %s\n'%self.units_dict['par_' + which + '_unit']
+                header += '#par_' + which + '_value: %s\n'%self.pid['generate_info']['fixed_parameter_' + which]
+            except KeyError:
+                pass
 
         if self.added_note != '':
             header+= '#Added note: ' + self.added_note + '\n'

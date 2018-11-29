@@ -85,7 +85,7 @@ class MakePlotProcess:
 		#read or append control values for ratio plots
 		for k, axis_string in enumerate(control_dict.keys()):
 			if 'control' in control_dict[axis_string]:
-				if 'name' in control_dict[axis_string]['control']:
+				if 'name' in control_dict[axis_string]['control'] or 'label' in control_dict[axis_string]['control']:
 					file_dict = control_dict[axis_string]['control']
 					if 'limits' in control_dict[axis_string].keys():
 						liimits_dict = control_dict[axis_string]['limits']

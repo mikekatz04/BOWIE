@@ -10,7 +10,7 @@ class SensitivityContainer:
             'sensitivity_curves': ['LPA'],
             'add_wd_noise': 'Both',
             'wd_noise': 'HB_wd_noise',
-            'phases': 'all',
+            'signal_type': ['all'],
             # TODO: add 'all' and 'full' capabilities
             'prefactor': 1.0,
             'num_points': 8192,
@@ -22,7 +22,7 @@ class SensitivityContainer:
                 setattr(self, prop, kwargs.get(prop, default))
 
         self._prep_noise_interpolants()
-        self.sensitivity_args = (self.noise_interpolants, self.phases,
+        self.sensitivity_args = (self.noise_interpolants, self.signal_type,
                                  self.prefactor, self.num_points)
 
     def _prep_noise_interpolants(self):
@@ -45,8 +45,8 @@ class SensitivityContainer:
             assert isinstance(self.noise_type_in, str)
             self.noise_type_in = [self.noise_type_in for _ in self.sensitivity_curves]
 
-        if isinstance(self.phases, str):
-            self.phases = [self.phases]
+        if isinstance(self.signal_type, str):
+            self.signal_type = [self.signal_type]
 
         for num, sc in enumerate(self.sensitivity_curves):
             if isinstance(sc, str):
@@ -63,7 +63,7 @@ class SensitivityContainer:
 
             noise_lists[key] = [f, h_n]
 
-        if self.add_wd_noise.lower() == 'true' or self.add_wd_noise.lower() == 'both' or self.add_wd_noise.lower() == 'yes':
+        if str(self.add_wd_noise).lower() == 'true' or str(self.add_wd_noise).lower() == 'both' or str(self.add_wd_noise).lower() == 'yes':
             if isinstance(self.wd_noise, str):
                 f_n_wd, h_n_wd = read_noise_curve(self.wd_noise, noise_type_in=self.wd_noise_type_in, noise_type_out='char_strain')
             elif isinstance(self,wd_noise, list):
