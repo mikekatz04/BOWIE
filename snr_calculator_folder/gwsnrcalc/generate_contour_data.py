@@ -35,7 +35,7 @@ def generate_contour_data(pid):
 
     Args:
         pid (obj or dict): GenInput class or dictionary containing all of the input information for
-            the generation. See BOWIE documentation and example notebooks usage of
+            the generation. See BOWIE documentation and example notebooks for usage of
             this class.
 
     """
