@@ -1,11 +1,80 @@
 import numpy as np
 from scipy import interpolate
-from snr_calculator.utils.readnoisecurves import read_noise_curve, combine_with_wd_noise
+from gwsnrcalc.utils.readnoisecurves import read_noise_curve, combine_with_wd_noise
+
 
 class SensitivityContainer:
+    """"Sensitivity curve analsis
 
+    This prepares the sensitivity side of the SNR calculation.
+    It takes all the inputs and converts them to characterstic strain.
+
+    Args:
+        sensitivity_curves (scalar or list of str or single or list of lists, optional):
+            String that starts the .txt file containing the sensitivity curve in
+            folder 'noise_curves/' or list of ``[f_n, asd_n]``
+            in terms of an amplitude spectral density. It can be a single one of these
+            values or a list of these values. A folder string with absolute path to a sensitivity
+            curve .txt file can also be input.
+            Default is [`LPA`] (LISA Phase A).
+        add_wd_noise (str or bool, optional): Options are `yes`, `no`, `True`, `False`,
+            `Both`, True, or False. `yes`, `True`, or True
+            will exclusively calculate with the wd noise.
+            `no`, `False`, or False will exclusively calculate without the wd noise.
+            `Both` will calculate with and without wd noise.
+            Default is `Both`.
+        wd_noise (str or list, optional): If string,
+            read the wd noise from `noise_curves` folder or absolute path to file.
+            If list, must be ``[f_n_wd, asd_n_wd]``.
+            Default is Hils-Bender estimation (Bender & Hils 1997) by Hiscock et al. 2000.
+        signal_type (scalar or list of str, optional): Phase of snr.
+            Options are 'all' for all phases;
+            'ins' for inspiral; 'mrg' for merger; or 'rd' for ringdown. Default is 'all'.
+        prefactor (float, optional): Factor to multiply snr (not snr^2) integral values by.
+            Default is 1.0.
+        num_points (int, optional): Number of points to use in the waveform.
+            The frequency points are log-spaced. Default is 8192.
+        noise_type_in (str, optional): Type of noise curve passed in.
+            Options are `ASD`, `PSD`, or `char_strain`.
+            All sensitivity curves must have same noise type.
+            Also, their amplitude column must have this same string as its label.
+            Default is `ASD`.
+
+    Attributes:
+        noise_interpolants (dict): Dictionary with all of the interpolated sensitivity curves.
+        sensitivity_args (tuple of obj): tuple  of args for input into parallel snr function.
+        sensitivity_curves (scalar or list of str or single or list of lists, optional):
+            String that starts the .txt file containing the sensitivity curve in
+            folder 'noise_curves/' or list of ``[f_n, asd_n]``
+            in terms of an amplitude spectral density. It can be a single one of these
+            values or a list of these values. A folder string with absolute path to a sensitivity
+            curve .txt file can also be input.
+            Default is [`LPA`] (LISA Phase A).
+        add_wd_noise (str or bool, optional): Options are `yes`, `no`, `True`, `False`,
+            `Both`, True, or False. `yes`, `True`, or True
+            will exclusively calculate with the wd noise.
+            `no`, `False`, or False will exclusively calculate without the wd noise.
+            `Both` will calculate with and without wd noise.
+            Default is `Both`.
+        wd_noise (str or list, optional): If string,
+            read the wd noise from `noise_curves` folder or absolute path to file.
+            If list, must be ``[f_n_wd, asd_n_wd]``.
+            Default is Hils-Bender estimation (Bender & Hils 1997) by Hiscock et al. 2000.
+        signal_type (scalar or list of str, optional): Phase of snr.
+            Options are 'all' for all phases;
+            'ins' for inspiral; 'mrg' for merger; or 'rd' for ringdown. Default is 'all'.
+        prefactor (float, optional): Factor to multiply snr (not snr^2) integral values by.
+            Default is 1.0.
+        num_points (int, optional): Number of points to use in the waveform.
+            The frequency points are log-spaced. Default is 8192.
+        noise_type_in (str, optional): Type of noise curve passed in.
+            Options are `ASD`, `PSD`, or `char_strain`.
+            All sensitivity curves must have same noise type.
+            Also, their amplitude column must have this same string as its label.
+            Default is `ASD`.
+
+    """
     def __init__(self, **kwargs):
-
         prop_defaults = {
             'sensitivity_curves': ['LPA'],
             'add_wd_noise': 'Both',
@@ -26,14 +95,18 @@ class SensitivityContainer:
                                  self.prefactor, self.num_points)
 
     def _prep_noise_interpolants(self):
+        """Construct interpolated sensitivity curves
+
+        This will construct the interpolated sensitivity curves
+        using scipy.interpolate.interp1d. It will add wd noise
+        if that is requested.
+
+        """
         noise_lists = {}
         self.noise_interpolants = {}
 
         if isinstance(self.sensitivity_curves, str):
             self.sensitivity_curves = [self.sensitivity_curves]
-        #elif isinstance(self.sensitivity_curves, list):
-        #    if len(np.shape(self.sensitivity_curves)) == 1:
-        #        self.sensitivity_curves = [self.sensitivity_curves]
 
         if isinstance(self.noise_type_in, list):
             if len(self.noise_type_in) != len(self.sensitivity_curves):
@@ -48,13 +121,14 @@ class SensitivityContainer:
         if isinstance(self.signal_type, str):
             self.signal_type = [self.signal_type]
 
+        # read in all the noise curves
         for num, sc in enumerate(self.sensitivity_curves):
             if isinstance(sc, str):
                 f, h_n = read_noise_curve(sc, noise_type_in=self.noise_type_in[num],
                                           noise_type_out='char_strain')
                 key = sc
             elif isinstance(sc, list):
-                # TODO: add to docs if inputing special noise curve, make sure its char_strain/ use converter provided
+                # TODO: add to docs if inputing special noise curve, make sure its char_strain
                 f, h_n = sc
                 key = str(num)
             else:
@@ -63,10 +137,13 @@ class SensitivityContainer:
 
             noise_lists[key] = [f, h_n]
 
-        if str(self.add_wd_noise).lower() == 'true' or str(self.add_wd_noise).lower() == 'both' or str(self.add_wd_noise).lower() == 'yes':
+        # add wd noise
+        if str(self.add_wd_noise).lower() in ['true', 'both', 'yes']:
             if isinstance(self.wd_noise, str):
-                f_n_wd, h_n_wd = read_noise_curve(self.wd_noise, noise_type_in=self.wd_noise_type_in, noise_type_out='char_strain')
-            elif isinstance(self,wd_noise, list):
+                f_n_wd, h_n_wd = read_noise_curve(self.wd_noise,
+                                                  noise_type_in=self.wd_noise_type_in,
+                                                  noise_type_out='char_strain')
+            elif isinstance(self, wd_noise, list):
                 f_n_wd, h_n_wd = self.wd_noise
 
             trans_dict = {}
@@ -80,17 +157,9 @@ class SensitivityContainer:
 
             noise_lists = trans_dict
 
+        # interpolate
         for sc in noise_lists:
             f_n, h_n = noise_lists[sc]
             self.noise_interpolants[sc] = (interpolate.interp1d(f_n, h_n,
-                                            bounds_error=False, fill_value=1e30))
-
+                                           bounds_error=False, fill_value=1e30))
         return
-
-    def adjust_noise_type(self, f, amp):
-        if self.noise_type == 'ASD':
-            return np.sqrt(f)*amp
-        elif self.noise_type == 'PSD':
-            return np.sqrt(f*amp)
-        else:
-            raise Exception('Noise type provided is {}. Must be ASD, PSD, or char_strain.'.format(self.noise_type))
