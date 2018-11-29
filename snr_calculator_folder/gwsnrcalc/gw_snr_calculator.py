@@ -96,8 +96,8 @@ class SNR(SensitivityContainer, ParallelContainer):
             func_args = (0,) + binary_args + self.sensitivity_args + (self.verbose,)
             return self.snr_function(*func_args)
 
-        self._prep_parallel(length, binary_args, self.sensitivity_args, self.verbose)
-        return self._run_parallel(self.snr_function)
+        self.prep_parallel(length, binary_args, self.sensitivity_args)
+        return self.run_parallel(self.snr_function)
 
     def __call__(self, m1, m2, z_or_dist, st, et,
                  chi_1=None, chi_2=None, chi=0.8, dist_type='redshift'):
@@ -129,6 +129,9 @@ class SNR(SensitivityContainer, ParallelContainer):
         Returns:
             (dict): Dictionary with the SNR output from the calculation.
 
+        Raises:
+            UserError: Supplying chi_1 or chi_2
+
         """
         # check shapes and spins and cast to the right values
         try:
@@ -143,7 +146,7 @@ class SNR(SensitivityContainer, ParallelContainer):
             pass
 
         if ((chi_1 is None) & (chi_2 is not None)) or ((chi_1 is not None) & (chi_2 is None)):
-            raise Exception("Either supply `chi`, or supply both `chi_1` and `chi_2`."
+            raise UserError("Either supply `chi`, or supply both `chi_1` and `chi_2`."
                             + "You supplied only `chi_1` or `chi_2`.")
 
         if chi_1 is None:

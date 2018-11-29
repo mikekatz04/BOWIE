@@ -101,6 +101,10 @@ class SensitivityContainer:
         using scipy.interpolate.interp1d. It will add wd noise
         if that is requested.
 
+        Raises:
+            ValueError: ``len(noise_type_in) != len(sensitivity_curves)``
+            ValueError: Issue with sensitivity curve type provided.
+
         """
         noise_lists = {}
         self.noise_interpolants = {}
