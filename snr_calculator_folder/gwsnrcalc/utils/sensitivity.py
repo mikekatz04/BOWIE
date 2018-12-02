@@ -4,7 +4,7 @@ from gwsnrcalc.utils.readnoisecurves import read_noise_curve, combine_with_wd_no
 
 
 class SensitivityContainer:
-    """"Sensitivity curve analysis
+    """Sensitivity curve analysis
 
     This prepares the sensitivity side of the SNR calculation.
     It takes all the inputs and converts them to characterstic strain.
