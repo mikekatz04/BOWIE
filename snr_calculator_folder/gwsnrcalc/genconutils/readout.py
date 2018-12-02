@@ -21,29 +21,24 @@ class FileReadOut:
     back to the file at a later point in time.
 
     Args:
-        xvals (1D array): The x values for the contour data.
-        yvals (1D array): The y values for the contour data.
-        output_dict (dict): The output of the SNR calculations. This is the dictionary
-            returned by ``gwsnrcalc.gw_snr_calculator.snr``.
-        **kwargs (dict): Combination of the `general`, `output_info`, and `generate_info`
-            dictionaries from pid. This allows all the class attributes to load in a clean way.
-
-    Attributes:
         xvals/yvals (1D array): The x/y values for the contour data.
         output_dict (dict): The output of the SNR calculations. This is the dictionary
             returned by ``gwsnrcalc.gw_snr_calculator.snr``.
-        WORKING_DIRECTORY (str): Relative or absolute path to working directory.
+        **kwargs (dict): Combination of the `general`, `output_info`, and `generate_info`
+            dictionaries from pid. These kwargs are stored as attributes.
+
+    Keyword Arguments:
         output_file_name (str): Path and name of output file in relation to working directory.
-        num_x/num_y (int): Number of x,y points for contour grid.
-        xval_name/yval_name (str): Name of x/y parameter.
-        xval_unit/yval_unit (str): Units of x/y parameter.
-        fixed_parameter_1/fixed_parameter_2/fixed_parameter_3/fixed_parameter_4/fixed_parameter_5
-            (float): Value of fixed parameter.
-        par_1_name/par_2_name/par_3_name/par_4_name/par_5_name (str): Name of fixed parameter.
-        par_1_unit/par_2_unit/par_3_unit/par_4_unit/par_5_unit (str): Unit of fixed parameter.
         x_col_name (str, optional): Column label for x column in output file. Default is `x`.
         y_col_name (str, optional): Column label for y column in output file. Default is `y`.
-            added_note (str, optional): Add note to output file. Default is ''.
+        added_note (str, optional): Add note to output file. Default is ''.
+
+    Attributes:
+        output_file_type (str): Type of file. Must be `hdf5` or `txt`.
+        Note: All args above are added as attributes.
+        Note: All kwargs above are added as attributes.
+        Note: kwargs from :class:`gwsnrcalc.genconutils.genprocess.GenProcess`
+            are also included for readout information. These are stored as attributes.
 
     """
 
@@ -63,6 +58,12 @@ class FileReadOut:
 
         for (prop, default) in prop_defaults.items():
                 setattr(self, prop, kwargs.get(prop, default))
+
+        output_file_type = self.output_file_name.split('.')[-1]
+
+        if output_file_type not in ['hdf5', 'txt']:
+            raise ValueError('file_output_type must be hdf5 or txt.')
+        self.output_file_type = output_file_type
 
     def hdf5_read_out(self):
         """

@@ -36,6 +36,21 @@ import warnings
 import inspect
 
 
+class GenerateContainer:
+    """Holds all of the attributes related to the generate_info dictionary.
+
+    This class is used to store the information when methods from Generate class
+    are called by the MainContainer class.
+
+    Attributes:
+        Note: Attributes represent the kwargs from
+            :class:`gwsnrcalc.genconutils.genprocess.GenProcess`.
+
+    """
+    def __init__(self):
+        pass
+
+
 class Generate:
     """ Generate contains the methods inherited by MainContainer.
 
@@ -134,75 +149,31 @@ class Generate:
         setattr(self.generate_info, 'par_' + par_num + '_unit', unit)
         return
 
-    def set_num_waveform_points(self, num_wave_points):
-        """Number of log-spaced points for waveforms.
 
-        The number of points of the waveforms with asymptotically increase
-        the accuracy, but will lower the speed of generation.
+class SensitivityInputContainer:
+    """Holds all of the attributes related to the sensitivity_input dictionary.
 
-        Args:
-            num_wave_points (int): Number of log-spaced points for the waveforms.
-
-        """
-        self.generate_info.num_points = num_wave_points
-        return
-
-    def set_snr_factor(self, factor):
-        """Set the SNR multiplicative factor.
-
-        This factor will be multpilied by the SNR, not SNR^2.
-        This involves orientation, sky, and polarization averaging, as well
-        as any factors for the configuration.
-
-        For example, for LISA, this would be sqrt(2*16/5). The sqrt(2) is for
-        a six-link configuration and the 16/5 represents the averaging factors.
-
-        Args:
-            factor (float): Factor to multiply SNR by for averaging.
-
-        """
-        self.generate_info.prefactor = factor
-        return
-
-
-class GenerateContainer:
-    """Holds all of the attributes related to the generate_info dictionary.
-
-    This class is used to store the information when methods from Generate class
+    This class is used to store the information when methods from Input class
     are called by the MainContainer class.
 
     Attributes:
-        num_x/num_y (int): Number of points on x/y axis.
-        x_low/x_high/y_low/y_high (float): Lowest/highest value for the x/y axis.
-        xscale/yscale (str): Scale of the x/y axis. Choices are 'log' or 'lin'.
-        xval_unit/yval_unit/par_1_unit/par_2_unit/par_3_unit/par_4_unit/par_5_unit (str):
-            This is for export to a file. It keeps track of quantities for future use of the file.
-            Start time and end time must be given in years. Mass must be given in solar masses.
-            If "luminosity_distance" or "comoving_distance" is used, then the units matter.
-            Default is "Mpc". However, "Gpc" can be given.
-        xval_name/yval_name/par_1_name/par_2_name/par_3_name/par_4_name/par_5_name (str):
-            Names of the x/y values or fixed parameters being tested.
-            Choices are "total_mass", "mass_ratio", "luminosity_distance",
-            "comoving_distance", "redshift", "spin_1", "spin_2",
-            "start_time", "end_time".
-        fixed_parameter_1/fixed_parameter_2/fixed_parameter_3/fixed_parameter_4/fixed_parameter_5
-            (float): Value for the parameters fixed for each binary.
-        num_points (int, optional): Number of log-spaced points for the waveforms.
-        factor (float, optional): Factor to multiply SNR by for averaging. Default is 1.0.
+        Note: Attributes represent the kwargs from
+            :class:`gwsnrcalc.utils.sensitivity.SensitivityContainer`.
+
 
     """
     def __init__(self):
         pass
 
 
-class Input:
+class SensitivityInput:
     """ Input contains the methods inherited by MainContainer.
 
     These methods are used by MainContainer class to add noise curve
     information.
 
-    All attributes are appended to the InputContainer class.
-    The InputContainer class is contained in the legend attribute
+    All attributes are appended to the SensitivityInputContainer class.
+    The SensitivityInputContainer class is contained in the sensitivty_input attribute
     in the MainContainer class.
 
     """
@@ -210,7 +181,7 @@ class Input:
         """Add a noise curve for generation.
 
         This will add a noise curve for an SNR calculation by appending to the sensitivity_curves
-        list within the input_info dictionary.
+        list within the sensitivity_input dictionary.
 
         The name of the noise curve prior to the file extension will appear as its
         label in the final output dataset. Therefore, it is recommended prior to
@@ -221,43 +192,65 @@ class Input:
             name (str): Name of noise curve including file extension inside input_folder.
             noise_type (str, optional): Type of noise. Choices are `ASD`, `PSD`, or `char_strain`.
                 Default is ASD.
+            is_wd_background (bool, optional): If True, this sensitivity is used as the white dwarf
+                background noise. Default is False.
 
         """
         if is_wd_background:
-            self.input_info.wd_noise = name
-            self.input_info.wd_noise_type_in = noise_type
+            self.sensitivity_input.wd_noise = name
+            self.sensitivity_input.wd_noise_type_in = noise_type
 
         else:
-            if 'sensitivity_curves' not in self.input_info.__dict__:
-                self.input_info.sensitivity_curves = []
-            if 'noise_type_in' not in self.input_info.__dict__:
-                self.input_info.noise_type_in = []
+            if 'sensitivity_curves' not in self.sensitivity_input.__dict__:
+                self.sensitivity_input.sensitivity_curves = []
+            if 'noise_type_in' not in self.sensitivity_input.__dict__:
+                self.sensitivity_input.noise_type_in = []
 
-            self.input_info.sensitivity_curves.append(name)
-            self.input_info.noise_type_in.append(noise_type)
+            self.sensitivity_input.sensitivity_curves.append(name)
+            self.sensitivity_input.noise_type_in.append(noise_type)
+        return
+
+    def set_wd_noise(self, wd_noise):
+        """Add White Dwarf Background Noise
+
+        This adds the White Dwarf (WD) Background noise. This can either do calculations with,
+        without, or with and without WD noise.
+
+        Args:
+            wd_noise (bool or str, optional): Add or remove WD background noise. First option is to
+                have only calculations with the wd_noise. For this, use `yes` or True.
+                Second option is no WD noise. For this, use `no` or False. For both calculations
+                with and without WD noise, use `both`.
+
+        Raises:
+            ValueError: Input value is not one of the options.
+
+        """
+        if isinstance(wd_noise, bool):
+            wd_noise = str(wd_noise)
+
+        if wd_noise.lower() == 'yes' or wd_noise.lower() == 'true':
+            wd_noise = 'True'
+        elif wd_noise.lower() == 'no' or wd_noise.lower() == 'false':
+            wd_noise = 'False'
+        elif wd_noise.lower() == 'both':
+            wd_noise = 'Both'
+        else:
+            raise ValueError('wd_noise must be yes, no, True, False, or Both.')
+
+        self.sensitivity_input.add_wd_noise = wd_noise
         return
 
 
-class InputContainer:
-    """Holds all of the attributes related to the input_info dictionary.
+class OutputContainer:
+    """Holds all of the attributes related to the output_info dictionary.
 
-    This class is used to store the information when methods from Input class
+    This class is used to store the information when methods from Output class
     are called by the MainContainer class.
 
     Attributes:
-        sensitivity_curves (list of obj): List of noise curve information held
-            in the NoiseCurveContainer class. This sets up the calculation for
-            the sensitivty curves desired by the user.
-            This is either a provided curve or a file path to use.
-        noise_type_in (list of obj): Type of curve provided. Can be `ASD`, `PSD`,
-            or `char_strain`. The amplitude column of the file must be named
-            this same string.
-        wd_noise (str, optional): List of noise curve information held
-            in the NoiseCurveContainer class. This sets up the calculation for
-            the sensitivty curves desired by the user.
-        wd_noise_type_in (str, optional): Type of noise curve provided. Can be `ASD`, `PSD`,
-            or `char_strain`. The amplitude column of the file must be named
-            this same string.
+        Note: Attributes represent the kwargs from
+            :class:`gwsnrcalc.genconutils.readout.FileReadOut`.
 
     """
     def __init__(self):
@@ -292,12 +285,6 @@ class Output:
 
         """
         self.output_info.output_file_name = output_file_name
-
-        output_file_type = output_file_name.split('.')[-1]
-
-        if output_file_type not in ['hdf5', 'txt']:
-            raise ValueError('file_output_type must be hdf5 or txt.')
-        self.output_info.output_file_type = output_file_type
         return
 
     def _set_column_name(self, which, col_name):
@@ -346,69 +333,33 @@ class Output:
             note (str): Note to be added.
 
         """
-        self.input_info.added_note = note
+        self.output_info.added_note = note
         return
 
 
-class OutputContainer:
-    """Holds all of the attributes related to the output_info dictionary.
+class ParallelInputContainer:
+    """Holds all of the attributes related to the parallel_input dictionary.
 
-    This class is used to store the information when methods from Output class
+    This class is used to store the information when methods from ParallelInput class
     are called by the MainContainer class.
 
     Attributes:
-        output_file_name (str): String representing the name of the file
-            without the file extension.
-        output_file_type (str, optional): File extension. Choices are `hdf5` or `txt`.
-            Default is `hdf5`.
-        output_folder (str, optional): Output folder in relation to WORKING_DIRECTORY.
-            Default is '.'.
-        x_col_name/y_col_name (st, optional): x/y column name to be added.
-            Default is `x`/`y`.
-        added_note (str, optional): Note to be added. Default is None.
+        Note: Attributes represent the kwargs from
+            :class:`gwsnrcalc.utils.parallel.ParallelContainer`.
 
     """
     def __init__(self):
         pass
 
 
-class General:
+class ParallelInput:
     """ General contains the methods inherited by MainContainer.
 
     These methods are used by MainContainer class to add information that applies
-    to all plots or the figure as a whole. Many of its settings pertaining to plots
-    can be overriden with methods in SinglePlot.
+    to parallel generation. This information is stored in a ParallelInputContainer
+    class object.
 
     """
-    def set_working_directory(self, wd):
-        """Set the WORKING_DIRECTORY variable.
-
-        Sets the WORKING_DIRECTORY. The code will then use all paths as relative paths
-        to the WORKING_DIRECTORY. In code default is current directory.
-
-        Args:
-            wd (str): Absolute or relative path to working directory.
-
-        """
-        self.general.WORKING_DIRECTORY = wd
-        return
-
-    def set_signal_type(self, sig_type):
-        """Set the signal type of interest.
-
-        Sets the signal type for which the SNR is calculated.
-        This means inspiral, merger, and/or ringdown.
-
-        Args:
-            sig_type (str or list of str): Signal type desired by user.
-                Choices are `ins`, `mrg`, `rd`, `all`.
-
-        """
-        if isinstance(sig_type, str):
-            sig_type = [sig_type]
-        self.general.signal_type = sig_type
-        return
-
     def set_generation_type(self, num_processors=-1, num_splits=1000, verbose=-1):
         """Change generation type.
 
@@ -423,79 +374,106 @@ class General:
                 Default is 1000.
 
         """
-        self.general.num_processors = num_processors
-        self.general.num_splits = num_splits
-        self.general.verbose = verbose
-        return
-
-    def set_wd_noise(self, wd_noise):
-        """Add White Dwarf Background Noise
-
-        This adds the White Dwarf (WD) Background noise. This can either do calculations with,
-        without, or with and without WD noise.
-
-        Args:
-            wd_noise (bool or str, optional): Add or remove WD background noise. First option is to
-                have only calculations with the wd_noise. For this, use `yes` or True.
-                Second option is no WD noise. For this, use `no` or False. For both calculations
-                with and without WD noise, use `both`.
-
-        Raises:
-            ValueError: Input value is not one of the options.
-
-        """
-        if isinstance(wd_noise, bool):
-            wd_noise = str(wd_noise)
-
-        if wd_noise.lower() == 'yes' or wd_noise.lower() == 'true':
-            wd_noise = 'True'
-        elif wd_noise.lower() == 'no' or wd_noise.lower() == 'false':
-            wd_noise = 'False'
-        elif wd_noise.lower() == 'both':
-            wd_noise = 'Both'
-        else:
-            raise ValueError('wd_noise must be yes, no, True, False, or Both.')
-
-        self.general.add_wd_noise = wd_noise
+        self.parallel_input.num_processors = num_processors
+        self.parallel_input.num_splits = num_splits
+        self.parallel_input.verbose = verbose
         return
 
 
-class GeneralContainer:
-    """Holds all of the attributes related to the general dictionary.
+class SNRInputContainer:
+    """Holds all of the attributes related to the snr_input dictionary.
 
-    This class is used to store the information when methods from General class
+    This class is used to store the information when methods from SNRInput class
     are called by the MainContainer class.
 
     Attributes:
-        signal_type (str or list of str): Signal type desired by user.
-            Choices are `ins`, `mrg`, `rd`, `all`.
-        WORKING_DIRECTORY (str, optional): Working directory for file export and retrieval.
-            Default is ``'.'``.
-        add_wd_noise (bool or str, optional): Add or remove WD background noise. First option is to
-            have only calculations with the wd_noise. For this, use `yes` or True.
-            Second option is no WD noise. For this, use `no` or False. For both calculations
-            with and without WD noise, use `both`. Default is False.
-        num_processors (int or None, optional): Number of parallel processors to use.
-            If ``num_processors==-1``, this will use multiprocessing module and use
-            available cpus. If single generation is desired, num_processors is set
-            to ``None``. Default is -1.
-        num_splits (int, optional): Number of binaries to run during each process.
-            Default is 1000.
-        wd (str): Absolute or relative path to working directory.
+        Note: Attributes represent the kwargs from :class:`gwsnrcalc.gw_snr_calculator.SNR`.
 
     """
     def __init__(self):
         pass
 
 
-class MainContainer(General, Input, Output, Generate):
+class SNRInput:
+    """ General contains the methods inherited by MainContainer.
+
+    These methods are used by MainContainer class to add information that applies
+    to all plots or the figure as a whole. Many of its settings pertaining to plots
+    can be overriden with methods in SinglePlot.
+
+    """
+
+    def set_signal_type(self, sig_type):
+        """Set the signal type of interest.
+
+        Sets the signal type for which the SNR is calculated.
+        This means inspiral, merger, and/or ringdown.
+
+        Args:
+            sig_type (str or list of str): Signal type desired by user.
+                Choices are `ins`, `mrg`, `rd`, `all`.
+
+        """
+        if isinstance(sig_type, str):
+            sig_type = [sig_type]
+        self.snr_input.signal_type = sig_type
+        return
+
+    def set_snr_prefactor(self, factor):
+        """Set the SNR multiplicative factor.
+
+        This factor will be multpilied by the SNR, not SNR^2.
+        This involves orientation, sky, and polarization averaging, as well
+        as any factors for the configuration.
+
+        For example, for LISA, this would be sqrt(2*16/5). The sqrt(2) is for
+        a six-link configuration and the 16/5 represents the averaging factors.
+
+        Args:
+            factor (float): Factor to multiply SNR by for averaging.
+
+        """
+        self.snr_input.prefactor = factor
+        return
+
+    def set_num_waveform_points(self, num_wave_points):
+        """Number of log-spaced points for waveforms.
+
+        The number of points of the waveforms with asymptotically increase
+        the accuracy, but will lower the speed of generation.
+
+        Args:
+            num_wave_points (int): Number of log-spaced points for the waveforms.
+
+        """
+        self.snr_input.num_points = num_wave_points
+        return
+
+
+class GeneralContainer:
+    """Holds all of the attributes related to the general dictionary.
+
+    This class is used to store the information when methods
+    are called by the MainContainer class.
+
+    Attributes:
+        WORKING_DIRECTORY (str, optional): Working directory for file export and retrieval.
+            Default is ``'.'``.
+
+    """
+    def __init__(self):
+        pass
+
+
+class MainContainer(Generate, SensitivityInput, SNRInput, ParallelInput, Output):
     """Main class for creating input dictionary to ``generate_contour_data.py``.
 
     This class creates a pythonic way to add information to the input dictionary
     to ``generate_contour_data.py``. It creates and can read out this dictionary.
 
-    MainContainer inherits methods from General, Input, Output, and Generate classes
-    so that it can add respective dictionary information to MainContainer class.
+    MainContainer inherits methods from Generate, SensitivityInput, SNRInput,
+    ParallelInput, and Output classes so that it can
+    add respective dictionary information to MainContainer class.
 
     Args:
         print_input (bool, optional): If True, print the dictionary created by MainContainer
@@ -505,7 +483,12 @@ class MainContainer(General, Input, Output, Generate):
         general (obj): GeneralContainer class for holding information for general dictionary.
         generate_info (obj): GenerateContainer class for holding information
             for generate_info dictionary.
-        input_info (obj): InputContainer class for holding information for input_info dictionary.
+        sensitivity_input (obj): InputContainer class for holding information for
+            sensitivty_input dictionary.
+        snr_input (obj): SNRInputContainer class for holding information for
+            snr_input dictionary.
+        parallel_input (obj): ParallelInputContainer class for holding information for
+            parallel_input dictionary.
         output_info (obj): OutputContainer class for holding information for output_info dictionary.
         print_input (bool, optional): If True, print the dictionary created by MainContainer
             class after it is completed.
@@ -513,11 +496,26 @@ class MainContainer(General, Input, Output, Generate):
     """
     def __init__(self, print_input=False):
         Generate.__init__(self)
-        self.generate_info = GenerateContainer()
         self.general = GeneralContainer()
-        self.input_info = InputContainer()
+        self.generate_info = GenerateContainer()
+        self.sensitivity_input = SensitivityInputContainer()
+        self.snr_input = SNRInputContainer()
+        self.parallel_input = ParallelInputContainer()
         self.output_info = OutputContainer()
         self.print_input = print_input
+
+    def set_working_directory(self, wd):
+        """Set the WORKING_DIRECTORY variable.
+
+        Sets the WORKING_DIRECTORY. The code will then use all paths as relative paths
+        to the WORKING_DIRECTORY. In code default is current directory.
+
+        Args:
+            wd (str): Absolute or relative path to working directory.
+
+        """
+        self.general.WORKING_DIRECTORY = wd
+        return
 
     def return_overall_dictionary(self):
         """Output dictionary for ``generate_contour_data.py`` input.
@@ -535,7 +533,10 @@ class MainContainer(General, Input, Output, Generate):
         output_dict = {}
         output_dict['general'] = self._iterate_through_class(self.general.__dict__)
         output_dict['generate_info'] = self._iterate_through_class(self.generate_info.__dict__)
-        output_dict['input_info'] = self._iterate_through_class(self.input_info.__dict__)
+        output_dict['sensitivity_input'] = (self._iterate_through_class(
+            self.sensitivity_input.__dict__))
+        output_dict['snr_input'] = self._iterate_through_class(self.snr_input.__dict__)
+        output_dict['parallel_input'] = self._iterate_through_class(self.parallel_input.__dict__)
         output_dict['output_info'] = self._iterate_through_class(self.output_info.__dict__)
 
         if self.print_input:

@@ -9,7 +9,8 @@ class ParallelContainer:
     Calculate in parallel using multiprocessing module.
     This can be easily adaptable to other parallel functions.
 
-    Args:
+    Keyword Arguments:
+        length (int): Number of binaries to process.
         num_processors (int or None, optional): If None, run on single processor.
             If -1, use ```multiprocessing.cpu_count()`` to determine cpus to use.
             Otherwise, this is the number of processors to use. Default is -1.
@@ -20,47 +21,47 @@ class ParallelContainer:
 
     Attributes:
         args (list of tuple): List of arguments to passes to the parallel function.
-        num_processors (int or None, optional): If None, run on single processor.
-            If -1, use ```multiprocessing.cpu_count()`` to determine cpus to use.
-            Otherwise, this is the number of processors to use. Default is -1.
-        num_splits (int, optional): Number of binaries to run for each process. Default is 1000.
-        verbose (int, optional): Notify each time ``verbose`` processes finish.
-            If -1, then no notification. Default is -1.
-        timer (bool, optional): If True, time the parallel process. Default is False.
+        Note: All kwargs above are stored as attributes.
 
     """
 
     def __init__(self, **kwargs):
 
         prop_defaults = {
-            'num_processors': -1,
+            'num_processors': None,
             'num_splits': 1000,
             'verbose': -1,
-            'timer': False
+            'timer': False,
         }
+
+        required_kwarg_keys = ['length']
 
         for (prop, default) in prop_defaults.items():
                 setattr(self, prop, kwargs.get(prop, default))
 
-    def prep_parallel(self, length, binary_args, sensitivity_args):
+        for key in required_kwarg_keys:
+            setattr(self, key, kwargs[key])
+
+    def prep_parallel(self, binary_args, other_args):
         """Prepare the parallel calculations
 
         Prepares the arguments to be run in parallel.
         It will divide up arrays according to num_splits.
 
         Args:
-            length (int): Number of binaries to process.
             binary_args (list): List of binary arguments for input into the SNR function.
-            sensitivity_args (tuple of obj): tuple  of args for input into parallel snr function.
+            other_args (tuple of obj): tuple of other args for input into parallel snr function.
 
         """
+        if self.length < 100:
+            raise Exception("Run this across 1 processor by setting num_processors kwarg to None.")
         if self.num_processors == -1:
             self.num_processors = mp.cpu_count()
 
-        split_val = int(np.ceil(length/self.num_splits))
+        split_val = int(np.ceil(self.length/self.num_splits))
         split_inds = [self.num_splits*i for i in np.arange(1, split_val)]
 
-        inds_split_all = np.split(np.arange(length), split_inds)
+        inds_split_all = np.split(np.arange(self.length), split_inds)
 
         self.args = []
         for i, ind_split in enumerate(inds_split_all):
@@ -71,8 +72,7 @@ class ParallelContainer:
                 except TypeError:
                     trans_args.append(arg)
 
-            self.args.append((i,) + tuple(trans_args) + sensitivity_args + (self.verbose,))
-
+            self.args.append((i, tuple(trans_args)) + other_args)
         return
 
     def run_parallel(self, para_func):

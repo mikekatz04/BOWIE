@@ -51,7 +51,7 @@ def generate_contour_data(pid):
         pid['general']['WORKING_DIRECTORY'] = WORKING_DIRECTORY
 
     # Generate the contour data.
-    running_process = GenProcess(pid)
+    running_process = GenProcess(**{**pid, **pid['generate_info']})
     running_process.set_parameters()
     running_process.run_snr()
 

@@ -18,7 +18,15 @@ import sys
 sys.path.insert(0, os.path.abspath('/Users/michaelkatz/Documents/Research/PythonCodes/bowie_analysis/'))
 sys.path.insert(1, os.path.abspath('/Users/michaelkatz/Documents/Research/PythonCodes/bowie_analysis/snr_calculator_folder/'))
 
+def skip(app, what, name, obj, skip, options):
+    if name == "__call__":
+        return False
+    if name == "_prep_noise_interpolants":
+        return False
+    return skip
 
+def setup(app):
+    app.connect("autodoc-skip-member", skip)
 
 # -- Project information -----------------------------------------------------
 

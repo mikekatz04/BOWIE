@@ -14,7 +14,7 @@ The waveform generator creates PhenomD amplitude waveforms for binary black hole
 .. _arXiv:1508.07250: https://arxiv.org/abs/1508.07250
 .. _arXiv:1508.07253: https://arxiv.org/abs/1508.07253
 
-The snr grid generator: ``gwsnrcalc.generate_contour_data.py`` uses ``gwsnrcalc.gw_snr_calculator.snr to create SNR grids for contour plots (like those used in BOWIE).
+The snr grid generator: ``gwsnrcalc.generate_contour_data.py`` uses ``gwsnrcalc.gw_snr_calculator.snr`` to create SNR grids for contour plots (like those used in BOWIE).
 
 Available via pip and on github: https://github.com/mikekatz04/BOWIE/tree/master/snr_calculator_folder/
 

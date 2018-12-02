@@ -1,15 +1,15 @@
 bowie_makeplot package documentation:
 =====================================
 
+User interfacing modules:
+-------------------------
+
 make_plot module
-----------------
+^^^^^^^^^^^^^^^^
 .. automodule:: bowie_makeplot.make_plot
     :members:
     :undoc-members:
     :show-inheritance:
-
-plotutils package
------------------
 
 forminput module
 ^^^^^^^^^^^^^^^^
@@ -19,10 +19,8 @@ forminput module
     :undoc-members:
     :show-inheritance:
 
-Module contents
----------------
+Background script documentation:
+--------------------------------
 
-.. automodule:: bowie_makeplot.plotutils
-    :members:
-    :undoc-members:
-    :show-inheritance:
+plotutils package
+^^^^^^^^^^^^^^^^^
