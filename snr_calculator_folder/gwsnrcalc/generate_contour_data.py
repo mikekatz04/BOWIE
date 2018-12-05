@@ -42,7 +42,7 @@ def generate_contour_data(pid):
     # check if pid is  dicionary or GenInput class
     # if GenInput, change to dictionary
     if isinstance(pid, GenInput):
-        pid = pid.return_overall_dictionary()
+        pid = pid.return_dict()
 
     begin_time = time.time()
 

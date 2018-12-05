@@ -25,6 +25,7 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 
 from bowie_makeplot.plotutils.makeprocess import MakePlotProcess
+from bowie_makeplot.plotutils.forminput import MainContainer as PlotInput
 
 SNR_CUT = 5.0
 
@@ -46,6 +47,9 @@ def plot_main(pid, return_fig_ax=False):
 
     global WORKING_DIRECTORY, SNR_CUT
 
+    if isinstance(pid, PlotInput):
+        pid = pid.return_dict()
+
     WORKING_DIRECTORY = '.'
     if 'WORKING_DIRECTORY' not in pid['general'].keys():
         pid['general']['WORKING_DIRECTORY'] = '.'
@@ -57,21 +61,22 @@ def plot_main(pid, return_fig_ax=False):
     if "switch_backend" in pid['general'].keys():
         plt.switch_backend(pid['general']['switch_backend'])
 
-    running_process = MakePlotProcess(pid)
+    running_process = MakePlotProcess(
+        **{**pid, **pid['general'], **pid['plot_info'], **pid['figure']})
+
     running_process.input_data()
     running_process.setup_figure()
     running_process.create_plots()
 
     # save or show figure
-    if 'save_figure' in pid['general'].keys():
-        if pid['general']['save_figure'] is True:
-            dpi = 200
-            if 'dpi' in pid['general'].keys():
-                dpi = pid['general']['dpi']
-            running_process.fig.savefig(pid['general']['WORKING_DIRECTORY'] + '/' + pid['general']['output_path'], dpi=dpi)
+    if 'save_figure' in pid['figure'].keys():
+        if pid['figure']['save_figure'] is True:
+            running_process.fig.savefig(
+                pid['general']['WORKING_DIRECTORY'] + '/' + pid['figure']['output_path'],
+                **pid['figure']['savefig_kwargs'])
 
-    if 'show_figure' in pid['general'].keys():
-        if pid['general']['show_figure'] is True:
+    if 'show_figure' in pid['figure'].keys():
+        if pid['figure']['show_figure'] is True:
             plt.show()
 
     if return_fig_ax is True:

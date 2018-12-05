@@ -517,7 +517,7 @@ class MainContainer(Generate, SensitivityInput, SNRInput, ParallelInput, Output)
         self.general.WORKING_DIRECTORY = wd
         return
 
-    def return_overall_dictionary(self):
+    def return_dict(self):
         """Output dictionary for ``generate_contour_data.py`` input.
 
         Iterates through the entire MainContainer class turning its contents
