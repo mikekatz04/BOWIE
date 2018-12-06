@@ -194,7 +194,7 @@ class MakePlotProcess:
         # create list of plot types
         self.plot_types = [self.plot_info[str(i)]['plot_type'] for i in range(len(ax))]
 
-        if len(self.plot_types) == 1:
+        if len(self.plot_types) == 1 and self.plot_types[0] != 'CodetectionPotential2':
             if self.plot_types[0] not in self.colorbars:
                 self.colorbars[self.plot_types[0]] = {'cbar_pos': 5}
             else:
@@ -209,13 +209,13 @@ class MakePlotProcess:
                 self.colorbar_classes[plot_type] = None
 
             elif plot_type == 'CodetectionPotential2':
-                self.colorbar_classes[plot_type] = []
+                self.colorbar_classes['CodetectionPotential2'] = []
                 for plot_type in ['CodetectionPotential2', 'SingleDetection']:
-                    if plot_type in self.colorbars and plot_type != 'CodetectionPotential2':
-                        self.colorbar_classes[plot_type].append(FigColorbar(fig, plot_type, **self.colorbars[plot_type]))
+                    if plot_type in self.colorbars:
+                        self.colorbar_classes['CodetectionPotential2'].append(FigColorbar(fig, plot_type, **self.colorbars[plot_type]))
 
                     else:
-                        self.colorbar_classes[plot_type].append(FigColorbar(fig, plot_type))
+                        self.colorbar_classes['CodetectionPotential2'].append(FigColorbar(fig, plot_type))
 
             elif plot_type in self.colorbars:
                 self.colorbar_classes[plot_type] = FigColorbar(fig, plot_type, **self.colorbars[plot_type])
@@ -228,8 +228,9 @@ class MakePlotProcess:
 
         # set subplots_adjust settings
         if ('Ratio' in self.plot_types or 'Waterfall' in self.plot_types or
-                'CodetectionPotential' in self.plot_types or
-                'CodetectionPotential2' in self.plot_types):
+                'CodetectionPotential1' in self.plot_types or
+                'CodetectionPotential2' in self.plot_types or
+                'CodetectionPotential3' in self.plot_types):
             self.right = 0.79
 
         # adjust figure sizes

@@ -187,11 +187,11 @@ class FigColorbar:
             self.cbar_ticks = np.array([0., 10, 20, 50, 100, 200, 500, 1000, 3000, 1e10])
             self.cbar_tick_labels = [int(i) for i in np.delete(self.cbar_ticks , -1)]
 
-        elif plot_type == 'Ratio' or 'CodetectionPotential3':
+        elif plot_type == 'Ratio' or plot_type == 'CodetectionPotential3':
             self.cbar_ticks = [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]
             self.cbar_tick_labels = [r'$10^{%i}$' % i for i in self.cbar_ticks[1:-1]]
 
-        elif plot_type == 'CodetectionPotential2':
+        elif plot_type == 'CodetectionPotential2' or plot_type == 'SingleDetection':
             self.cbar_ticks = [-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0]
             self.cbar_tick_labels = [r'$\downarrow 10^{%i}$' % i for i in [4.0, 3.0, 2.0, 1.0]] + [
                 r'    $10^{%i}$' % i for i in [0.0]] + [r'$\uparrow 10^{%i}$' % i for i in [1.0, 2.0, 3.0, 4.0]]
@@ -222,7 +222,7 @@ class FigColorbar:
                                  'Ratio': r"$\rho_1/\rho_2$",
                                  'CodetectionPotential1': r'$\rho$',
                                  'SingleDetection': r'$\rho$',
-                                 'CodetectionPotential2': r'Codetection: $\sqrt{\rho_1^2 + rho_2^2}$',
+                                 'CodetectionPotential2': r'Codetection: $\sqrt{\rho_1^2 + \rho_2^2}$',
                                  'CodetectionPotential3': r'$\sqrt{\rho_{A1}^2+\rho_{A2}^2}/\sqrt{\rho_{B1}^2+\rho_{B2}^2}$'}
             self.cbar_label = cbar_label_defaults[plot_type]
 
@@ -230,7 +230,7 @@ class FigColorbar:
         if self.cbar_axes == []:
             cbar_pos_defaults = {'Waterfall': 1,
                                  'Ratio': 2,
-                                 'CodetectionPotential': 1,
+                                 'CodetectionPotential1': 5,
                                  'SingleDetection': 2,
                                  'CodetectionPotential2': 1,
                                  'CodetectionPotential3': 2}

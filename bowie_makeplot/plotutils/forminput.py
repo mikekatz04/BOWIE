@@ -294,7 +294,7 @@ class Legend:
     in the SinglePlot class.
 
     """
-    def add_legend(self, labels, **kwargs):
+    def add_legend(self, labels=None, **kwargs):
         """Specify legend for a plot.
 
         Adds labels and basic legend specifications for specific plot.

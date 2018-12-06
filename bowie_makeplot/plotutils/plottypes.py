@@ -75,7 +75,6 @@ class Ratio(CreateSinglePlot):
         cmap2.set_bad(color='white', alpha=0.001)
         # plot ratio contours
 
-        import pdb; pdb.set_trace()
         sc = self.axis.contourf(self.xvals[0], self.yvals[0], diff_out,
                                 levels=levels2, norm=norm2,
                                 extend='both', cmap=cmap2)
@@ -96,9 +95,12 @@ class Ratio(CreateSinglePlot):
                 self.axis.contour(self.xvals[0], self.yvals[0],
                                   loss_gain_contour, 3, colors='black', linewidths=2)
 
-            # TODO: add legend ability for Ratio plots
             except ValueError:
                 pass
+        from matplotlib.patches import Patch
+        loss_patch = Patch(fill=None, label='Loss', hatch='x', linestyle='--', linewidth=2)
+        gain_patch = Patch(fill=None, label='Gain', hatch='+', linestyle='-', linewidth=2)
+        legend = self.axis.legend(handles=[loss_patch, gain_patch], **self.legend_kwargs)
 
         return
 
@@ -118,7 +120,6 @@ class Ratio(CreateSinglePlot):
                         diff_out: (float) - 2D array - ratio contours.
 
         """
-
         # set contour to test and control contour
         self.ratio_comp_value = (self.comparison_value if self.ratio_comp_value is None
                                  else self.ratio_comp_value)
@@ -127,14 +128,14 @@ class Ratio(CreateSinglePlot):
         inds_gained = np.where((self.comp1 >= self.comparison_value) & (self.comp2 < self.comparison_value))
         inds_lost = np.where((self.comp1 < self.comparison_value) & (self.comp2 >= self.comparison_value))
 
+        self.comp1 = np.ma.masked_where(self.comp1 < self.ratio_comp_value, self.comp1)
+        self.comp2 = np.ma.masked_where(self.comp2 < self.ratio_comp_value, self.comp2)
+
         # set diff to ratio for purposed of determining raito differences
         diff = self.comp1/self.comp2
 
         # the following determines the log10 of the ratio difference. If it is extremely small, we neglect and put it as zero (limits chosen to resemble ratios of less than 1.05 and greater than 0.952)
-        diff = np.log10(diff)*(diff >= 1.05) + (-np.log10(1.0/diff)) * \
-            (diff <= 0.952) + 0.0*((diff < 1.05) & (diff > 0.952))
-
-        diff = np.ma.masked_where((self.comp1 < self.ratio_comp_value) | (self.comp2 < self.ratio_comp_value), diff)
+        diff = np.log10(diff)*(diff >= 1.05) + (-np.log10(1.0/diff)) * (diff <= 0.952) + 0.0*((diff < 1.05) & (diff > 0.952))
 
         # initialize loss/gain
         loss_gain_contour = np.zeros(np.shape(self.comp1))
@@ -180,7 +181,7 @@ class CodetectionPotential1(CreateSinglePlot):
                                levels=levels, norm=norm, extend='max', cmap=cmap_single, alpha=1.0)
 
             self.axis.scatter([-1e10, -1e10], [-1e1, -2e1], color=cmap_keys[i],
-                              label=self.labels[i])
+                              label=self.legend_labels[i])
 
             # toggle line contours of orders of magnitude of ratio comparisons
             if self.order_contour_lines:
@@ -198,9 +199,9 @@ class CodetectionPotential1(CreateSinglePlot):
         self.axis.scatter([-1e10, -1e10], [-1e1, -2e1], color=codet_cmap_key, label='Codetection')
 
         # black colorbar
-        self.colorbars.setup_colorbars(codet_sc)
+        self.colorbar.setup_colorbars(codet_sc)
 
-        self.axis.legend(markerscale=3.0, **self.legend)
+        self.axis.legend(markerscale=3.0, **self.legend_kwargs)
         return
 
     def find_codetection_potential(self):
@@ -213,7 +214,7 @@ class CodetectionPotential1(CreateSinglePlot):
 
         """
 
-        # ONLY FOR TESTING
+        compare_snrs = []
         for zval in self.zvals:
             compare_snrs.append(1*(zval >= self.comparison_value) + 0*(zval < self.comparison_value))
 
@@ -268,8 +269,8 @@ class CodetectionPotential(CreateSinglePlot):
 
         if return_single:
             # set indices of loss,gained. inds_check tells the ratio calculator not to val2 if both SNRs are below 1
-            inds_up_only = ((val1 >= comparison_value) & (val2 < comparison_value))
-            inds_down_only = ((val1 < comparison_value) & (val2 >= comparison_value))
+            inds_up_only = ((val1 >= self.comparison_value) & (val2 < self.comparison_value))
+            inds_down_only = ((val1 < self.comparison_value) & (val2 >= self.comparison_value))
 
             out_vals_single = inds_up_only*np.log10(val1) + inds_down_only*-1*np.log10(val2)
             out_vals_single = np.reshape(out_vals_single, np.shape(val1))
