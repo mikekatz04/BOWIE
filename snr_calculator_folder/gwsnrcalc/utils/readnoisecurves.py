@@ -100,7 +100,7 @@ def char_strain_to_psd(f, amp):
 
 
 def read_noise_curve(noise_curve, noise_type_in='ASD', noise_type_out='ASD',
-                     use_wd_noise=False, wd_noise='HB_wd_noise', wd_noise_type_in='ASD'):
+                     add_wd_noise=False, wd_noise='HB_wd_noise', wd_noise_type_in='ASD'):
     """Simple auxillary function that can read noise curves in.
 
     This function can read in noise curves from a provided file or those that are preinstalled
@@ -120,7 +120,7 @@ def read_noise_curve(noise_curve, noise_type_in='ASD', noise_type_out='ASD',
             See the arXiv paper above for the meaning behind each choice and a plot with each curve.
         noise_type_in/noise_type_out (str, optional): Type of noise input/output.
             Choices are `ASD`, `PSD`, or `char_strain`. Default for both is `ASD`.
-        use_wd_noise (bool, optional): If True, include wd noise.
+        add_wd_noise (bool, optional): If True, include wd noise.
         wd_noise (str, optional): File path to wd background noise or string representing
             those in the noise curves folder. Default is the Hiscock et al 2000 approximation
             of the Hils & Bender 1997 white dwarf background (`HB_wd_noise`).
@@ -153,26 +153,24 @@ def read_noise_curve(noise_curve, noise_type_in='ASD', noise_type_out='ASD',
         amp_n = globals()[noise_type_in.lower() + '_to_' + noise_type_out.lower()](f_n, amp_n)
 
     # add wd_noise if true
-    if use_wd_noise:
+    if add_wd_noise:
         if wd_noise_type_in not in possible_noise_types:
             raise ValueError('wd_noise_type_in must be either ASD, PSD, or char_strain.')
 
         if wd_noise[-4:] == '.txt':
-            noise = ascii.read(wd_noise)
+            wd_data = ascii.read(wd_noise)
         else:
             cfd = os.path.dirname(os.path.abspath(__file__))
-            noise = ascii.read(cfd + '/noise_curves/' + wd_noise + '.txt')
-
-        wd_data = ascii.read(file_string)
+            wd_data = ascii.read(cfd + '/noise_curves/' + wd_noise + '.txt')
 
         f_n_wd = np.asarray(wd_data['f'])
         amp_n_wd = np.asarray(wd_data[wd_noise_type_in])
 
         if wd_noise_type_in != noise_type_out:
             amp_n_wd = globals()[noise_type_in.lower()
-                                 + '_to_' + noise_type_out.lower()](f_n, amp_n_wd)
+                                 + '_to_' + noise_type_out.lower()](f_n_wd, amp_n_wd)
 
-        amp_n = combine_with_wd_noise(f_n, amp_n, f_n_wd, amp_n_wd)
+        f_n, amp_n = combine_with_wd_noise(f_n, amp_n, f_n_wd, amp_n_wd)
 
     return f_n, amp_n
 

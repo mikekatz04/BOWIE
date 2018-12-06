@@ -88,7 +88,7 @@ class FileReadOut:
                     header.attrs['par_' + which + '_unit'] = getattr(self, 'par_' + which + '_unit')
                     header.attrs['par_' + which + '_value'] = getattr(self,
                                                                       'fixed_parameter_' + which)
-                except KeyError:
+                except AttributeError:
                     pass
 
             if self.added_note != '':

@@ -3,6 +3,7 @@ from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib import colors
+from matplotlib.patches import Patch
 
 from bowie_makeplot.plotutils.baseplot import CreateSinglePlot
 
@@ -97,10 +98,11 @@ class Ratio(CreateSinglePlot):
 
             except ValueError:
                 pass
-        from matplotlib.patches import Patch
-        loss_patch = Patch(fill=None, label='Loss', hatch='x', linestyle='--', linewidth=2)
-        gain_patch = Patch(fill=None, label='Gain', hatch='+', linestyle='-', linewidth=2)
-        legend = self.axis.legend(handles=[loss_patch, gain_patch], **self.legend_kwargs)
+
+        if self.add_legend:
+            loss_patch = Patch(fill=None, label='Loss', hatch='x', linestyle='--', linewidth=2)
+            gain_patch = Patch(fill=None, label='Gain', hatch='+', linestyle='-', linewidth=2)
+            legend = self.axis.legend(handles=[loss_patch, gain_patch], **self.legend_kwargs)
 
         return
 
@@ -379,7 +381,7 @@ class Horizon(CreateSinglePlot):
                 self.axis.plot([0.1, 0.2], [0.1, 0.2], color=colors1[j],
                                label=self.legend_labels[j])
 
-        if self.legend_labels != []:
+        if self.add_legend:
             self.axis.legend(**self.legend_kwargs)
 
         return

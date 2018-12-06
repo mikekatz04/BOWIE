@@ -259,7 +259,7 @@ class PhenomDWaveforms:
             raise ValueError("dist_type needs to be redshift, comoving_distance,"
                              + "or luminosity_distance")
 
-        self.length = len(m1)
+        self.length = len(self.m1)
         self._sanity_check()
         self._create_waveforms()
         return self

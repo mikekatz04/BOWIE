@@ -27,9 +27,9 @@ Welcome to bowie's documentation!
    :maxdepth: 5
    :caption: Contents:
 
-   makeplot_link.rst
+   makeplot.rst
 
-   snrcalc_link.rst
+   gwsnrcalc.rst
 
 Indices and tables
 ==================

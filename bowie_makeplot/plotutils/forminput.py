@@ -59,6 +59,13 @@ class Label:
                 is None.
 
         """
+        prop_default = {
+            'fontsize': 18,
+        }
+
+        for prop, default in prop_default.items():
+            kwargs[prop] = kwargs.get(prop, default)
+
         setattr(self.label, which, label)
         setattr(self.label, which + '_kwargs', kwargs)
         return
@@ -78,7 +85,7 @@ class Label:
                 https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html
 
         """
-        self._set_label('xlabel', label, fontsize)
+        self._set_label('xlabel', label, **kwargs)
         return
 
     def set_ylabel(self, label, **kwargs):
@@ -96,7 +103,7 @@ class Label:
                 https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html
 
         """
-        self._set_label('ylabel', label, fontsize)
+        self._set_label('ylabel', label, **kwargs)
         return
 
     def set_title(self, title, **kwargs):
@@ -114,7 +121,7 @@ class Label:
                 https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_title.html
 
         """
-        self._set_labels('title', title, **kwargs)
+        self._set_label('title', title, **kwargs)
         return
 
     def _set_tick_label_fontsize(self, which, fontsize):
@@ -333,6 +340,7 @@ class Legend:
             else:
                 kwargs['prop']['size'] = kwargs['size']
             del kwargs['size']
+        self.legend.add_legend = True
         self.legend.legend_labels = labels
         self.legend.legend_kwargs = kwargs
         return
@@ -682,7 +690,7 @@ class Figure:
         self.figure.figure_height = height
         return
 
-    def spacing(self, space):
+    def set_spacing(self, space):
         """Set the figure spacing.
 
         Sets whether in general there is space between subplots.
@@ -739,6 +747,10 @@ class Figure:
             'hspace': 0.3,
             'wspace': 0.3,
         }
+
+        if 'subplots_adjust_kwargs' in self.figure.__dict__:
+            for key, value in self.figure.subplots_adjust_kwargs.items():
+                prop_default[key] = value
 
         for prop, default in prop_default.items():
             kwargs[prop] = kwargs.get(prop, default)
@@ -862,8 +874,7 @@ class Figure:
         self.figure.fig_title_kwargs = kwargs
         return
 
-    def set_colorbar(self, plot_type, label=None,
-                     label_fontsize=None, ticks_fontsize=None, pos=None, colorbar_axes=None):
+    def set_colorbar(self, plot_type, **kwargs):
         """Setup colorbar for specific type of plot.
 
         Specify a plot type to customize its corresponding colorbar in the figure.
@@ -885,32 +896,27 @@ class Figure:
                 This will not stop the code.
 
         """
-        if 'colorbars' not in self.general.__dict__:
+        prop_default = {
+            'cbar_label': None,
+            'cbar_ticks_fontsize': 15,
+            'cbar_label_fontsize': 20,
+            'cbar_axes': [],
+            'cbar_ticks': [],
+            'cbar_tick_labels': [],
+            'cbar_pos': 'use_default',
+            'cbar_label_pad': None,
+        }
+
+        for prop, default in prop_default.items():
+            kwargs[prop] = kwargs.get(prop[5:], default)
+
+            if prop[5:] in kwargs:
+                del kwargs[prop[5:]]
+
+        if 'colorbars' not in self.figure.__dict__:
             self.figure.colorbars = {}
 
-        trans_dict = ColorbarContainer()
-        # TODO: Check this. only problem for codet
-        if label is not None:
-            trans_dict.cbar_label = label
-
-        if label_fontsize is not None:
-            trans_dict.cbar_label_fontsize = label_fontsize
-
-        if ticks_fontsize is not None:
-            trans_dict.cbar_ticks_fontsize = ticks_fontsize
-
-        if pos is not None:
-            trans_dict.cbar_pos = pos
-
-        if colorbar_axes is not None:
-            trans_dict.cbar_axes = colorbar_axes
-
-        self.figure.colorbars[plot_type] = trans_dict
-
-        if (label is None and label_fontsize is None and
-                ticks_fontsize is None and pos is None and colorbar_axes is None):
-            warnings.warn("Call to set_colorbar without supplying Args.", UserWarning)
-
+        self.figure.colorbars[plot_type] = kwargs
         return
 
 
@@ -944,32 +950,6 @@ class FigureContainer:
         figure_width/figure_height (float, optional): Dimensions of the figure set with
         ``fig.set_size_inches()`` from matplotlib. Default is 8.0 for each.
         colorbars (obj): ColorbarContainer object carrying information for the colorbars.
-
-    """
-    def __init__(self):
-        pass
-
-
-class ColorbarContainer:
-    """Holds all of the attributes related to the colorbar dictionary.
-
-    This class is used to store the information when ``set_colorbar`` is called
-    by the MainContainer class.
-
-    Attributes:
-        label (str, optional): Label for the colorbar. Default for Waterfall is `rho_i`.
-            Default for Ratio: `rho_i/rho_0`.
-        ticks_fontsize (float, optional): Fontsize for tick marks on colorbar.
-            The ticks are set based on the plot type. Default is 17.
-        label_fontsize (float, optional): Colorbar label fontsize. Default is 20.
-        pos (int, optional): Preset positions for the colorbars. 1 - top right, 2 - lower right,
-            3 - top left (horizontal), 4 - top right (horizontal),
-            5 - stretched to fill right side (effectively 1 & 2 combined).
-            Defaults are Waterfall-1, Ratio -2. If plot is alone on figure, default is 5.
-        colorbar_axes (len-4 list of floats, optional): List for custom axes placement
-            of the colorbar. See ``fig.add_axes`` from matplotlib.
-            url: https://matplotlib.org/2.0.0/api/figure_api.html
-            Default is placement based on `pos` attribute.
 
     """
     def __init__(self):

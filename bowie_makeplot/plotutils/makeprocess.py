@@ -88,6 +88,7 @@ class MakePlotProcess:
             'hspace': 0.3,
             'wspace': 0.3,
             'colorbars': {},
+            'subplots_adjust_kwargs': {},
             }
 
         for prop, default in prop_default.items():
@@ -198,7 +199,8 @@ class MakePlotProcess:
             if self.plot_types[0] not in self.colorbars:
                 self.colorbars[self.plot_types[0]] = {'cbar_pos': 5}
             else:
-                self.colorbars[self.plot_types[0]]['cbar_pos'] = 5
+                if 'cbar_pos' not in self.colorbars[self.plot_types[0]]:
+                    self.colorbars[self.plot_types[0]]['cbar_pos'] = 5
 
         # prepare colorbar classes
         self.colorbar_classes = {}
@@ -231,12 +233,10 @@ class MakePlotProcess:
                 'CodetectionPotential1' in self.plot_types or
                 'CodetectionPotential2' in self.plot_types or
                 'CodetectionPotential3' in self.plot_types):
-            self.right = 0.79
+            self.subplots_adjust_kwargs['right'] = 0.79
 
         # adjust figure sizes
-        fig.subplots_adjust(left=self.left, top=self.top,
-                            bottom=self.bottom, right=self.right,
-                            wspace=self.wspace, hspace=self.hspace)
+        fig.subplots_adjust(**self.subplots_adjust_kwargs)
 
         if 'fig_y_label' in self.__dict__.keys():
             fig.text(self.fig_y_label_x,
@@ -273,6 +273,7 @@ class MakePlotProcess:
                                                      colorbar=(
                                                         self.colorbar_classes[self.plot_types[i]]),
                                                      **{**self.general,
+                                                        **self.figure,
                                                         **self.plot_info[str(i)],
                                                         **self.plot_info[str(i)]['limits'],
                                                         **self.plot_info[str(i)]['label'],

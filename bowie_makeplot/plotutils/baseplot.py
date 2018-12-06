@@ -38,6 +38,7 @@ class CreateSinglePlot:
             'ratio_comp_value': None,
             'legend_kwargs': {},
             'legend_labels': [],
+            'add_legend': False,
         }
 
         for key, value in kwargs.items():
@@ -166,15 +167,14 @@ class CreateSinglePlot:
             self.axis.grid(True, linestyle='-', color='0.75')
 
         # add title
-        title_fontsize = 20
         if 'title' in self.__dict__.keys():
-            self.axis.set_title(r'%s'.format(self.title), **self.title_kwargs)
+            self.axis.set_title(r'{}'.format(self.title), **self.title_kwargs)
 
         if 'xlabel' in self.__dict__.keys():
-            self.axis.set_xlabel(r'%s'.format(self.xlabel), **self.xlabel_kwargs)
+            self.axis.set_xlabel(r'{}'.format(self.xlabel), **self.xlabel_kwargs)
 
         if 'ylabel' in self.__dict__.keys():
-            self.axis.set_ylabel(r'%s'.format(self.ylabel), **self.ylabel_kwargs)
+            self.axis.set_ylabel(r'{}'.format(self.ylabel), **self.ylabel_kwargs)
         return
 
 
@@ -247,7 +247,7 @@ class FigColorbar:
         # check if colorbar is horizontal or vertical
         if self.cbar_axes[2] > self.cbar_axes[3]:
             self.cbar_orientation = 'horizontal' if self.cbar_orientation is None else self.cbar_orientation
-            self.cbar_label_pad = +10 if self.cbar_label_pad is None else self.cbar_label_pad
+            self.cbar_label_pad = -60 if self.cbar_label_pad is None else self.cbar_label_pad
             self.cbar_var = 'x' if self.cbar_var is None else self.cbar_var
             self.cbar_ax.xaxis.set_ticks_position('top')
 

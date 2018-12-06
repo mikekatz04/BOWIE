@@ -129,7 +129,7 @@ class ReadInData:
 
             # find number of distinct x and y points.
             num_x_pts = len(np.unique(data[self.x_column_label][:]))
-            num_y_pts = len(np.unique(data[self.x_column_label][:]))
+            num_y_pts = len(np.unique(data[self.y_column_label][:]))
 
             # create 2D arrays of x,y,z
             self.xvals = np.reshape(data[self.x_column_label][:], (num_y_pts, num_x_pts))
