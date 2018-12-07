@@ -17,6 +17,10 @@ import ctypes
 from astropy.cosmology import Planck15 as cosmo
 import numpy as np
 import os
+import scipy.constants as ct
+from scipy.special import jv  # bessel function of the first kind
+
+M_sun = 1.989e30  # kg
 
 
 class PhenomDWaveforms:
@@ -254,6 +258,246 @@ class PhenomDWaveforms:
             comoving_distance = self.z_or_dist
             self.z = np.interp(comoving_distance, com_dis, z_in)
             self.dist = np.interp(comoving_distance, com_dis, lum_dis)
+
+        else:
+            raise ValueError("dist_type needs to be redshift, comoving_distance,"
+                             + "or luminosity_distance")
+
+        self.length = len(self.m1)
+        self._sanity_check()
+        self._create_waveforms()
+        return self
+
+
+class EccentricBinaries:
+    def __init__(self, **kwargs):
+        prop_default = {
+            'dist_type': 'redshift',
+            'initial_cond_type': 'frequency',
+            'num_points': 1024,
+            'n_max': 100,
+        }
+
+        for prop, default in prop_default.items():
+            setattr(self, prop, kwargs.get(prop, default))
+
+    def _broadcast_and_set_attrs(self, local_dict):
+        """Cast all inputs to correct dimensions.
+
+        This method fixes inputs who have different lengths. Namely one input as
+        an array and others that are scalara or of len-1.
+
+        Raises:
+            Value Error: Multiple length arrays of len>1
+
+        """
+        del local_dict['self']
+        self.remove_axis = False
+        max_length = 0
+        for key in local_dict:
+            try:
+                length = len(local_dict[key])
+                if length > max_length:
+                    max_length = length
+
+            except TypeError:
+                pass
+
+        if max_length == 0:
+            self.remove_axis = True
+            for key in local_dict:
+                setattr(self, key, np.array([local_dict[key]]))
+
+        # check for bad length arrays
+        else:
+            for key in local_dict:
+                try:
+                    if len(local_dict[key]) < max_length and len(local_dict[key]) > 1:
+                        raise ValueError("Casting parameters not correct."
+                                         + " Need all at a maximum shape and the rest being"
+                                         + "len-1 arrays or scalars")
+                except TypeError:
+                    pass
+
+            # broadcast arrays
+            for key in local_dict:
+                try:
+                    if len(local_dict[key]) == max_length:
+                        setattr(self, key, local_dict[key])
+                    elif len(local_dict[key]) == 1:
+                        setattr(self, key, np.full((max_length,), local_dict[key][0]))
+                except TypeError:
+                    setattr(self, key, np.full((max_length,), local_dict[key]))
+        return
+
+    def _sanity_check(self):
+        """Check if parameters are okay.
+
+        Sanity check makes sure each parameter is within an allowable range.
+
+        Raises:
+            ValueError: Problem with a specific parameter.
+
+        """
+        if any(self.m1 < 0.0):
+            raise ValueError("Mass 1 is negative.")
+        if any(self.m2 < 0.0):
+            raise ValueError("Mass 2 is negative.")
+
+        if any(self.z <= 0.0):
+            raise ValueError("Redshift is zero or negative.")
+
+        if any(self.dist <= 0.0):
+            raise ValueError("Distance is zero or negative.")
+
+        if any(self.initial_point < 0.0):
+            raise ValueError("initial_point is negative.")
+
+        if any(self.t_obs < 0.0):
+            raise ValueError("t_obs is negative.")
+
+        return
+
+    def _convert_units(self):
+        self.m1 = self.m1*M_sun*ct.G/ct.c**2
+        self.m2 = self.m2*M_sun*ct.G/ct.c**2
+        initial_cond_type_conversion = {
+            'time': ct.c*ct.Julian_year,
+            'frequency': 1./ct.c,
+            'separation': ct.parsec,
+        }
+
+        self.initial_point = self.initial_point*initial_cond_type_conversion[self.initial_cond_type]
+
+        self.t_obs = self.t_obs*ct.c*ct.Julian_year
+        return
+
+    def _find_integrand(self, e):
+        return e**(29./19.)*(1.+(121./304.)*e**2.)**(1181./2299.)/(1.-e**2)**(3./2.)
+
+    def _f_e(self, e):
+        return e**(12./19.)*(1.+(121./304.)*e**2.)**(870./2299.)/(1.-e**2)
+
+    def _c0_func(self, a0, e0):
+        return a0*(1.-e0**2)/e0**(12./19.) * (1.+(121./304.)*e0**2)**(-870./2299.)
+
+    def _t_of_e(self, a0=None, t_start=None, f0=None, ef=None, t_obs=5.0):
+
+        if ef is None:
+            ef = np.ones_like(self.e0)*0.0000001
+
+        beta = 64.0/5.0*self.m1*self.m2*(self.m1+self.m2)
+
+        e_vals = np.asarray([np.linspace(ef[i], self.e0[i], self.num_points) for i in range(len(self.e0))])
+        integrand = self._find_integrand(e_vals)
+        integral = np.asarray([np.trapz(integrand[:,i:], x=e_vals[:,i:]) for i in range(e_vals.shape[1])]).T
+
+        if a0 is None and f0 is None:
+
+            a0 = (19./12.*t_start*beta*1/integral[:,0])**(1./4.) * self._f_e(e_vals[:,-1])
+
+        elif a0 is None:
+            a0 = ((self.m1 + self.m2)/self.f0**2)**(1./3.)
+
+        c0 = self._c0_func(a0, self.e0)
+
+        a_vals = c0[:, np.newaxis]*self._f_e(e_vals)
+
+        delta_t = 12./19*c0[:, np.newaxis]**4/beta[:, np.newaxis]*integral
+
+        return e_vals, a_vals, delta_t
+
+    def _chirp_mass(self):
+        return (self.m1*self.m2)**(3./5.)/(self.m1+self.m2)**(1./5.)
+
+    def _f_func(self):
+        return (1.+(73./24.)*self.e_vals**2.+(37./96.)*self.e_vals**4.)/(1.-self.e_vals**2.)**(7./2.)
+
+    def _g_func(self):
+        return self.n**4./32. * ((jv(self.n-2., self.n*self.e_vals) - 2.*self.e_vals*jv(self.n-1., self.n*self.e_vals) + 2./self.n*jv(self.n, self.n*self.e_vals) + 2.*self.e_vals*jv(self.n+1., self.n*self.e_vals) - jv(self.n+2., self.n*self.e_vals))**2. + (1.-self.e_vals**2.)*(jv(self.n-2., self.n*self.e_vals) - 2.*jv(self.n, self.n*self.e_vals) + jv(self.n+2., self.n*self.e_vals))**2. + 4./(3.*self.n**2.)*(jv(self.n, self.n*self.e_vals))**2.)
+
+    def _dEndfr(self):
+        #eq 4 from orazio and samsing
+        # takes f in rest frame
+        Mc = self._chirp_mass()
+        return np.pi**(2./3.)*Mc**(5./3.)/(3.*(1.+self.z)**(1./3.)*(self.freqs_orb/(1.+self.z))**(1./3.))*(2./self.n)**(2./3.)*self._g_func()/self._f_func()
+
+    def _hcn_func(self):
+        self.hc = 1./(np.pi*self.dist)*np.sqrt(2.*self._dEndfr())
+        return
+
+    def _create_waveforms(self):
+
+        e_vals, a_vals, t_vals = self._t_of_e(a0=self.a0, f0=self.f0, t_start=self.t_start, ef=None, t_obs=self.t_obs)
+
+        ind_start = np.asarray([np.where(t_vals[i]<self.t_obs[i])[0][0] for i in range(len(t_vals))])
+
+        self.ef = np.asarray([e_vals[i][ind] for i, ind in enumerate(ind_start)])
+
+        self.e_vals, self.a_vals, self.t_vals = self._t_of_e(a0=a_vals[:,-1], ef=self.ef, t_obs=self.t_obs)
+
+        self.freqs_orb = np.sqrt((self.m1[:, np.newaxis]+self.m2[:, np.newaxis])/self.a_vals**3)
+
+        for attr in ['e_vals', 'a_vals', 't_vals', 'freqs_orb']:
+            arr = getattr(self, attr)
+            new_arr = np.flip(np.tile(arr, self.n_max).reshape(len(arr)*self.n_max, len(arr[0])), -1)
+            setattr(self, attr, new_arr)
+
+        for attr in ['m1', 'm2', 'z', 'dist']:
+            arr = getattr(self, attr)
+            new_arr = np.repeat(arr, self.n_max)[:, np.newaxis]
+            setattr(self, attr, new_arr)
+
+        self.n = np.tile(np.arange(1, self.n_max + 1), self.length)[:, np.newaxis]
+
+        self._hcn_func()
+
+        # reshape hc
+        self.hc = self.hc.reshape(self.length, self.n_max, self.hc.shape[-1])
+        self.freqs = np.reshape(self.n*self.freqs_orb/(1+self.z)*ct.c, (self.length, self.n_max, self.freqs_orb.shape[-1]))
+
+        self.hc, self.freqs = np.squeeze(self.hc), np.squeeze(self.freqs)
+        return
+
+    def __call__(self, m1, m2, z_or_dist, initial_point, e0, t_obs):
+
+        # cast binary inputs to same shape
+        self._broadcast_and_set_attrs(locals())
+
+        self.f0 = None
+        self.t_start = None
+        self.a0 = None
+
+        self._convert_units()
+
+        initial_cond_set_attr = {
+            'time': 't_start',
+            'frequency': 'f0',
+            'separation': 'a0'
+        }
+
+        setattr(self, initial_cond_set_attr[self.initial_cond_type], self.initial_point)
+
+        # based on distance inputs, need to find redshift and luminosity distance.
+        if self.dist_type == 'redshift':
+            self.z = self.z_or_dist
+            self.dist = cosmo.luminosity_distance(self.z).value*ct.parsec*1e6
+
+        elif self.dist_type == 'luminosity_distance':
+            z_in = np.logspace(-3, 3, 10000)
+            lum_dis = cosmo.luminosity_distance(z_in).value
+
+            self.dist = self.z_or_dist*ct.parsec*1e6
+            self.z = np.interp(self.dist, lum_dis, z_in)
+
+        elif self.dist_type == 'comoving_distance':
+            z_in = np.logspace(-3, 3, 10000)
+            lum_dis = cosmo.luminosity_distance(z_in).value
+            com_dis = cosmo.comoving_distance(z_in).value
+
+            comoving_distance = self.z_or_dist
+            self.z = np.interp(comoving_distance, com_dis, z_in)
+            self.dist = np.interp(comoving_distance, com_dis, lum_dis)*ct.parsec*1e6
 
         else:
             raise ValueError("dist_type needs to be redshift, comoving_distance,"

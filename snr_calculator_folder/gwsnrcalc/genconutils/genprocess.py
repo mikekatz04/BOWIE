@@ -75,6 +75,13 @@ class GenProcess:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+        prop_default = {
+            'ecc': False,
+        }
+
+        for prop, default in prop_default.items():
+            setattr(self, prop, kwargs.get(prop, default))
+
     def set_parameters(self):
         """Setup all the parameters for the binaries to be evaluated.
 
@@ -106,9 +113,22 @@ class GenProcess:
         trans = np.meshgrid(self.xvals, self.yvals)
         self.xvals, self.yvals = [tran.ravel() for tran in trans]
 
+        key_list = ['par_1_name', 'par_2_name', 'par_3_name',
+                    'par_4_name', 'xval_name', 'yval_name']
+
+        for key in key_list:
+            if getattr(self, key) == 'eccentricity':
+                    self.ecc = True
+
+        if self.ecc is False:
+            key_list = key_list + ['par_5_name']
+            num_pars = 5
+        else:
+            num_pars = 4
+
         # if testing spin, we do not want to set the second spin to a constant value,
         # so we assume spins are the same.
-        if 'spin' in [self.xval_name, self.yval_name]:
+        if 'spin' in [self.xval_name, self.yval_name] or self.ecc:
             sub_par_5 = True
         else:
             sub_par_5 = False
@@ -124,7 +144,7 @@ class GenProcess:
         if sub_par_5 is False:
             self.fixed_parameter_5 = float(self.fixed_parameter_5)
 
-        else:
+        elif self.ecc is False:
             self.par_5_name = 'spin_2'
             self.par_5_unit = 'None'
             if self.xval_name == 'spin':
@@ -139,17 +159,20 @@ class GenProcess:
         for which in ['x', 'y']:
             setattr(self, getattr(self, which + 'val_name'), getattr(self, which + 'vals'))
 
-        for which in np.arange(1, 6).astype(str):
+        for which in np.arange(1, num_pars + 1).astype(str):
             setattr(self, getattr(self, 'par_' + which + '_name'),
                     getattr(self, 'fixed_parameter_' + which))
 
-        key_list = ['par_1_name', 'par_2_name', 'par_3_name',
-                    'par_4_name', 'par_5_name', 'xval_name', 'yval_name']
 
         for key in key_list:
             if getattr(self, key) in ['redshift', 'luminosity_distance', 'comoving_distance']:
                 self.dist_type = getattr(self, key)
                 self.z_or_dist = getattr(self, getattr(self, key))
+
+            if self.ecc:
+                if getattr(self, key) in ['start_frequency', 'start_time', 'start_separation']:
+                    self.initial_cond_type = getattr(self, key).split('_')[-1]
+                    self.initial_point = getattr(self, getattr(self, key))
 
         # add m1 and m2
         self.m1 = (self.total_mass / (1. + self.mass_ratio))
@@ -163,12 +186,24 @@ class GenProcess:
         into the snr calculator.
 
         """
-        input_kwargs = {'dist_type': self.dist_type, 'z_or_dist': self.z_or_dist,
-                        **self.general, **self.sensitivity_input,
-                        **self.snr_input, **self.parallel_input}
 
-        input_args = [self.m1, self.m2, self.spin_1, self.spin_2,
-                      self.z_or_dist, self.start_time, self.end_time]
+        if self.ecc:
+            required_kwargs = {'dist_type': self.dist_type,
+                               'initial_cond_type': self.initial_cond_type,
+                               'ecc': True}
+            input_args = [self.m1, self.m2, self.z_or_dist, self.initial_point,
+                          self.eccentricity, self.observation_time]
+
+        else:
+            required_kwargs = {'dist_type': self.dist_type}
+            input_args = [self.m1, self.m2, self.spin_1, self.spin_2,
+                          self.z_or_dist, self.start_time, self.end_time]
+
+        input_kwargs = {**required_kwargs,
+                        **self.general,
+                        **self.sensitivity_input,
+                        **self.snr_input,
+                        **self.parallel_input}
 
         self.final_dict = snr(*input_args, **input_kwargs)
         return

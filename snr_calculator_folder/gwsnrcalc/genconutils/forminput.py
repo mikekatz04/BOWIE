@@ -449,6 +449,19 @@ class SNRInput:
         self.snr_input.num_points = num_wave_points
         return
 
+    def set_n_max(self, n_max):
+        """Maximium modes for eccentric signal.
+
+        The number of modes to be considered when calculating the SNR for an
+        eccentric signal.
+
+        Args:
+            n_max (int): Maximium modes for eccentric signal.
+
+        """
+        self.snr_input.n_max = n_max
+        return
+
 
 class GeneralContainer:
     """Holds all of the attributes related to the general dictionary.
