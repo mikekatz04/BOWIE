@@ -94,7 +94,10 @@ class SensitivityContainer:
             if isinstance(sc, str):
                 f, h_n = read_noise_curve(sc, noise_type_in=self.noise_type_in[num],
                                           noise_type_out='char_strain')
-                key = sc
+                if sc[-4:] == '.txt':
+                    key = sc.split('.')[0].split('/')[-1]
+                else:
+                    key = sc
             elif isinstance(sc, list):
                 # TODO: add to docs if inputing special noise curve, make sure its char_strain
                 f, h_n = sc
