@@ -12,10 +12,10 @@ gw_snr_calculator module
     :undoc-members:
     :show-inheritance:
 
-pyphenomd module
+waveforms module
 ++++++++++++++++++++++
 
-.. automodule:: gwsnrcalc.utils.pyphenomd
+.. automodule:: gwsnrcalc.utils.waveforms
     :members:
     :undoc-members:
     :show-inheritance:
