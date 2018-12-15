@@ -2,14 +2,15 @@
 Calculate gravitational wave SNRs.
 
 This was used in "Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253),
-as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE).
+as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE). Please cite this
+when using this code.
 
 This code is licensed with the GNU public license.
 
 This python code impliments PhenomD waveforms from Husa et al 2016 (arXiv:1508.07250)
-and Khan et al 2016 (arXiv:1508.07253).
+and Khan et al 2016 (arXiv:1508.07253). Please cite these papers if PhenomD waveforms are used.
 
-Please cite all of the arXiv papers above if you use this code in a publication.
+It can also generate eccentric inspirals according to Peters evolution.
 
 """
 
@@ -145,12 +146,11 @@ def parallel_snr_func(num, binary_args, phenomdwave, signal_type,
 
 def parallel_ecc_snr_func(num, binary_args, eccwave, signal_type,
                           noise_interpolants, prefactor, verbose):
-    """SNR calulation with PhenomDWaveforms
+    """SNR calulation with eccentric waveforms
 
     Generate PhenomDWaveforms and calculate their SNR against sensitivity curves.
 
     Args:
-        # TODO: check all documentation
         num (int): Process number. If only a single process, num=0.
         binary_args (tuple): Binary arguments for
             :meth:`gwsnrcalc.utils.waveforms.EccentricBinaries.__call__`.
@@ -196,9 +196,9 @@ def snr(*args, **kwargs):
     snr is a function that takes binary parameters and sensitivity curves as inputs,
     and returns snr for chosen phases.
 
-    Warning: All binary parameters need to have the same shape, either scalar or 1D array.
-    Start time (st), end time (et), and/or chi values can be scalars while the rest of
-    the binary parameters are arrays.
+    Warning: All binary parameters must be either scalar, len-1 arrays,
+    or arrays of the same length. All of these can be used at once. However,
+    you cannot input multiple arrays of different lengths.
 
     Arguments:
         *args: Arguments for :meth:`gwsnrcalc.utils.pyphenomd.PhenomDWaveforms.__call__`
