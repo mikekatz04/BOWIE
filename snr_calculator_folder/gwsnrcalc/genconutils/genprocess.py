@@ -40,33 +40,16 @@ class GenProcess:
         num_x/num_y (int): Number of x/y points in contour.
         xval_name/yval_name (str): Name of the x/y quantity.
         xval_unit/yval_unit(str): Units for x/y quantity.
-        fixed_parameter_1/fixed_parameter_1/fixed_parameter_1/fixed_parameter_1 (float):
-            Value for each fixed parameter.
-        par_1_unit/par_2_unit/par_3_unit/par_4_unit (str): Unit for fixed parameters.
-        par_1_name/par_2_name/par_3_name/par_4_name (str): Name of fixed parameters.
-        fixed_parameter_5 (float): Value of fixed parameter 5.
-            This is only optional if ``xval_name`` or ``yval_name`` is 'spin'.
-        par_5_name (str): Name of fixed parameter 5.
-            This is only optional if ``xval_name`` or ``yval_name`` is 'spin'.
-        par_5_name (str): Unit of fixed parameter 5.
-            This is only optional if ``xval_name`` or ``yval_name`` is 'spin'.
+        parameters: All the parameters (*args) for the specific waveform generator.
+            For both circular and eccentric, this will include start_time, m1, m2,
+            redshift (or luminosity_distance or comoving_distance). For circular with will
+            also include spin_1, spin_2, and end_time. For eccentric this will
+            additionally include eccentricity and observation time.
         sensitivty_input (dict): kwargs for
             :class:`gwsnrcalc.utils.sensitivity.SensitivityContainer`.
         snr_input (dict): kwargs for :class:`gwsnrcalc.gw_snr_calculator.SNR`.
 
-
     Attributes:
-        total_mass (1D array of floats): Total mass of each binary.
-        mass_ratio (1D array of floats): Mass ratio of each binary.
-        m1 (1D array of floats): Mass 1 of each binary.
-        m2 (1D array of floats): Mass 2 of each binary.
-        z_or_dist (1D array of floats): Redshift or distance of each binary.
-        spin_1 (1D array of floats): Spin of mass 1 of each binary.
-        spin_2 (1D array of floats): Spin of mass 2 of each binary.
-        start_time (1D array of floats): Start time in years before merger of each binary.
-        total_mass (1D array of floats): End time in years before merger of each binary.
-        dist_type (str): Which type of distance measure is used. Options are `redshift`,
-            `luminosity_distance`, or `comoving_distance`.
         final_dict (dict): Dictionary with SNR results.
         Note: All kwargs above are added as attributes.
 
@@ -110,69 +93,34 @@ class GenProcess:
                                      float(self.y_high),
                                      self.num_y)
 
-        trans = np.meshgrid(self.xvals, self.yvals)
-        self.xvals, self.yvals = [tran.ravel() for tran in trans]
+        self.xvals, self.yvals = np.meshgrid(self.xvals, self.yvals)
+        self.xvals, self.yvals = self.xvals.ravel(), self.yvals.ravel()
 
-        key_list = ['par_1_name', 'par_2_name', 'par_3_name',
-                    'par_4_name', 'xval_name', 'yval_name']
-
-        for key in key_list:
-            if getattr(self, key) == 'eccentricity':
-                    self.ecc = True
-
-        if self.ecc is False:
-            key_list = key_list + ['par_5_name']
-            num_pars = 5
-        else:
-            num_pars = 4
-
-        # if testing spin, we do not want to set the second spin to a constant value,
-        # so we assume spins are the same.
-        if 'spin' in [self.xval_name, self.yval_name] or self.ecc:
-            sub_par_5 = True
-        else:
-            sub_par_5 = False
-
-        # ensure these other parameters are floats
-        self.fixed_parameter_1 = float(self.fixed_parameter_1)
-        self.fixed_parameter_2 = float(self.fixed_parameter_2)
-        self.fixed_parameter_3 = float(self.fixed_parameter_3)
-        self.fixed_parameter_4 = float(self.fixed_parameter_4)
-
-        # meshrid to get 1d arrays for each parameter
-
-        if sub_par_5 is False:
-            self.fixed_parameter_5 = float(self.fixed_parameter_5)
-
-        elif self.ecc is False:
-            self.par_5_name = 'spin_2'
-            self.par_5_unit = 'None'
-            if self.xval_name == 'spin':
-                self.xval_name = 'spin_1'
-                self.fixed_parameter_5 = self.xvals
-            if self.yval_name == 'spin':
-                self.yval_name = 'spin_1'
-                self.fixed_parameter_5 = self.yvals
-
-        # add parameters to self. Names must be 'total_mass', 'mass_ratio', 'redshift' or
-        # 'luminosity_distance' or 'comoving distance', 'spin_1', 'spin_2'
         for which in ['x', 'y']:
             setattr(self, getattr(self, which + 'val_name'), getattr(self, which + 'vals'))
 
-        for which in np.arange(1, num_pars + 1).astype(str):
-            setattr(self, getattr(self, 'par_' + which + '_name'),
-                    getattr(self, 'fixed_parameter_' + which))
+        self.ecc = 'eccentricity' in self.__dict__
+        if self.ecc:
+            if 'observation_time' not in self.__dict__:
+                if 'start_time' not in self.__dict__:
+                    raise ValueError('If no observation time is provided, the time before'
+                                     + 'merger must be the inital starting condition.')
+                self.observation_time = self.start_time  # small number so it is not zero
+        else:
+            if 'spin' in self.__dict__:
+                self.spin_1 = self.spin
+                self.spin_2 = self.spin
 
-
-        for key in key_list:
-            if getattr(self, key) in ['redshift', 'luminosity_distance', 'comoving_distance']:
-                self.dist_type = getattr(self, key)
-                self.z_or_dist = getattr(self, getattr(self, key))
+        for key in ['redshift', 'luminosity_distance', 'comoving_distance']:
+            if key in self.__dict__:
+                self.dist_type = key
+                self.z_or_dist = getattr(self, key)
 
             if self.ecc:
-                if getattr(self, key) in ['start_frequency', 'start_time', 'start_separation']:
-                    self.initial_cond_type = getattr(self, key).split('_')[-1]
-                    self.initial_point = getattr(self, getattr(self, key))
+                for key in ['start_frequency', 'start_time', 'start_separation']:
+                    if key in self.__dict__:
+                        self.initial_cond_type = key.split('_')[-1]
+                        self.initial_point = getattr(self, key)
 
         # add m1 and m2
         self.m1 = (self.total_mass / (1. + self.mass_ratio))
