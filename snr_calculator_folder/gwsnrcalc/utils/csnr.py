@@ -17,8 +17,6 @@ import numpy as np
 import ctypes
 import os
 
-# TODO: Update SNR calculators
-
 
 def csnr(freqs, hc, hn, fmrg, fpeak, prefactor=1.0):
     """Calculate the SNR of a frequency domain waveform.
