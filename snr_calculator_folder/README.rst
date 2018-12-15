@@ -7,16 +7,20 @@ gwsnrcalc package
 .. _BOWIE: https://mikekatz04.github.io/BOWIE/
 .. _arXiv:1807.02511: https://arxiv.org/abs/
 
-The main snr function is ``gwsnrcalc.gw_snr_calculator.snr``. It has the capability to perform calculations in parallel across processors for faster calculation.
+The main snr function is :func:`gwsnrcalc.gw_snr_calculator.snr`. It has the capability to perform calculations in parallel across processors for faster calculation.
 
-The waveform generator creates PhenomD amplitude waveforms for binary black hole inspiral, merger, and ringdown. PhenomD is from Husa et al 2016 (`arXiv:1508.07250`_) and Khan et al 2016 (`arXiv:1508.07253`_). The current waveforms returned are in units of characteristic strain.
+The waveform generator (:mod:`gwsnrcalc.utils.waveforms`) creates either circular or eccentric waveforms.
+
+Circular waveforms are created with PhenomD amplitude waveforms for binary black hole inspiral, merger, and ringdown. PhenomD is from Husa et al 2016 (`arXiv:1508.07250`_) and Khan et al 2016 (`arXiv:1508.07253`_). The current waveforms returned are in units of characteristic strain.
+
+Eccentric waveforms are generated according to Peters evolution only for the inspiral phase.
 
 .. _arXiv:1508.07250: https://arxiv.org/abs/1508.07250
 .. _arXiv:1508.07253: https://arxiv.org/abs/1508.07253
 
-The snr grid generator: ``gwsnrcalc.generate_contour_data.py`` uses ``gwsnrcalc.gw_snr_calculator.snr`` to create SNR grids for contour plots (like those used in BOWIE).
+The snr grid generator: :mod:`gwsnrcalc.generate_contour_data` uses `:func:`gwsnrcalc.gw_snr_calculator.snr` to create SNR grids for contour plots (like those used in BOWIE).
 
-Available via pip and on github: https://github.com/mikekatz04/BOWIE/tree/master/snr_calculator_folder/
+Available via pip and on github: https://github.com/mikekatz04/BOWIE/
 
 Getting Started
 ===============
