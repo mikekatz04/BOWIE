@@ -62,7 +62,7 @@ class Generate:
     in the MainContainer class.
 
     """
-    def _set_grid_info(self, which, low, high, num, scale, name, unit):
+    def _set_grid_info(self, which, low, high, num, scale, name):
         """Set the grid values for x or y.
 
         Create information for the grid of x and y values.
@@ -85,14 +85,13 @@ class Generate:
         setattr(self.generate_info, which + '_high', high)
         setattr(self.generate_info, 'num_' + which, num)
         setattr(self.generate_info, which + 'val_name', name)
-        setattr(self.generate_info, which + 'val_unit', unit)
 
         if scale not in ['lin', 'log']:
             raise ValueError('{} scale must be lin or log.'.format(which))
         setattr(self.generate_info, which + 'scale', scale)
         return
 
-    def set_y_grid_info(self, y_low, y_high, num_y, yscale, yval_name, yval_unit):
+    def set_y_grid_info(self, y_low, y_high, num_y, yscale, yval_name):
         """Set the grid values for y.
 
         Create information for the grid of y values.
@@ -103,14 +102,12 @@ class Generate:
             yscale (str): Scale of the axis. Choices are 'log' or 'lin'.
             yval_name (str): Name representing the axis. See GenerateContainer documentation
                 for options for the name.
-            yval_unit (str): Unit for this axis quantity. See GenerateContainer documentation
-                for options for the units.
 
         """
-        self._set_grid_info('y', y_low, y_high, num_y, yscale, yval_name, yval_unit)
+        self._set_grid_info('y', y_low, y_high, num_y, yscale, yval_name)
         return
 
-    def set_x_grid_info(self, x_low, x_high, num_x, xscale, xval_name, xval_unit):
+    def set_x_grid_info(self, x_low, x_high, num_x, xscale, xval_name):
         """Set the grid values for x.
 
         Create information for the grid of x values.
@@ -121,32 +118,23 @@ class Generate:
             xscale (str): Scale of the axis. Choices are 'log' or 'lin'.
             xval_name (str): Name representing the axis. See GenerateContainer documentation
                 for options for the name.
-            xval_unit (str): Unit for this axis quantity. See GenerateContainer documentation
-                for options for the units.
 
         """
-        self._set_grid_info('x', x_low, x_high, num_x, xscale, xval_name, xval_unit)
+        self._set_grid_info('x', x_low, x_high, num_x, xscale, xval_name)
         return
 
-    def add_fixed_parameter(self, par_num, val, name, unit):
+    def add_fixed_parameter(self, val, name):
         """Add the fixed parameters for SNR calculation.
 
         The fixed parameters represent those that a fixed for the entire 2D grid.
-
-        # TODO: remove same spin
 
         Args:
             val (float): Value of parameter.
             name (str): Name representing the axis. See GenerateContainer documentation
                 for options for the name.
-            unit (str): Unit for this axis quantity. See GenerateContainer documentation
-                for options for the units.
 
         """
-        par_num = str(par_num)
-        setattr(self.generate_info, 'fixed_parameter_' + par_num, val)
-        setattr(self.generate_info, 'par_' + par_num + '_name', name)
-        setattr(self.generate_info, 'par_' + par_num + '_unit', unit)
+        setattr(self.generate_info, name, val)
         return
 
 
@@ -159,7 +147,6 @@ class SensitivityInputContainer:
     Attributes:
         Note: Attributes represent the kwargs from
             :class:`gwsnrcalc.utils.sensitivity.SensitivityContainer`.
-
 
     """
     def __init__(self):
@@ -277,11 +264,6 @@ class Output:
         Args:
             output_file_name (str): String representing the name of the file
                 without the file extension.
-            output_file_type (str, optional): File extension. Choices are `hdf5` or `txt`.
-                Default is `hdf5`.
-
-        Raises:
-            ValueError: File type is not txt or hdf5.
 
         """
         self.output_info.output_file_name = output_file_name
@@ -353,7 +335,7 @@ class ParallelInputContainer:
 
 
 class ParallelInput:
-    """ General contains the methods inherited by MainContainer.
+    """General contains the methods inherited by MainContainer.
 
     These methods are used by MainContainer class to add information that applies
     to parallel generation. This information is stored in a ParallelInputContainer
@@ -372,6 +354,9 @@ class ParallelInput:
                 to ``None``. Default is -1.
             num_splits (int, optional): Number of binaries to run during each process.
                 Default is 1000.
+            verbose (int, optional): Describes the notification of when parallel processes
+                are finished. Value describes cadence of process completion notifications.
+                If ``verbose == -1``, no notifications are given. Default is -1.
 
         """
         self.parallel_input.num_processors = num_processors
@@ -411,7 +396,8 @@ class SNRInput:
 
         Args:
             sig_type (str or list of str): Signal type desired by user.
-                Choices are `ins`, `mrg`, `rd`, `all`.
+                Choices are `ins`, `mrg`, `rd`, `all` for circular waveforms created with PhenomD.
+                If eccentric waveforms are used, must be `all`.
 
         """
         if isinstance(sig_type, str):
@@ -453,7 +439,7 @@ class SNRInput:
         """Maximium modes for eccentric signal.
 
         The number of modes to be considered when calculating the SNR for an
-        eccentric signal.
+        eccentric signal. This will only matter when calculating eccentric signals.
 
         Args:
             n_max (int): Maximium modes for eccentric signal.
@@ -540,7 +526,8 @@ class MainContainer(Generate, SensitivityInput, SNRInput, ParallelInput, Output)
         prior to returning the dicitonary.
 
         Returns:
-            - **output_dict** (*dict*): Dicitonary for input into ``generate_contour_data.py``.
+            - **output_dict** (*dict*): Dicitonary for input into
+                :module:`gwsnrcalc.generate_contour_data.
 
         """
         output_dict = {}
