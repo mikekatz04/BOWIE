@@ -66,10 +66,12 @@ class FileReadOut:
         self.output_file_type = output_file_type
 
     def hdf5_read_out(self):
-        """
-        Read out an hdf5 file.
-        """
+        """Read out an hdf5 file.
 
+        Takes the output of :class:`gwsnrcalc.genconutils.genprocess.GenProcess`
+        and reads it out to an HDF5 file.
+
+        """
         with h5py.File(self.WORKING_DIRECTORY + '/' + self.output_file_name, 'w') as f:
 
             header = f.create_group('header')
@@ -80,16 +82,24 @@ class FileReadOut:
             for which in ['x', 'y']:
                 header.attrs[which + 'val_name'] = getattr(self, which + 'val_name')
                 header.attrs['num_' + which + '_pts'] = getattr(self, 'num_' + which)
-                header.attrs[which + 'val_unit'] = getattr(self, which + 'val_unit')
 
-            for which in np.arange(1, 6).astype(str):
-                try:
-                    header.attrs['par_' + which + '_name'] = getattr(self, 'par_' + which + '_name')
-                    header.attrs['par_' + which + '_unit'] = getattr(self, 'par_' + which + '_unit')
-                    header.attrs['par_' + which + '_value'] = getattr(self,
-                                                                      'fixed_parameter_' + which)
-                except AttributeError:
-                    pass
+            ecc = 'eccentricity' in self.__dict__
+            if ecc:
+                name_list = ['observation_time', 'start_frequency', 'start_separation'
+                             'eccentricity']
+            else:
+                name_list = ['spin_1', 'spin_2', 'spin', 'end_time']
+
+            name_list += ['total_mass', 'mass_ratio', 'start_time', 'luminosity_distance',
+                          'comoving_distance', 'redshift']
+
+            for name in name_list:
+                if name != self.xval_name and name != self.yval_name:
+                    try:
+                        getattr(self, name)
+                        header.attrs[name] = getattr(self, name)
+                    except AttributeError:
+                        pass
 
             if self.added_note != '':
                 header.attrs['Added note'] = self.added_note
@@ -112,8 +122,11 @@ class FileReadOut:
                                            compression='gzip', compression_opts=9)
 
     def txt_read_out(self):
-        """
-        Read out an txt file.
+        """Read out txt file.
+
+        Takes the output of :class:`gwsnrcalc.genconutils.genprocess.GenProcess`
+        and reads it out to a txt file.
+
         """
 
         header = '#Generated SNR Out\n'
@@ -123,18 +136,24 @@ class FileReadOut:
         for which in ['x', 'y']:
             header += '#' + which + 'val_name: {}\n'.format(getattr(self, which + 'val_name'))
             header += '#num_' + which + '_pts: {}\n'.format(getattr(self, 'num_' + which))
-            header += '#' + which + 'val_unit: {}\n'.format(getattr(self, which + 'val_unit'))
 
-        for which in np.arange(1, 6).astype(str):
-            try:
-                header += '#par_' + which + '_name: {}\n'.format(
-                    getattr(self, 'par_' + which + '_name'))
-                header += '#par_' + which + '_unit: {}\n'.format(
-                    getattr(self, 'par_' + which + '_unit'))
-                header += '#par_' + which + '_value: {}\n'.format(
-                    getattr(self, 'fixed_parameter_' + which))
-            except AttributeError:
-                pass
+        ecc = 'eccentricity' in self.__dict__
+        if ecc:
+            name_list = ['observation_time', 'start_frequency', 'start_separation'
+                         'eccentricity']
+        else:
+            name_list = ['spin_1', 'spin_2', 'spin', 'end_time']
+
+        name_list += ['total_mass', 'mass_ratio', 'start_time', 'luminosity_distance',
+                      'comoving_distance', 'redshift']
+
+        for name in name_list:
+            if name != self.xval_name and name != self.yval_name:
+                try:
+                    getattr(self, name)
+                    header += '#{}: {}\n'.format(name, getattr(self, name))
+                except AttributeError:
+                    pass
 
         if self.added_note != '':
             header += '#Added note: ' + self.added_note + '\n'
