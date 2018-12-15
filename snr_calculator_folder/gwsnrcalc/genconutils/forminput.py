@@ -517,17 +517,18 @@ class MainContainer(Generate, SensitivityInput, SNRInput, ParallelInput, Output)
         return
 
     def return_dict(self):
-        """Output dictionary for ``generate_contour_data.py`` input.
+        """Output dictionary for :mod:`gwsnrcalc.generate_contour_data` input.
 
         Iterates through the entire MainContainer class turning its contents
-        into dictionary form. This dictionary becomes the input for ``generate_contour_data.py``.
+        into dictionary form. This dictionary becomes the input for
+        :mod:`gwsnrcalc.generate_contour_data`.
 
         If `print_input` attribute is True, the entire dictionary will be printed
         prior to returning the dicitonary.
 
         Returns:
-            - **output_dict** (*dict*): Dicitonary for input into
-                :module:`gwsnrcalc.generate_contour_data.
+            - output_dict: Dicitonary for input into
+                :mod:`gwsnrcalc.generate_contour_data`.
 
         """
         output_dict = {}

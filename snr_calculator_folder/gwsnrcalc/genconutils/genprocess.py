@@ -40,7 +40,7 @@ class GenProcess:
         num_x/num_y (int): Number of x/y points in contour.
         xval_name/yval_name (str): Name of the x/y quantity.
         xval_unit/yval_unit(str): Units for x/y quantity.
-        parameters: All the parameters (*args) for the specific waveform generator.
+        parameters: All the parameters (args) for the specific waveform generator.
             For both circular and eccentric, this will include start_time, m1, m2,
             redshift (or luminosity_distance or comoving_distance). For circular with will
             also include spin_1, spin_2, and end_time. For eccentric this will
