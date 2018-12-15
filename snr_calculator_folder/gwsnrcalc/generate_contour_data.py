@@ -7,10 +7,13 @@ for usage of this code.
 PhenomD waveforms are generated according to Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016
 (arXiv:1508.07253). Please cite these papers if the PhenomD waveform is used.
 
+Eccentric inspiral waveforms are also possible according to Peters evolution.
+
 generate_contour_data produces gridded data sets based on an input class or dictionary.
 It can take any basic set of parameters for binary black holes and produce waveforms
-and SNR calculations for each phase of binary black hole coalescence.
-It reads in sensitivity curves from .txt files. The outputs can either be .txt or .hdf5.
+and SNR calculations for each phase of binary black hole coalescence
+(only inspiral for eccentric binaries). It reads in sensitivity curves from .txt files.
+The outputs can either be .txt or .hdf5.
 It can run in parallel or on a single processor. See the example notebooks for usage of this module.
 
 This code is licensed under the GNU public license.
@@ -69,9 +72,6 @@ def generate_contour_data(pid):
 
 
 if __name__ == '__main__':
-    """
-    __main__ function for loading in .json configuration file.
-    """
     plot_info_dict = json.load(open(sys.argv[1], 'r'))
 
     generate_contour_data(plot_info_dict)
