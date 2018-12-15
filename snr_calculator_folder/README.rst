@@ -30,7 +30,7 @@ These instructions will get you a copy of the project up and running on your loc
 Prerequisites
 =============
 
-Software installation/usage only requires a few specific libraries in python. All libraries are included with Anaconda. If you do not run python in an anaconda environment, you  will need the following libraries and modules to run with all capabilities: Numpy, Scipy, collections, sys, json, multiprocessing, datetime, time, astropy, h5py, and matplotlib. All can be installed with pip. For example, within your python environment of choice:
+Software installation/usage only requires a few specific libraries in python. All libraries are included with Anaconda. If you do not run python in an anaconda environment, you  will need the following libraries and modules to run with all capabilities: Numpy, Scipy, collections, sys, json, multiprocessing, datetime, time, astropy, and h5py. All can be installed with pip. For example, within your python environment of choice:
 
 ``pip install astropy``
 
