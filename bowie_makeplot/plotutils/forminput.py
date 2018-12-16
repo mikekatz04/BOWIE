@@ -524,7 +524,7 @@ class DataImport:
             index (int, optional): Index of plot with preloaded data.
                 Required if not loading a file.
             control (bool, optional): If True, this dataset is set to the control.
-                This is needed for Ratio and Codetection plots. It sets
+                This is needed for Ratio plots. It sets
                 the baseline. Default is False.
 
         Raises:
@@ -608,7 +608,7 @@ class SinglePlot(Label, Limits, Legend, Extra, DataImport):
 
     Attributes:
         type (str): Which type of plot. Currently supporting `Ratio`, `Watefall`,
-            `Horizon`, `Codetection1`, `Codetection2`, `Codetection3`.
+            `Horizon`.
         file (list of obj): List of DataImportContainer objects with information on which
             dataset to use.
         label (obj): LabelContainer holding informaiton pertaining to labels of the plot.
@@ -635,8 +635,7 @@ class SinglePlot(Label, Limits, Legend, Extra, DataImport):
 
         Args:
             plot_type (str): Type of specific plot.
-                Currently supporting `Ratio`, `Watefall`,
-                `Horizon`, `Codetection1`, `Codetection2`, `Codetection3`.
+                Currently supporting `Ratio`, `Watefall`, `Horizon`.
 
         """
         self.plot_type = plot_type

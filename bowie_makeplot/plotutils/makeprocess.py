@@ -18,14 +18,7 @@ from bowie_makeplot.plotutils.baseplot import FigColorbar
 from bowie_makeplot.plotutils.plottypes import (CreateSinglePlot,
                                                 Waterfall,
                                                 Ratio,
-                                                Horizon,
-                                                CodetectionPotential1,
-                                                CodetectionPotential2,
-                                                CodetectionPotential3,
-                                                CodetectionPotential4,
-                                                CodetectionPotential5,
-                                                CodetectionPotential6,
-                                                CodetPot)
+                                                Horizon)
 
 
 class MakePlotProcess:
@@ -206,7 +199,7 @@ class MakePlotProcess:
         # create list of plot types
         self.plot_types = [self.plot_info[str(i)]['plot_type'] for i in range(len(ax))]
 
-        if len(self.plot_types) == 1 and self.plot_types[0] != 'CodetectionPotential2':
+        if len(self.plot_types) == 1:
             if self.plot_types[0] not in self.colorbars:
                 self.colorbars[self.plot_types[0]] = {'cbar_pos': 5}
             else:
@@ -221,17 +214,6 @@ class MakePlotProcess:
             if plot_type == 'Horizon':
                 self.colorbar_classes[plot_type] = None
 
-            elif plot_type == 'CodetectionPotential2':
-                self.colorbar_classes['CodetectionPotential2'] = []
-                for plot_type in ['CodetectionPotential2', 'SingleDetection']:
-                    if plot_type in self.colorbars:
-                        (self.colorbar_classes['CodetectionPotential2'].append(
-                            FigColorbar(fig, plot_type, **self.colorbars[plot_type])))
-
-                    else:
-                        (self.colorbar_classes['CodetectionPotential2'].append(
-                            FigColorbar(fig, plot_type)))
-
             elif plot_type in self.colorbars:
                 self.colorbar_classes[plot_type] = FigColorbar(fig, plot_type,
                                                                **self.colorbars[plot_type])
@@ -240,13 +222,7 @@ class MakePlotProcess:
                 self.colorbar_classes[plot_type] = FigColorbar(fig, plot_type)
 
         # set subplots_adjust settings
-        if ('Ratio' in self.plot_types or 'Waterfall' in self.plot_types or
-                'CodetectionPotential1' in self.plot_types or
-                'CodetectionPotential2' in self.plot_types or
-                'CodetectionPotential3' in self.plot_types or
-                'CodetectionPotential5' in self.plot_types or
-                'CodetectionPotential6' in self.plot_types or
-                'CodetPot' in self.plot_types):
+        if 'Ratio' in self.plot_types or 'Waterfall':
             self.subplots_adjust_kwargs['right'] = 0.79
 
         # adjust figure sizes

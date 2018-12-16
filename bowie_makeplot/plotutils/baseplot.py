@@ -92,8 +92,6 @@ class CreateSinglePlot:
             'legend_labels': [],
             'add_legend': False,
             'contour_vals': [],
-            'solid_codetection_contour': True,
-            'solid_single_detection_contour': False,
         }
 
         for key, value in kwargs.items():
@@ -140,18 +138,8 @@ class CreateSinglePlot:
                                     + " {} plots.".format(self.plot_type))
 
         # check input data sizes.
-        if (len(self.zvals) != 2
-                and ((self.plot_type == 'Ratio') | (self.plot_type == 'CodetectionPotential2'))):
-
+        if len(self.zvals) != 2 and self.plot_type == 'Ratio':
             raise Exception("Length of vals not equal to 2. Ratio plots must have 2 inputs.")
-
-        # check to make sure ratio plot has 2 arrays to compare.
-        if len(self.xvals) < 2 and self.plot_type == 'CodetectionPotential1':
-            raise Exception("Length of vals less than 2. No need for codetection.")
-
-        if len(self.xvals) > 4 and self.plot_type == 'CodetectionPotential1':
-            raise NotImplementedError('CodetectionPotential1 cannot handle'
-                                      + 'more than 4 contours currently.')
 
         self.comparison_value = (self.snr_contour_value if self.snr_contour_value is not
                                  None else self.SNR_CUT)
@@ -286,28 +274,9 @@ class FigColorbar:
             self.cbar_ticks = np.array([0., 10, 20, 50, 100, 200, 500, 1000, 3000, 1e10])
             self.cbar_tick_labels = [int(i) for i in np.delete(self.cbar_ticks, -1)]
 
-        elif plot_type == 'Ratio' or plot_type == 'CodetectionPotential3':
+        elif plot_type == 'Ratio':
             self.cbar_ticks = [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]
             self.cbar_tick_labels = [r'$10^{}$'.format(i) for i in self.cbar_ticks[1:-1]]
-
-        elif plot_type == 'CodetectionPotential2' or plot_type == 'SingleDetection':
-            self.cbar_ticks = [-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0]
-            self.cbar_tick_labels = ([r'$\downarrow 10^{}$'.format(i) for i in [4.0, 3.0, 2.0, 1.0]]
-                                     + [r'$10^{}$'.format(i) for i in [0.0]]
-                                     + [r'$\uparrow 10^{}$'.format(i)
-                                        for i in [1.0, 2.0, 3.0, 4.0]])
-
-        elif plot_type == 'CodetectionPotential1':
-            self.cbar_ticks = [0.0, 1.0, 2.0, 3.0, 4.0]
-            self.cbar_tick_labels = ['$10^{}$'.format(i) for i in self.cbar_ticks]
-
-        elif plot_type == 'CodetectionPotential6':
-            self.cbar_ticks = np.array([-50., np.log10(8.0), 2.0, 3.0, 4.0])
-            self.cbar_tick_labels = ['0'] + [r'$10^{}$'.format(i) for i in self.cbar_ticks[1:]]
-
-        elif plot_type == 'CodetPot':
-            self.cbar_ticks = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0])
-            self.cbar_tick_labels = ['0'] + [r'${}$'.format(i) for i in self.cbar_ticks[1:]]
 
         prop_default = {
             'cbar_label': None,
@@ -328,30 +297,14 @@ class FigColorbar:
 
         if self.cbar_label is None:
             cbar_label_defaults = {'Waterfall': r'$\rho$',
-                                   'Ratio': r"$\rho_1/\rho_2$",
-                                   'CodetectionPotential1': r'$\rho$',
-                                   'SingleDetection': r'$\rho$',
-                                   'CodetectionPotential2':
-                                            r'Codetection: $\sqrt{\rho_1^2 + \rho_2^2}$',
-                                   'CodetectionPotential3': r'rho',
-                                   'CodetectionPotential4': r'$\rho$',
-                                   'CodetectionPotential5': r'$\rho$',
-                                   'CodetectionPotential6': r'$\rho$',
-                                   'CodetPot': r'CP/min(CP)'}
+                                   'Ratio': r"$\rho_1/\rho_2$"}
+
             self.cbar_label = cbar_label_defaults[plot_type]
 
         # dict with axes locations
         if self.cbar_axes == []:
             cbar_pos_defaults = {'Waterfall': 1,
-                                 'Ratio': 2,
-                                 'CodetectionPotential1': 5,
-                                 'SingleDetection': 2,
-                                 'CodetectionPotential2': 1,
-                                 'CodetectionPotential3': 2,
-                                 'CodetectionPotential4': 5,
-                                 'CodetectionPotential5': 5,
-                                 'CodetectionPotential6': 5,
-                                 'CodetPot': 5}
+                                 'Ratio': 2}
 
             cbar_axes_defaults = {'1': [0.83, 0.49, 0.03, 0.38],
                                   '2': [0.83, 0.05, 0.03, 0.38],
