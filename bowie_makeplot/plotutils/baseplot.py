@@ -2,26 +2,77 @@ import numpy as np
 
 
 class CreateSinglePlot:
+    """Base class for the subclasses designed for creating the plots.
+
+    All of the plot types inherit this class and its methods. The __init__ method
+    is the same for all plots. Each plot_type in :mod:`bowie_makeplot.plotutils.plottypes`
+    has its own ``make_plot`` method and associated methods for creating the plot.
+
+    Args:
+        fig (obj): Figure environment for the plots.
+        axis (obj): Axis object representing specific plot.
+        xvals/yvals/zvals (list of 2D arrays of floats): List of x,y,z-value
+            arrays for the plot.
+
+    Keyword Arguments:
+        plot_type (str): String representing the plot type.
+        SNR_CUT (float): SNR cut for detectability or another desired value.
+        xlims/ylims (len-2 list of floats): Limits for the x/y axis. If
+            ``xscale/yscale == 'log'``, these values are the log10 of the limits.
+        dx/dy (float): Amount to increment for tick labels. If log10 of values,
+            then dx/dy repesents increments in log10.
+        xscale/yscale (str): `lin` for linear scale. `log` for log10 scale.
+        title/xlabel/ylabel (str, optional): String for title/xlabel/ylabel for specific plot.
+        title_kwargs/xlabel_kwargs/ylabel_kwargs: Kwargs for call to add string labelling to plot.
+        x_tick_label_fontsize/y_tick_label_fontsize (int, optional): Tick label fontsize
+            for x/y axis. Default is 14.
+        tick_label_fontsize (int, optional): Tick label fontsize for both x and y axes.
+            If not None, this will set both axis in one go to the same value.
+            Default is None.
+        reverse_x_axis/reverse_y_axis (bool, optional): If True, reverse the order
+            of the ticks along each axis from ascending to descending. Default is False.
+        spacing (str, optional): Spacing of plots. `wide` indicates spaced out plots
+            (``hspace = 0.3`` and ``wspace = 0.3`` in subplots_adjust).
+            All the tick labels will show. If `tight`, no space between plots
+            in the figure (``hspace = 0.0`` and ``wspace = 0.0`` in subplots_adjust).
+            In this case, the edge tick labels are cut off for clarity. Default is `wide`.
+        add_grid (bool, optional): If True, add a grid to the specific plot. Default is True.
+        colorbar (obj, optional): Object of type
+            :class:`bowie_makeplot.plotutils.baseplot.FigColorbar`. This houses information for the
+            colorbar for the associated plot type. Default is None.
+        colormap (str, optional): String represented the the colormap choice through python's
+            predefined colormaps. This is for ratio plots. Default is `coolwarm`.
+        loss_gain_status (bool, optional): If True, show the loss gain contours.
+            This only applies to :class:`bowie_makeplot.plotutils.plottypes.Ratio` plot.
+            Default is True.
+        snr_contour_value (float, optional): This will set the value for contours in plots.
+            In :class:`bowie_makeplot.plotutils.plottypes.Ratio` plots, this sets the value for
+            loss/gain contours and minimal value for ratio contours (overrides SNR_CUT). For
+            :class:`bowie_makeplot.plotutils.plottypes.Horizon` plots this sets the value
+            for the horizon contours. For :class:`bowie_makeplot.plotutils.plottypes.Waterfall`
+            plots, this will add an additional contour in white. Default is None.
+        order_contour_lines (bool, optional): Show dashed lines at each order of magnitude
+            within the ratio contours. Default is False.
+        ratio_comp_value (float, optional): If not None, this value is used as the minimum
+            value for the ratio contours. If None, this value will be `SNR_CUT` or
+            `snr_contour_value` if given. In other words, it will be the
+            same as loss/gain contour maximum. Default is None.
+        legend_kwargs (dict, optional): kwargs for call to ax.legend(). Default is {}.
+        legend_labels (list of str, optional): Labels for the curves in the legend.
+            If calling legend, these are required. Default is [].
+        add_legend (bool, optional): If True, add legend.
+        contour_vals (list or array of floats): Contour values to use for
+            :class:`bowie_makeplot.plotutils.plottypes.Waterfall`. Default is
+            np.array([0., 10, 20, 50, 100, 200, 500, 1000, 3000, 1e10]).
+            Default kwarg value is [].
+
+    Attributes:
+        comparison_value (float): Value to use for contour comparisons. This will either
+            be SNR_CUT or snr_contour_value.
+        Note: all args and kwargs become attributes.
+
+    """
     def __init__(self, fig, axis, xvals, yvals, zvals, **kwargs):
-        """This is the base class for the subclasses designed for creating the plots.
-
-        Parameters:
-                fig (figure object): Figure environment for the plots.
-                axis (axes object): Axis object representing specific plot.
-                xvals, yvals, zvals (2D array of float): List of x,y,z-value arrays for the plot.
-
-        Optional Inputs (options for the dictionaries will be given in the documentation):
-                gen_dict - dict containing extra kwargs for plot
-
-                limits_dict - dict containing axis limits and axes labels information. Inputs/keys:
-
-                label_dict - dict containing label information for x labels, y labels, and title. Inputs/keys:
-
-                extra_dict - dict containing extra plot information to aid in customization. Inputs/keys:
-
-                legend_dict - dict describing legend labels and properties. This is used for horizon plots.
-
-        """
 
         prop_default = {
             'x_tick_label_fontsize': 14,
@@ -32,6 +83,7 @@ class CreateSinglePlot:
             'spacing': 'wide',
             'add_grid': True,
             'colorbar': None,
+            'colormap': 'coolwarm',
             'loss_gain_status': True,
             'snr_contour_value': None,
             'order_contour_lines': False,
@@ -39,6 +91,9 @@ class CreateSinglePlot:
             'legend_kwargs': {},
             'legend_labels': [],
             'add_legend': False,
+            'contour_vals': [],
+            'solid_codetection_contour': True,
+            'solid_single_detection_contour': False,
         }
 
         for key, value in kwargs.items():
@@ -79,30 +134,32 @@ class CreateSinglePlot:
                                     + " {} plots.".format(self.plot_type))
 
             for i in np.arange(len(self.xvals)-1):
-                if len(np.where(self.xvals[0] != self.xvals[i+1])[0]) != 0 or len(np.where(self.yvals[0] != self.yvals[i+1])[0]) != 0:
+                if (len(np.where(self.xvals[0] != self.xvals[i+1])[0]) != 0
+                        or len(np.where(self.yvals[0] != self.yvals[i+1])[0]) != 0):
                     raise Exception("All x and y values from each dataset must be the same for"
                                     + " {} plots.".format(self.plot_type))
 
         # check input data sizes.
-        if len(self.zvals) != 2 and ((self.plot_type == 'Ratio') | (self.plot_type == 'CodetectionPotential2')):
-            raise Exception("Length of vals not equal to 2. Ratio plots must have 2 inputs.")
+        if (len(self.zvals) != 2
+                and ((self.plot_type == 'Ratio') | (self.plot_type == 'CodetectionPotential2'))):
 
-        if len(self.zvals) != 3 and self.plot_type == 'CodetectionPotential3':
-            raise Exception("Length of vals not equal to 3. CodetectionPotential3 plots must have 3 inputs.")
+            raise Exception("Length of vals not equal to 2. Ratio plots must have 2 inputs.")
 
         # check to make sure ratio plot has 2 arrays to compare.
         if len(self.xvals) < 2 and self.plot_type == 'CodetectionPotential1':
             raise Exception("Length of vals less than 2. No need for codetection.")
 
         if len(self.xvals) > 4 and self.plot_type == 'CodetectionPotential1':
-            raise NotImplementedError('CodetectionPotential1 cannot handle more than 4 contours currently.')
+            raise NotImplementedError('CodetectionPotential1 cannot handle'
+                                      + 'more than 4 contours currently.')
 
         self.comparison_value = (self.snr_contour_value if self.snr_contour_value is not
                                  None else self.SNR_CUT)
 
     def setup_plot(self):
-        """
-        Takes an axis and sets up plot limits and labels according to label_dict and limits_dict from input dict or .json file.
+        """Set up limits and labels.
+
+        For all plot types, this method is used to setup the basic features of each plot.
 
         """
         if self.tick_label_fontsize is not None:
@@ -150,17 +207,17 @@ class CreateSinglePlot:
         # set tick labels based on scale
         if self.xscale == 'log':
             self.axis.set_xticklabels([r'$10^{%i}$' % int(i)
-                                       for i in xticks[x_inds]], fontsize=self.x_tick_label_fontsize)
+                                      for i in xticks[x_inds]], fontsize=self.x_tick_label_fontsize)
         else:
             self.axis.set_xticklabels([r'$%.3g$' % (i)
-                                       for i in xticks[x_inds]], fontsize=self.x_tick_label_fontsize)
+                                      for i in xticks[x_inds]], fontsize=self.x_tick_label_fontsize)
 
         if self.yscale == 'log':
             self.axis.set_yticklabels([r'$10^{%i}$' % int(i)
-                                       for i in yticks[y_inds]], fontsize=self.y_tick_label_fontsize)
+                                      for i in yticks[y_inds]], fontsize=self.y_tick_label_fontsize)
         else:
             self.axis.set_yticklabels([r'$%.3g$' % (i)
-                                       for i in yticks[y_inds]], fontsize=self.y_tick_label_fontsize)
+                                      for i in yticks[y_inds]], fontsize=self.y_tick_label_fontsize)
 
         # add grid
         if self.add_grid:
@@ -179,26 +236,78 @@ class CreateSinglePlot:
 
 
 class FigColorbar:
+    """Create colorbars
+
+    This class holds and creates colorbars for the plots shown. It has default values
+    for each plot that can be replaced by passing kwargs.
+
+    Args:
+        fig (obj): Figure object for adding the colorbar.
+        plot_type (str): String representing the plot type for this colorbar.
+
+    Keyword Arguments:
+        cbar_ticks (list or array of floats, optional): List or array representing
+            the ticks to be shown on the colorbar. Default kwarg is []. If ``cbar_ticks == []``,
+            the default for each plot type is used. For Waterfall it is
+            [0., 10, 20, 50, 100, 200, 500, 1000, 3000, 1e10]. For Ratio plots,
+            it is [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0].
+        cbar_tick_labels (list of str, optional): List of strings corresponding to the labels
+            for the cbar_ticks. Default is []. In this case, default for each plot type is used.
+            Waterfall plots default to [0., 10, 20, 50, 100, 200, 500, 1000, 3000].
+            Ratio plots default to [-2.0, -1.0, 0.0, 1.0, 2.0].
+        cbar_ticks_fontsize (int, optional): Fontsize for colorbar ticks. Default is 15.
+        cbar_label_fontsize (int, optional): Label fontsize for the colorbar. Default is 20.
+        cbar_pos (int, optional): Describes defined positions (axes) for the colorbar.
+            Default positions are 1-5. {'1': [0.83, 0.49, 0.03, 0.38],
+            '2': [0.83, 0.05, 0.03, 0.38], '3': [0.05, 0.92, 0.38, 0.03],
+            '4': [0.47, 0.92, 0.38, 0.03], '5': [0.83, 0.1, 0.03, 0.8]}. Default is 1 for Waterfall
+            and 2 for Ratio. Default value for kwarg is 'use_default'.
+        cbar_axes (len-4 list of floats, optional): Custom axes for colorbar. This overrides any
+            entry to ``cbar_pos``. Default is []. In this case, it will default to
+            axes for ``cbar_pos`` value.
+        cbar_orientation (str, optional): Vertical or horizontal orientation for the colorbar.
+            Default is vertical if the bar is thinner than it is tall.
+            If it is wider than it is tall, default is horizontal. Default value for kwarg is None.
+        cbar_label_pad (float, optional): Label padding of colorbar label. Default is None.
+            This means -60 for horizontal and 10 for vertical. # TODO check these numbers.
+
+    Attributes:
+        cbar_ax (obj): Axes object on the figure for the colorbar.
+        cbar_var (str): String representing the axis of the colorbar to add labels to.
+            For horizontal this is 'x' and for vertical it is 'y'.
+        Note: all args and kwargs are added as attributes.
+
+    """
     def __init__(self, fig, plot_type, **kwargs):
         # setup tick labels depending on plot
         self.fig = fig
-
+        self.plot_type = plot_type
         if plot_type == 'Waterfall':
             self.cbar_ticks = np.array([0., 10, 20, 50, 100, 200, 500, 1000, 3000, 1e10])
-            self.cbar_tick_labels = [int(i) for i in np.delete(self.cbar_ticks , -1)]
+            self.cbar_tick_labels = [int(i) for i in np.delete(self.cbar_ticks, -1)]
 
         elif plot_type == 'Ratio' or plot_type == 'CodetectionPotential3':
             self.cbar_ticks = [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]
-            self.cbar_tick_labels = [r'$10^{%i}$' % i for i in self.cbar_ticks[1:-1]]
+            self.cbar_tick_labels = [r'$10^{}$'.format(i) for i in self.cbar_ticks[1:-1]]
 
         elif plot_type == 'CodetectionPotential2' or plot_type == 'SingleDetection':
             self.cbar_ticks = [-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0]
-            self.cbar_tick_labels = [r'$\downarrow 10^{%i}$' % i for i in [4.0, 3.0, 2.0, 1.0]] + [
-                r'    $10^{%i}$' % i for i in [0.0]] + [r'$\uparrow 10^{%i}$' % i for i in [1.0, 2.0, 3.0, 4.0]]
+            self.cbar_tick_labels = ([r'$\downarrow 10^{}$'.format(i) for i in [4.0, 3.0, 2.0, 1.0]]
+                                     + [r'$10^{}$'.format(i) for i in [0.0]]
+                                     + [r'$\uparrow 10^{}$'.format(i)
+                                        for i in [1.0, 2.0, 3.0, 4.0]])
 
         elif plot_type == 'CodetectionPotential1':
             self.cbar_ticks = [0.0, 1.0, 2.0, 3.0, 4.0]
-            self.cbar_tick_labels = ['$10^{%i}$' % i for i in self.cbar_ticks]
+            self.cbar_tick_labels = ['$10^{}$'.format(i) for i in self.cbar_ticks]
+
+        elif plot_type == 'CodetectionPotential6':
+            self.cbar_ticks = np.array([-50., np.log10(8.0), 2.0, 3.0, 4.0])
+            self.cbar_tick_labels = ['0'] + [r'$10^{}$'.format(i) for i in self.cbar_ticks[1:]]
+
+        elif plot_type == 'CodetPot':
+            self.cbar_ticks = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0])
+            self.cbar_tick_labels = ['0'] + [r'${}$'.format(i) for i in self.cbar_ticks[1:]]
 
         prop_default = {
             'cbar_label': None,
@@ -219,11 +328,16 @@ class FigColorbar:
 
         if self.cbar_label is None:
             cbar_label_defaults = {'Waterfall': r'$\rho$',
-                                 'Ratio': r"$\rho_1/\rho_2$",
-                                 'CodetectionPotential1': r'$\rho$',
-                                 'SingleDetection': r'$\rho$',
-                                 'CodetectionPotential2': r'Codetection: $\sqrt{\rho_1^2 + \rho_2^2}$',
-                                 'CodetectionPotential3': r'$\sqrt{\rho_{A1}^2+\rho_{A2}^2}/\sqrt{\rho_{B1}^2+\rho_{B2}^2}$'}
+                                   'Ratio': r"$\rho_1/\rho_2$",
+                                   'CodetectionPotential1': r'$\rho$',
+                                   'SingleDetection': r'$\rho$',
+                                   'CodetectionPotential2':
+                                            r'Codetection: $\sqrt{\rho_1^2 + \rho_2^2}$',
+                                   'CodetectionPotential3': r'rho',
+                                   'CodetectionPotential4': r'$\rho$',
+                                   'CodetectionPotential5': r'$\rho$',
+                                   'CodetectionPotential6': r'$\rho$',
+                                   'CodetPot': r'CP/min(CP)'}
             self.cbar_label = cbar_label_defaults[plot_type]
 
         # dict with axes locations
@@ -233,10 +347,17 @@ class FigColorbar:
                                  'CodetectionPotential1': 5,
                                  'SingleDetection': 2,
                                  'CodetectionPotential2': 1,
-                                 'CodetectionPotential3': 2}
+                                 'CodetectionPotential3': 2,
+                                 'CodetectionPotential4': 5,
+                                 'CodetectionPotential5': 5,
+                                 'CodetectionPotential6': 5,
+                                 'CodetPot': 5}
 
-            cbar_axes_defaults = {'1': [0.83, 0.49, 0.03, 0.38], '2': [0.83, 0.05, 0.03, 0.38], '3': [
-            0.05, 0.92, 0.38, 0.03], '4': [0.47, 0.92, 0.38, 0.03], '5': [0.83, 0.1, 0.03, 0.8]}
+            cbar_axes_defaults = {'1': [0.83, 0.49, 0.03, 0.38],
+                                  '2': [0.83, 0.05, 0.03, 0.38],
+                                  '3': [0.05, 0.92, 0.38, 0.03],
+                                  '4': [0.47, 0.92, 0.38, 0.03],
+                                  '5': [0.83, 0.1, 0.03, 0.8]}
 
             if self.cbar_pos == 'use_default':
                 self.cbar_pos = cbar_pos_defaults[plot_type]
@@ -246,36 +367,37 @@ class FigColorbar:
 
         # check if colorbar is horizontal or vertical
         if self.cbar_axes[2] > self.cbar_axes[3]:
-            self.cbar_orientation = 'horizontal' if self.cbar_orientation is None else self.cbar_orientation
+            self.cbar_orientation = ('horizontal' if self.cbar_orientation is None
+                                     else self.cbar_orientation)
             self.cbar_label_pad = -60 if self.cbar_label_pad is None else self.cbar_label_pad
-            self.cbar_var = 'x' if self.cbar_var is None else self.cbar_var
-            self.cbar_ax.xaxis.set_ticks_position('top')
 
         else:
-            self.cbar_orientation = 'vertical' if self.cbar_orientation is None else self.cbar_orientation
+            self.cbar_orientation = ('vertical' if self.cbar_orientation is None
+                                     else self.cbar_orientation)
             self.cbar_label_pad = 10 if self.cbar_label_pad is None else self.cbar_label_pad
-            self.cbar_var = 'y' if self.cbar_var is None else self.cbar_var
+
+        if self.cbar_orientation == 'horizontal':
+            self.cbar_var = 'x'
+            self.cbar_ax.xaxis.set_ticks_position('top')
+        else:
+            self.cbar_var = 'y'
 
     def setup_colorbars(self, plot_call_sign):
-        """
-        Setup colorbars for each type of plot.
+        """Setup colorbars for each type of plot.
 
-        Inputs:
-                :param colorbar_pos: (int) - scalar - position of colorbar. Options are 1-5. See documentation for positions and uses.
-                :param plot_call_sign: (string) - plot class name
-                :colorbar_label: (string) - label of colorbar
+        Take all of the optional performed during ``__init__`` method and makes the colorbar.
 
-        Optional Inputs:
-                :param levels: (float) - list or array - levels used in the contouring. This is used for Waterfall plots.
-                :param ticks_fontsize: (float) - fontsize for the ticks applied to colorbar
-                :param label_fontsize: (float) - fontsize for the label for the colorbar
-                :param colorbar_axes: (float) - list of len 4 - allows for custom placement of colorbar. Values must be [0.0, 1.0]. See adding colorbar axes to figures in matplotlib documentation. Structure [horizontal placement, vertical placement, horizontal stretch, vertical stretch]
+        Args:
+            plot_call_sign (obj): Plot instance of ax.contourf with colormapping to
+                add as a colorbar.
+
         """
         self.fig.colorbar(plot_call_sign, cax=self.cbar_ax,
                           ticks=self.cbar_ticks, orientation=self.cbar_orientation)
         # setup colorbar ticks
-        getattr(self.cbar_ax, 'set_' + self.cbar_var + 'ticklabels')(self.cbar_tick_labels, fontsize=self.cbar_ticks_fontsize)
-        getattr(self.cbar_ax, 'set_' + self.cbar_var + 'label')(self.cbar_label,
-                                                 fontsize=self.cbar_label_fontsize, labelpad=self.cbar_label_pad)
+        (getattr(self.cbar_ax, 'set_' + self.cbar_var + 'ticklabels')
+            (self.cbar_tick_labels, fontsize=self.cbar_ticks_fontsize))
+        (getattr(self.cbar_ax, 'set_' + self.cbar_var + 'label')
+            (self.cbar_label, fontsize=self.cbar_label_fontsize, labelpad=self.cbar_label_pad))
 
         return

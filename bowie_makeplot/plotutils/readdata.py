@@ -1,59 +1,46 @@
-"""
-This module houses the data read in classes for plotting within the BOWIE package.
-
-    It is part of the BOWIE analysis tool. Author: Michael Katz. Please cite "Evaluating Black Hole Detectability with LISA" (arXiv:1807.02511) for usage of this code.
-
-    This code is licensed under the GNU public license.
-"""
-
 import h5py
 from astropy.io import ascii
 import numpy as np
 
+
 class PlotVals:
+    """
+    This class is designed to carry around the data for each plot as an attribute of self.
 
+    Args:
+        x_arr_list/y_arr_list/z_arr_list (list of 2D arrays of floats): List of gridded,
+            2D datasets representing the x/y/z-values.
 
+    """
     def __init__(self, x_arr_list, y_arr_list, z_arr_list):
-        """
-        This class is designed to carry around the data for each plot as an attribute of self.
-
-        Inputs/Attributes:
-            :param x_arr_list: (float) -list of 2D arrays - list of gridded, 2D datasets representing the x-values.
-            :param y_arr_list: (float) - list of 2d arrays - list of gridded, 2D datasets representing the y-values.
-            :param z_arr_list: (float) - list of 2d arrays - list of gridded, 2D datasets representing the z-values.
-        """
-
         self.x_arr_list, self.y_arr_list, self.z_arr_list = x_arr_list, y_arr_list, z_arr_list
+        return
 
 
 class ReadInData:
-    """
-    This class reads in data based on the pid and file_dict. The file_dict provides information about the files to read in. This information is transferred to the read in methods that work for .txt, .csv, and .hdf5.
+    """Read in the data from txt or hdf5.
 
-        Mandatory Inputs:
-            pid - dict - plot_info_dict used in main code. It contains information for types of plots created and the general settings in the pid['general'] dict. See documentation for all options.
+    This class reads in data. The information is transferred to the read in methods
+    that work for .txt, .csv, and .hdf5.
 
+    Keyword Arguments:
+        WORKING_DIRECTORY (str): Path to working directory.
+        file_name (str): File name for output file.
+        label (str): Label for column of data in file that will be the z value (SNR).
+        xlims/ylims (len-2 list of floats): x/y min value followed by max value.
+            Default is `lin` for linear. If log, the limits should be log of values.
+        dx/dy (float): increments in x and y.
+        xscale/yscale (string, optional): scaling for axes. Either 'log' or 'lin'.
+            Default is `lin`.
+        x_column_label/y_column_label (str, optional): Column label within the file for x and y.
 
-            file_dict - dict - contains info about the file to read in. Inputs/keys:
-                    Mandatory:
-                    name - string - file name including path extension from WORKING_DIRECTORY.
-                    label - string - name of column for the z values.
+    Attributes:
+        file_type (str): File extension. Either `hdf5`, `txt`, or `csv`.
+        xvals/yvals/zvals (2D array of floats): Values received from files.
+        x_append_value/y_append_value/z_append_value (2D array of floats): The value to append
+            to data lists. This can be log10 values for x/y if ``xcale/yscale == log10``.
+            For z values, it will just be zvals.
 
-                    Optional:
-                    x_column_label, y_column_label - string - x and y column names in file_dict
-
-        Optional Inputs:
-            limits_dict - dict - contains info on scaling of x and y
-                xscale, yscale - string - 'log' or 'lin' representing scale of data in x and y. 'lin' is default.
-
-
-
-
-        Optional Inputs:
-            limits_dict - dict containing axis limits and axes labels information. Inputs/keys:
-                xlims, ylims - length 2 list of floats - min followed by max. default is log for x and linear for y. If log, the limits should be log of values.
-                dx, dy - float - x-change and y-change
-                xscale, yscale - string - scaling for axes. Either 'log' or 'lin'.
 
     """
     def __init__(self, **kwargs):
@@ -98,8 +85,11 @@ class ReadInData:
         self.z_append_value = self.zvals
 
     def txt_read_in(self):
-        """
-        Method for reading in text or csv files. This uses ascii class from astropy.io for flexible input. It is slower than numpy, but has greater flexibility with less input.
+        """Read in txt files.
+
+        Method for reading in text or csv files. This uses ascii class from astropy.io
+        for flexible input. It is slower than numpy, but has greater flexibility with less input.
+
         """
 
         # read in
@@ -117,8 +107,7 @@ class ReadInData:
         return
 
     def hdf5_read_in(self):
-        """
-        Method for reading in hdf5 files.
+        """Method for reading in hdf5 files.
 
         """
 

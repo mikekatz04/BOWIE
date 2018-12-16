@@ -1,9 +1,17 @@
 """
-make_plot.py turns gridded datasets into helpful plots. It is designed for LISA Signal-to-Noise (SNR) comparisons across sennsitivity curves and parameters, but is flexible to other needs. It is part of the BOWIE analysis tool. Author: Michael Katz. Please cite "Evaluating Black Hole Detectability with LISA" (arXiv:1807.02511) for usage of this code.
+make_plot turns gridded datasets into helpful plots. It is designed for
+LISA Signal-to-Noise (SNR) comparisons across sennsitivity curves and parameters,
+but is flexible to other needs. It is part of the BOWIE analysis tool.
+Author: Michael Katz.
+
+Please cite "Evaluating Black Hole Detectability with LISA" (arXiv:1807.02511)
+for usage of this code.
 
 This code is licensed under the GNU public license.
 
-The methods here can be called with an input dictionary or .json configuration file. The plotting classes are also importable for customization. See BOWIE_basic_examples.ipynb for examples on how to use this code. See paper_plots.ipynb for the plots shown in the paper.
+TThe plotting classes are also importable for customization.
+See BOWIE_basic_examples.ipynb for examples on how to use this code.
+See paper_plots.ipynb for the plots shown in the paper.
 
 The three main classes are plot types: Waterfall, Horizon, and Ratio.
 
@@ -11,10 +19,15 @@ Waterfall:
     SNR contour plot based on plots from LISA Mission proposal.
 
 Ratio:
-    Comparison plot of the ratio of SNRs for two different inputs. This plot also contains Loss/Gain contours, which describe when sources are gained or lost compared to one another based on a user specified SNR cut. See paper above for further explanation.
+    Comparison plot of the ratio of SNRs for two different inputs.
+    This plot also contains Loss/Gain contours, which describe when sources
+    are gained or lost compared to one another based on a user specified SNR cut.
+    See paper above for further explanation.
 
 Horizon:
-    SNR contour plots comparing multipile inputs. User can specify contour value. The default is the user specified SNR cut.
+    SNR contour plots comparing multipile inputs. User can specify contour value.
+    The default is the user specified SNR cut.
+
 """
 
 

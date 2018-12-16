@@ -37,7 +37,7 @@ import inspect
 
 
 class Label:
-    """ Label contains the methods inherited by SinglePlot.
+    """Label contains the methods inherited by SinglePlot.
 
     These methods are used by SinglePlot class to add configuration
     information pertaining to the labels dict involved in plot creation.
@@ -291,7 +291,7 @@ class LimitsContainer:
 
 
 class Legend:
-    """ Legend contains the methods inherited by SinglePlot.
+    """Legend contains the methods inherited by SinglePlot.
 
     These methods are used by SinglePlot class to add configuration
     information pertaining to the legend dict involved in plot creation.
@@ -316,6 +316,7 @@ class Legend:
         Args:
             labels (list of str): String representing each item in plot that
                 will be added to the legend.
+
         Keyword Arguments:
             loc (str, int, len-2 list of floats, optional): Location of
                 legend. See matplotlib documentation for more detail.
@@ -641,6 +642,25 @@ class SinglePlot(Label, Limits, Legend, Extra, DataImport):
         self.plot_type = plot_type
         return
 
+    def set_colormap(self, cmap):
+        """Set colormap for Ratio plots.
+
+        Change the colormap.
+
+        Arguments:
+            cmap (str): String representing the colormap from predefined
+                python colormaps.
+
+        """
+        self.colormap = cmap
+        return
+
+    def add_comparison(self, comp_list):
+        if 'comparisons' not in self.__dict__:
+            self.comparisons = []
+
+        self.comparisons.append(comp_list)
+
 
 class Figure:
     def savefig(self, output_path, **kwargs):
@@ -860,7 +880,7 @@ class Figure:
             verticalalignment/va (str, optional): The vertical alignment of the text
                 relative to (x, y). Optionas are 'top', 'center', 'bottom',
                 or 'baseline'. Default is 'top'.
-            fontsize/size (int): The font size of the text. Default is 20.
+            fontsize/size (int, optional): The font size of the text. Default is 20.
 
         """
         prop_default = {
@@ -1004,7 +1024,6 @@ class General:
         """
         self.general.switch_backend = string
         return
-
 
     def set_all_file_name(self, name):
         """Add general file name.

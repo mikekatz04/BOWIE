@@ -21,7 +21,11 @@ from bowie_makeplot.plotutils.plottypes import (CreateSinglePlot,
                                                 Horizon,
                                                 CodetectionPotential1,
                                                 CodetectionPotential2,
-                                                CodetectionPotential3)
+                                                CodetectionPotential3,
+                                                CodetectionPotential4,
+                                                CodetectionPotential5,
+                                                CodetectionPotential6,
+                                                CodetPot)
 
 
 class MakePlotProcess:
@@ -68,6 +72,8 @@ class MakePlotProcess:
         total_mass (1D array of floats): End time in years before merger of each binary.
         dist_type (str): Which type of distance measure is used. Options are `redshift`,
             `luminosity_distance`, or `comoving_distance`.
+        value_classes (obj): Class :class:`bowie_makeplot.plotutils.readdata.PlotVals` that
+            holds data.
         final_dict (dict): Dictionary with SNR results.
         Note: All kwargs above are added as attributes.
 
@@ -95,8 +101,10 @@ class MakePlotProcess:
             setattr(self, prop, kwargs.get(prop, default))
 
     def input_data(self):
-        """
-        Function to extract data from files according to pid.
+        """Function to extract data from files according to pid.
+
+        This function will read in the data with
+        :class:`bowie_makeplot.plotutils.readdata.ReadInData`.
 
         """
         ordererd = np.sort(np.asarray(list(self.plot_info.keys())).astype(int))
@@ -118,7 +126,8 @@ class MakePlotProcess:
             if 'file' not in self.plot_info[axis_string].keys():
                 continue
             for j, file_dict in enumerate(self.plot_info[axis_string]['file']):
-                data_class = ReadInData(**{**self.general, **file_dict, **self.plot_info[axis_string]['limits']})
+                data_class = ReadInData(**{**self.general, **file_dict,
+                                           **self.plot_info[axis_string]['limits']})
 
                 x[k].append(data_class.x_append_value)
                 y[k].append(data_class.y_append_value)
@@ -132,7 +141,8 @@ class MakePlotProcess:
             # takes first file from plot
             if 'indices' in self.plot_info[axis_string]:
                 if type(self.plot_info[axis_string]['indices']) == int:
-                    self.plot_info[axis_string]['indices'] = [self.plot_info[axis_string]['indices']]
+                    self.plot_info[axis_string]['indices'] = (
+                        [self.plot_info[axis_string]['indices']])
 
                 for index in self.plot_info[axis_string]['indices']:
 
@@ -151,7 +161,8 @@ class MakePlotProcess:
                     if 'limits' in self.plot_info[axis_string].keys():
                         liimits_dict = self.plot_info[axis_string]['limits']
 
-                    data_class = ReadInData(**{**self.general, **file_dict, **self.plot_info[axis_string]['limits']})
+                    data_class = ReadInData(**{**self.general, **file_dict,
+                                               **self.plot_info[axis_string]['limits']})
                     x[k].append(data_class.x_append_value)
                     y[k].append(data_class.y_append_value)
                     z[k].append(data_class.z_append_value)
@@ -174,8 +185,8 @@ class MakePlotProcess:
         return
 
     def setup_figure(self):
-        """
-        Sets up the initial figure on which every plot is added.
+        """Sets up the initial figure on to which every plot is added.
+
         """
 
         # declare figure and axes environments
@@ -214,25 +225,28 @@ class MakePlotProcess:
                 self.colorbar_classes['CodetectionPotential2'] = []
                 for plot_type in ['CodetectionPotential2', 'SingleDetection']:
                     if plot_type in self.colorbars:
-                        self.colorbar_classes['CodetectionPotential2'].append(FigColorbar(fig, plot_type, **self.colorbars[plot_type]))
+                        (self.colorbar_classes['CodetectionPotential2'].append(
+                            FigColorbar(fig, plot_type, **self.colorbars[plot_type])))
 
                     else:
-                        self.colorbar_classes['CodetectionPotential2'].append(FigColorbar(fig, plot_type))
+                        (self.colorbar_classes['CodetectionPotential2'].append(
+                            FigColorbar(fig, plot_type)))
 
             elif plot_type in self.colorbars:
-                self.colorbar_classes[plot_type] = FigColorbar(fig, plot_type, **self.colorbars[plot_type])
+                self.colorbar_classes[plot_type] = FigColorbar(fig, plot_type,
+                                                               **self.colorbars[plot_type])
 
             else:
                 self.colorbar_classes[plot_type] = FigColorbar(fig, plot_type)
-
-
-
 
         # set subplots_adjust settings
         if ('Ratio' in self.plot_types or 'Waterfall' in self.plot_types or
                 'CodetectionPotential1' in self.plot_types or
                 'CodetectionPotential2' in self.plot_types or
-                'CodetectionPotential3' in self.plot_types):
+                'CodetectionPotential3' in self.plot_types or
+                'CodetectionPotential5' in self.plot_types or
+                'CodetectionPotential6' in self.plot_types or
+                'CodetPot' in self.plot_types):
             self.subplots_adjust_kwargs['right'] = 0.79
 
         # adjust figure sizes
@@ -260,8 +274,8 @@ class MakePlotProcess:
         return
 
     def create_plots(self):
-        """
-        Creates plots according to each plotting class.
+        """Creates plots according to each plotting class.
+
         """
         for i, axis in enumerate(self.ax):
             # plot everything. First check general dict for parameters related to plots.
