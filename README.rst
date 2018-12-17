@@ -43,6 +43,9 @@ In order to properly create waveforms with ctypes, you will need complex, gsl, a
 Installation
 =============
 
+Begin with updated conda:
+  ``conda update conda``
+
 Installation is done two ways:
 
 1) using pip
