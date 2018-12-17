@@ -5,7 +5,7 @@ from matplotlib import cm
 from matplotlib import colors
 from matplotlib.patches import Patch
 
-from bowie_makeplot.plotutils.baseplot import CreateSinglePlot
+from bowie.plotutils.baseplot import CreateSinglePlot
 
 # TODO: remove requirement for axis limits
 
@@ -13,7 +13,7 @@ from bowie_makeplot.plotutils.baseplot import CreateSinglePlot
 class Waterfall(CreateSinglePlot):
     """Create Waterfall plot.
 
-    Waterfall is a subclass of :class:`bowie_makeplot.plotutils.baseplot.CreateSinglePlot`.
+    Waterfall is a subclass of :class:`bowie.plotutils.baseplot.CreateSinglePlot`.
 
     Waterfall creates an snr filled contour plot similar in style to those seen in
     the LISA proposal. Contours are displayed at snrs of 10, 20, 50, 100, 200,
@@ -53,7 +53,7 @@ class Waterfall(CreateSinglePlot):
 class Ratio(CreateSinglePlot):
     """Create a ratio plot.
 
-    Ratio is a subclass of :class:`bowie_makeplot.plotutils.baseplot.CreateSinglePlot`.
+    Ratio is a subclass of :class:`bowie.plotutils.baseplot.CreateSinglePlot`.
 
     Ratio creates a filled contour plot comparing snrs from two different data sets.
     Typically, it is used to compare sensitivty curves and/or varying binary parameters.
@@ -183,7 +183,7 @@ class Ratio(CreateSinglePlot):
 class Horizon(CreateSinglePlot):
     """Create Horizon plots.
 
-    Horizon is a subclass of :class:`bowie_makeplot.plotutils.baseplot.CreateSinglePlot`.
+    Horizon is a subclass of :class:`bowie.plotutils.baseplot.CreateSinglePlot`.
 
     Horizon plots snr contour lines for a designated SNR value. The defaul is SNR_CUT,
     but can be overridden with `snr_contour_value`. Horizon can make as many

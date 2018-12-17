@@ -5,7 +5,7 @@ class CreateSinglePlot:
     """Base class for the subclasses designed for creating the plots.
 
     All of the plot types inherit this class and its methods. The __init__ method
-    is the same for all plots. Each plot_type in :mod:`bowie_makeplot.plotutils.plottypes`
+    is the same for all plots. Each plot_type in :mod:`bowie.plotutils.plottypes`
     has its own ``make_plot`` method and associated methods for creating the plot.
 
     Args:
@@ -38,18 +38,18 @@ class CreateSinglePlot:
             In this case, the edge tick labels are cut off for clarity. Default is `wide`.
         add_grid (bool, optional): If True, add a grid to the specific plot. Default is True.
         colorbar (obj, optional): Object of type
-            :class:`bowie_makeplot.plotutils.baseplot.FigColorbar`. This houses information for the
+            :class:`bowie.plotutils.baseplot.FigColorbar`. This houses information for the
             colorbar for the associated plot type. Default is None.
         colormap (str, optional): String represented the the colormap choice through python's
             predefined colormaps. This is for ratio plots. Default is `coolwarm`.
         loss_gain_status (bool, optional): If True, show the loss gain contours.
-            This only applies to :class:`bowie_makeplot.plotutils.plottypes.Ratio` plot.
+            This only applies to :class:`bowie.plotutils.plottypes.Ratio` plot.
             Default is True.
         snr_contour_value (float, optional): This will set the value for contours in plots.
-            In :class:`bowie_makeplot.plotutils.plottypes.Ratio` plots, this sets the value for
+            In :class:`bowie.plotutils.plottypes.Ratio` plots, this sets the value for
             loss/gain contours and minimal value for ratio contours (overrides SNR_CUT). For
-            :class:`bowie_makeplot.plotutils.plottypes.Horizon` plots this sets the value
-            for the horizon contours. For :class:`bowie_makeplot.plotutils.plottypes.Waterfall`
+            :class:`bowie.plotutils.plottypes.Horizon` plots this sets the value
+            for the horizon contours. For :class:`bowie.plotutils.plottypes.Waterfall`
             plots, this will add an additional contour in white. Default is None.
         order_contour_lines (bool, optional): Show dashed lines at each order of magnitude
             within the ratio contours. Default is False.
@@ -62,7 +62,7 @@ class CreateSinglePlot:
             If calling legend, these are required. Default is [].
         add_legend (bool, optional): If True, add legend.
         contour_vals (list or array of floats): Contour values to use for
-            :class:`bowie_makeplot.plotutils.plottypes.Waterfall`. Default is
+            :class:`bowie.plotutils.plottypes.Waterfall`. Default is
             np.array([0., 10, 20, 50, 100, 200, 500, 1000, 3000, 1e10]).
             Default kwarg value is [].
 

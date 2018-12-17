@@ -1,4 +1,4 @@
-bowie_makeplot package documentation:
+bowie package documentation:
 ======================================
 
 User interfacing modules:
@@ -7,7 +7,7 @@ User interfacing modules:
 make_plot module
 ++++++++++++++++
 
-.. automodule:: bowie_makeplot.make_plot
+.. automodule:: bowie.make_plot
     :members:
     :undoc-members:
     :show-inheritance:
@@ -15,7 +15,7 @@ make_plot module
 forminput module
 ++++++++++++++++
 
-.. automodule:: bowie_makeplot.plotutils.forminput
+.. automodule:: bowie.plotutils.forminput
     :members:
     :undoc-members:
     :show-inheritance:
@@ -27,7 +27,7 @@ Background documentation (plotutils package):
 readdata module
 +++++++++++++++
 
-.. automodule:: bowie_makeplot.plotutils.readdata
+.. automodule:: bowie.plotutils.readdata
     :members:
     :undoc-members:
     :show-inheritance:
@@ -35,7 +35,7 @@ readdata module
 plottypes module
 ++++++++++++++++
 
-.. automodule:: bowie_makeplot.plotutils.plottypes
+.. automodule:: bowie.plotutils.plottypes
     :members:
     :undoc-members:
     :show-inheritance:
@@ -43,7 +43,7 @@ plottypes module
 makeprocess module
 ++++++++++++++++++
 
-.. automodule:: bowie_makeplot.plotutils.makeprocess
+.. automodule:: bowie.plotutils.makeprocess
     :members:
     :undoc-members:
     :show-inheritance:
@@ -51,7 +51,7 @@ makeprocess module
 baseplot module
 ++++++++++++++++
 
-.. automodule:: bowie_makeplot.plotutils.baseplot
+.. automodule:: bowie.plotutils.baseplot
     :members:
     :undoc-members:
     :show-inheritance:

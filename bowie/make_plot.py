@@ -37,8 +37,8 @@ from collections import OrderedDict
 
 import matplotlib.pyplot as plt
 
-from bowie_makeplot.plotutils.makeprocess import MakePlotProcess
-from bowie_makeplot.plotutils.forminput import MainContainer as PlotInput
+from bowie.plotutils.makeprocess import MakePlotProcess
+from bowie.plotutils.forminput import MainContainer as PlotInput
 
 SNR_CUT = 5.0
 

@@ -13,9 +13,9 @@ from collections import OrderedDict
 import numpy as np
 import matplotlib.pyplot as plt
 
-from bowie_makeplot.plotutils.readdata import PlotVals, ReadInData
-from bowie_makeplot.plotutils.baseplot import FigColorbar
-from bowie_makeplot.plotutils.plottypes import (CreateSinglePlot,
+from bowie.plotutils.readdata import PlotVals, ReadInData
+from bowie.plotutils.baseplot import FigColorbar
+from bowie.plotutils.plottypes import (CreateSinglePlot,
                                                 Waterfall,
                                                 Ratio,
                                                 Horizon)
@@ -65,7 +65,7 @@ class MakePlotProcess:
         total_mass (1D array of floats): End time in years before merger of each binary.
         dist_type (str): Which type of distance measure is used. Options are `redshift`,
             `luminosity_distance`, or `comoving_distance`.
-        value_classes (obj): Class :class:`bowie_makeplot.plotutils.readdata.PlotVals` that
+        value_classes (obj): Class :class:`bowie.plotutils.readdata.PlotVals` that
             holds data.
         final_dict (dict): Dictionary with SNR results.
         Note: All kwargs above are added as attributes.
@@ -97,7 +97,7 @@ class MakePlotProcess:
         """Function to extract data from files according to pid.
 
         This function will read in the data with
-        :class:`bowie_makeplot.plotutils.readdata.ReadInData`.
+        :class:`bowie.plotutils.readdata.ReadInData`.
 
         """
         ordererd = np.sort(np.asarray(list(self.plot_info.keys())).astype(int))
