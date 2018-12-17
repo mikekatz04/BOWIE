@@ -30,6 +30,8 @@ These instructions will get you a copy of the project up and running on your loc
 Prerequisites
 =============
 
+It is best to run out of conda environment. It will handle the dependencies better. If you have issues with certain modules, try to update them.
+
 Software installation/usage only requires a few specific libraries in python. All libraries are included with Anaconda. If you do not run python in an anaconda environment, you  will need the following libraries and modules to run with all capabilities: Numpy, Scipy, collections, sys, json, multiprocessing, datetime, time, astropy, and h5py. All can be installed with pip. For example, within your python environment of choice:
 
 ``pip install astropy``
@@ -39,7 +41,7 @@ In order to properly create waveforms with ctypes, you will need complex, gsl, a
 Installation
 =============
 
-Begin with updated conda:
+Begin with updating conda:
   ``conda update conda``
 
 Installation is done two ways:
@@ -50,7 +52,7 @@ Installation is done two ways:
 
   This will download the all necessary packages to your current environment. It will not download the notebooks for testing and example usage.
 
-2) Clone the git repo on the command line, or downloading it from github. This is for all the modules, example jupyter notebooks, and extra files. This method will include BOWIE. To just download specific files that do not come with pip (e.g. jupyter notebook with examples), just download the files from the github.
+2) Clone the git repo on the command line, or downloading it from github. This is for all the modules, example jupyter notebooks, and extra files. This method will include BOWIE if pip install is used on the outer directory. To just download specific files that do not come with pip (e.g. jupyter notebook with examples), just download the files from the github.
 
   a) navigate to the directory of your choice.
 
@@ -58,9 +60,9 @@ Installation is done two ways:
 
     ``git clone https://github.com/mikekatz04/BOWIE.git``
 
-  c) run setup.py to add the modules to your environment and compile the c codes.
+  c) pip install the local code to add the modules to your environment and compile the c codes.
 
-    ``python ./setup.py install``
+    ``pip install ./BOWIE/snr_calculator_folder/``
 
 Testing and Running an Example
 ==============================
