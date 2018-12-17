@@ -91,7 +91,7 @@ class CreateSinglePlot:
             'legend_kwargs': {},
             'legend_labels': [],
             'add_legend': False,
-            'contour_vals': [],
+            'contour_vals':  np.array([0., 10, 20, 50, 100, 200, 500, 1000, 3000, 1e10]),
         }
 
         for key, value in kwargs.items():

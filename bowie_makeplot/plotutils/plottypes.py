@@ -28,13 +28,6 @@ class Waterfall(CreateSinglePlot):
 
         """
 
-        prop_default = {
-            'contour_vals': np.array([0., 10, 20, 50, 100, 200, 500, 1000, 3000, 1e10])
-        }
-
-        for prop, default in prop_default.items():
-            setattr(self, prop, self.__dict__.get(prop, default))
-
         # sets levels of main contour plot
         colors1 = ['None', 'darkblue', 'blue', 'deepskyblue', 'aqua',
                    'greenyellow', 'orange', 'red', 'darkred']
