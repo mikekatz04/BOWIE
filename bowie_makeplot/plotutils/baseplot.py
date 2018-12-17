@@ -276,7 +276,7 @@ class FigColorbar:
 
         elif plot_type == 'Ratio':
             self.cbar_ticks = [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]
-            self.cbar_tick_labels = [r'$10^{}$'.format(i) for i in self.cbar_ticks[1:-1]]
+            self.cbar_tick_labels = [r'$10^{%i}$' % i for i in self.cbar_ticks[1:-1]]
 
         prop_default = {
             'cbar_label': None,
