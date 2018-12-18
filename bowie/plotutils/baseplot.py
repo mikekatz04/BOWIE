@@ -92,6 +92,8 @@ class CreateSinglePlot:
             'legend_labels': [],
             'add_legend': False,
             'contour_vals':  np.array([0., 10, 20, 50, 100, 200, 500, 1000, 3000, 1e10]),
+            'solid_codetection_contour': True,
+            'solid_single_detection_contour': False,
         }
 
         for key, value in kwargs.items():
@@ -140,6 +142,9 @@ class CreateSinglePlot:
         # check input data sizes.
         if len(self.zvals) != 2 and self.plot_type == 'Ratio':
             raise Exception("Length of vals not equal to 2. Ratio plots must have 2 inputs.")
+
+        if len(self.xvals) < 2 and self.plot_type == 'CodetectionPotential1':
+            raise Exception("Length of vals less than 2. No need for codetection.")
 
         self.comparison_value = (self.snr_contour_value if self.snr_contour_value is not
                                  None else self.SNR_CUT)
@@ -278,6 +283,14 @@ class FigColorbar:
             self.cbar_ticks = [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]
             self.cbar_tick_labels = [r'$10^{%i}$' % i for i in self.cbar_ticks[1:-1]]
 
+        elif plot_type == 'CodetectionPotential6':
+            self.cbar_ticks = np.array([-50., np.log10(8.0), 2.0, 3.0, 4.0])
+            self.cbar_tick_labels = ['0'] + [r'$10^{}$'.format(i) for i in self.cbar_ticks[1:]]
+
+        elif plot_type == 'CodetPot':
+            self.cbar_ticks = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0])
+            self.cbar_tick_labels = ['0'] + [r'${}$'.format(i) for i in self.cbar_ticks[1:]]
+
         prop_default = {
             'cbar_label': None,
             'cbar_ticks_fontsize': 15,
@@ -297,7 +310,11 @@ class FigColorbar:
 
         if self.cbar_label is None:
             cbar_label_defaults = {'Waterfall': r'$\rho$',
-                                   'Ratio': r"$\rho_1/\rho_2$"}
+                                   'Ratio': r"$\rho_1/\rho_2$",
+                                   'CodetectionPotential6': r'$\rho$',
+                                   'CodetPot': r'CP/min(CP)',
+                                   'CodetectionPotential6': 5,
+                                   'CodetPot': 5}
 
             self.cbar_label = cbar_label_defaults[plot_type]
 

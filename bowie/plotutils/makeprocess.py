@@ -16,9 +16,12 @@ import matplotlib.pyplot as plt
 from bowie.plotutils.readdata import PlotVals, ReadInData
 from bowie.plotutils.baseplot import FigColorbar
 from bowie.plotutils.plottypes import (CreateSinglePlot,
-                                                Waterfall,
-                                                Ratio,
-                                                Horizon)
+                                       Waterfall,
+                                       Ratio,
+                                       Horizon,
+                                       CodetectionPotential3,
+                                       CodetectionPotential6,
+                                       CodetPot)
 
 
 class MakePlotProcess:
@@ -222,7 +225,8 @@ class MakePlotProcess:
                 self.colorbar_classes[plot_type] = FigColorbar(fig, plot_type)
 
         # set subplots_adjust settings
-        if 'Ratio' in self.plot_types or 'Waterfall':
+        if 'Ratio' in self.plot_types or 'Waterfall' or 'CodetectionPotential6' in self.plot_types or
+        'CodetPot' in self.plot_types:
             self.subplots_adjust_kwargs['right'] = 0.79
 
         # adjust figure sizes
