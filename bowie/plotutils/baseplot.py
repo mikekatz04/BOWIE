@@ -93,8 +93,9 @@ class CreateSinglePlot:
             'add_legend': False,
             'contour_vals':  np.array([0., 10, 20, 50, 100, 200, 500, 1000, 3000, 1e10]),
             'solid_codetection_contour': True,
-            'solid_single_detection_contour': False,
+            'solid_single_detection_contour': True,
         }
+        # TODO decide on solid contours
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -283,13 +284,9 @@ class FigColorbar:
             self.cbar_ticks = [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]
             self.cbar_tick_labels = [r'$10^{%i}$' % i for i in self.cbar_ticks[1:-1]]
 
-        elif plot_type == 'CodetectionPotential6':
-            self.cbar_ticks = np.array([-50., np.log10(8.0), 2.0, 3.0, 4.0])
-            self.cbar_tick_labels = ['0'] + [r'$10^{}$'.format(i) for i in self.cbar_ticks[1:]]
-
         elif plot_type == 'CodetPot':
-            self.cbar_ticks = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0])
-            self.cbar_tick_labels = ['0'] + [r'${}$'.format(i) for i in self.cbar_ticks[1:]]
+            self.cbar_ticks = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+            self.cbar_tick_labels = [r'$%i$' % i for i in self.cbar_ticks]
 
         prop_default = {
             'cbar_label': None,
@@ -311,17 +308,15 @@ class FigColorbar:
         if self.cbar_label is None:
             cbar_label_defaults = {'Waterfall': r'$\rho$',
                                    'Ratio': r"$\rho_1/\rho_2$",
-                                   'CodetectionPotential6': r'$\rho$',
-                                   'CodetPot': r'CP/min(CP)',
-                                   'CodetectionPotential6': 5,
-                                   'CodetPot': 5}
+                                   'CodetPot': r'CP/min(CP)'}
 
             self.cbar_label = cbar_label_defaults[plot_type]
 
         # dict with axes locations
         if self.cbar_axes == []:
             cbar_pos_defaults = {'Waterfall': 1,
-                                 'Ratio': 2}
+                                 'Ratio': 2,
+                                  'CodetPot': 5}
 
             cbar_axes_defaults = {'1': [0.83, 0.49, 0.03, 0.38],
                                   '2': [0.83, 0.05, 0.03, 0.38],

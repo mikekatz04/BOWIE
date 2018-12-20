@@ -809,11 +809,11 @@ class Figure:
 
         """
         prop_default = {
-            'x': 0.01,
-            'y': 0.51,
+            'x': 0.45,
+            'y': 0.02,
             'fontsize': 20,
-            'rotation': 'vertical',
-            'va': 'center',
+            'rotation': 'horizontal',
+            'ha': 'center',
         }
 
         for prop, default in prop_default.items():
@@ -848,11 +848,11 @@ class Figure:
 
         """
         prop_default = {
-            'x': 0.45,
-            'y': 0.02,
+            'x': 0.01,
+            'y': 0.51,
             'fontsize': 20,
-            'rotation': 'horizontal',
-            'ha': 'center',
+            'rotation': 'vertical',
+            'va': 'center',
         }
 
         for prop, default in prop_default.items():

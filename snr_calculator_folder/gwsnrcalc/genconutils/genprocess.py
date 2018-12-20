@@ -110,6 +110,12 @@ class GenProcess:
             if 'spin' in self.__dict__:
                 self.spin_1 = self.spin
                 self.spin_2 = self.spin
+            if 'end_time' not in self.__dict__:
+                if 'observation_time' not in self.__dict__:
+                    raise ValueError('If end time is not given, observation_time must be provided.')
+                else:
+                    trans = self.start_time - self.observation_time
+                    self.end_time = 0.0*(trans <= 0.0) + trans*(trans > 0.0)
 
         for key in ['redshift', 'luminosity_distance', 'comoving_distance']:
             if key in self.__dict__:

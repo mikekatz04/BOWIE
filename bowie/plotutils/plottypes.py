@@ -242,12 +242,16 @@ class CodetectionPotential1(CreateSinglePlot):
         """
         This methd creates the ratio plot.
         """
+        """
         colormaps = ['Purples', 'Blues', 'Greens', 'Reds']
         cmap_keys = [map_name.lower()[:-1] for map_name in colormaps]
 
         codet_cmap = 'Greys'
         codet_cmap_key = codet_cmap.lower()[:-1]
+        """
 
+        codet_color = 'grey'
+        single_det_colors = ['purple', 'blue', 'green', 'red', 'orange', 'brown', 'goldenrod']
         # find loss/gain contour and ratio contour
         codet_pot, singles = self.find_codetection_potential()
 
@@ -270,11 +274,11 @@ class CodetectionPotential1(CreateSinglePlot):
 
         # setup single detections
         for i, single in enumerate(singles):
-            cmap_single = getattr(cm, colormaps[i])
+            #cmap_single = getattr(cm, colormaps[i])
             sdet = self.axis.contourf(self.xvals[0], self.yvals[0], single,
-                                      cmap=cmap_single, **contour_kwargs)
+                                      colors=single_det_colors[i], alpha=0.6, **contour_kwargs)
 
-            self.axis.scatter([-1e10, -1e10], [-1e1, -2e1], color=cmap_keys[i],
+            self.axis.scatter([-1e10, -1e10], [-1e1, -2e1], color=single_det_colors[i],
                               label=self.legend_labels[i])
 
             # toggle line contours of orders of magnitude of ratio comparisons
@@ -300,18 +304,18 @@ class CodetectionPotential1(CreateSinglePlot):
                 'extend': 'max'
             }
 
-        cmap_comb = getattr(cm, codet_cmap)
+        #cmap_comb = getattr(cm, codet_cmap)
         codet_sc = self.axis.contourf(self.xvals[0], self.yvals[0], codet_pot,
-                                      cmap=cmap_comb, **contour_kwargs)
+                                     colors='grey', **contour_kwargs)
         if self.solid_codetection_contour is not True:
             # black colorbar
             self.colorbar.setup_colorbars(codet_sc)
 
         if self.order_contour_lines and self.solid_codetection_contour is not True:
             self.axis.contour(self.xvals[0], self.yvals[0], levels=np.array(
-                [1.0, 2.0, 3.0]), colors='black', linewidths=1.0)
+                [1.0, 2.0, 3.0]), colors='grey', linewidths=1.0)
 
-        self.axis.scatter([-1e10, -1e10], [-1e1, -2e1], color=codet_cmap_key, label='Codetection')
+        self.axis.scatter([-1e10, -1e10], [-1e1, -2e1], color='grey', label='Codetection')
 
 
 
@@ -372,9 +376,9 @@ class CodetPot(CreateSinglePlot):
         mpl.rcParams['hatch.linewidth'] = 0.25
         # set values of ratio comparison contour
         normval2 = 5.0
-        num_contours2 = 11  # must be even
-        levels2 = np.linspace(0.0, normval2, num_contours2)
-        norm2 = colors.Normalize(0.0, normval2)
+        num_contours2 = 9  # must be even
+        levels2 = np.linspace(1.0, normval2, num_contours2)
+        norm2 = colors.Normalize(1.0, normval2)
 
         # find Loss/Gain contour and Ratio contour
         pot, loss_gain_contour = self.find_difference_contour()
@@ -456,7 +460,7 @@ class CodetPot(CreateSinglePlot):
         return pot, loss_gain_contour
 
 
-class CodetectionPotential3(Horizon, CodetectionPotential, CreateSinglePlot):
+class CodetectionPotential3(Horizon, CreateSinglePlot):
     """
     Ratio is a subclass of CreateSinglePlot. Refer to CreateSinglePlot class docstring for input information.
 
@@ -464,10 +468,16 @@ class CodetectionPotential3(Horizon, CodetectionPotential, CreateSinglePlot):
     """
     def get_contour_values(self):
         codet = []
-        for comp in self.comparisons:
+        xvals = []
+        yvals = []
+        for num, comp in enumerate(self.comparisons):
             trans_cont_vals = [self.zvals[i] for i in comp]
             codet.append(self.find_codetection_potential(trans_cont_vals))
+            xvals.append(self.xvals[0])
+            yvals.append(self.yvals[0])
 
+        self.xvals = xvals
+        self.yvals = yvals
         self.zvals = codet
         return
 

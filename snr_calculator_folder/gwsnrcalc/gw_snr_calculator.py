@@ -20,9 +20,10 @@ from gwsnrcalc.utils.waveforms import PhenomDWaveforms, EccentricBinaries
 from gwsnrcalc.utils.csnr import csnr
 from gwsnrcalc.utils.sensitivity import SensitivityContainer
 from gwsnrcalc.utils.parallel import ParallelContainer
+from gwsnrcalc.utils.lsstsnr import LSSTCalc, MBHEddMag, parallel_em_snr_func
 
 
-class SNR(SensitivityContainer, ParallelContainer, PhenomDWaveforms):
+class SNR(SensitivityContainer, ParallelContainer, LSSTCalc):
     """Main class for SNR calculations.
 
     This class performs gravitational wave SNR calculations with a matched
@@ -30,10 +31,15 @@ class SNR(SensitivityContainer, ParallelContainer, PhenomDWaveforms):
     It can run in parallel or on a single processor.
 
     Args:
-        ecc (bool, optional): If True, use the eccentric SNR calculator. If False,
-            use PhenomDWaveforms. (For future usage.) Default is False.
-        **kwargs (dict): kwargs to be added to ParallelContainer, PhenomDWaveforms, and
-            SensitivityContainer.
+        calc_type (str, optional): Options are `circ` for circular orbits
+            and use of :class:`gwsnrcalc.utils.waveforms.PhenomDWaveforms`;
+            `ecc` eccentric orbits and use of :class:`gwsnrcalc.utils.waveforms.EccentricBinaries`,
+             or `em` for LSST snr calculations for a quasar and use of
+             :class:`gwsnrcalc.utils.lsstsnr.LSSTSNR`. (For future usage.) Default is `circ`.
+        **kwargs (dict): kwargs to be added to :class:`gwsnrcalc.utils.parallel.ParallelContainer`,
+            waveform class (:class:`gwsnrcalc.utils.waveforms.PhenomDWaveforms`
+            or :class:`gwsnrcalc.utils.waveforms.EccentricBinaries`) , and
+            :class:`gwsnrcalc.utils.sensitivity.SensitivityContainer`.
 
     Keyworkd Arguments:
         signal_type (scalar or list of str, optional): Phase of snr.
@@ -45,8 +51,12 @@ class SNR(SensitivityContainer, ParallelContainer, PhenomDWaveforms):
     Attributes:
         snr_function (obj): Function object representing the snr function to use.
             This is form future use with other snr calculations.
-        phenomdwave (obj): :class:`gwsnrcalc.utils.pyphenomd.PhenomDWaveforms`
+        phenomdwave (obj, optional): If using circular waveforms,
+            :class:`gwsnrcalc.utils.pyphenomd.PhenomDWaveforms`
             object for storing initial kwargs and passing to snr function.
+        eccwave (obj, optional): If using eccentric waveforms,
+            :class:`gwsnrcalc.utils.waveforms.EccentricBinaries` obhect for storing
+            initial kwargs and passing to snr function.
         Note: All kwargs are stored as attributes.
         Note: Attributes are inherited from inherited classes.
 
@@ -57,23 +67,36 @@ class SNR(SensitivityContainer, ParallelContainer, PhenomDWaveforms):
         prop_defaults = {
             'prefactor': 1.0,
             'signal_type': ['all'],
-            'ecc': False,
+            'calc_type': 'circ',
         }
 
         for (prop, default) in prop_defaults.items():
                 setattr(self, prop, kwargs.get(prop, default))
 
         # initialize sensitivity and parallel modules
-        SensitivityContainer.__init__(self, **kwargs)
+        if self.calc_type != 'em':
+            SensitivityContainer.__init__(self, **kwargs)
+
+        else:
+            LSSTCalc.__init__(self, **kwargs)
+
         ParallelContainer.__init__(self, **kwargs)
 
         # set the SNR function
-        if self.ecc:
+        if self.calc_type == 'ecc':
             self.snr_function = parallel_ecc_snr_func
             self.wavegen = EccentricBinaries(**kwargs)
-        else:
+
+        elif self.calc_type == 'em':
+            self.snr_function = parallel_em_snr_func
+            self.wavegen = MBHEddMag(**kwargs)
+
+        elif self.calc_type == 'circ':
             self.snr_function = parallel_snr_func
             self.wavegen = PhenomDWaveforms(**kwargs)
+
+        else:
+            raise ValueError('calc_type must be either circ, ecc, or em.')
 
     def __call__(self, *binary_args):
         """Input binary parameters and calculate the SNR
@@ -89,10 +112,17 @@ class SNR(SensitivityContainer, ParallelContainer, PhenomDWaveforms):
 
         """
         # if self.num_processors is None, run on single processor
+        if self.calc_type == 'ecc' or self.calc_type == 'circ':
+            other_args = (self.wavegen, self.signal_type,  self.noise_interpolants,
+                          self.prefactor,  self.verbose)
+
+        else:
+            other_args = (self.wavegen, self.noise_interpolants,
+                          self.prefactor,  self.verbose)
+
         if self.num_processors is None:
-            return self.snr_function(0, binary_args, self.wavegen,
-                                     self.signal_type,  self.noise_interpolants,
-                                     self.prefactor,  self.verbose)
+            func_args = (0, binary_args) + other_args
+            return self.snr_function(*func_args)
         other_args = (self.wavegen, self.signal_type,
                       self.noise_interpolants, self.prefactor,  self.verbose)
         self.prep_parallel(binary_args, other_args)
@@ -148,7 +178,7 @@ def parallel_ecc_snr_func(num, binary_args, eccwave, signal_type,
                           noise_interpolants, prefactor, verbose):
     """SNR calulation with eccentric waveforms
 
-    Generate PhenomDWaveforms and calculate their SNR against sensitivity curves.
+    Generate eccentric waveforms and calculate their SNR against sensitivity curves.
 
     Args:
         num (int): Process number. If only a single process, num=0.

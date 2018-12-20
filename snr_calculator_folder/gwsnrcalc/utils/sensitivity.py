@@ -2,6 +2,8 @@ import numpy as np
 from scipy import interpolate
 from gwsnrcalc.utils.readnoisecurves import read_noise_curve, combine_with_wd_noise
 
+# TODO: Change wd_background to background
+
 
 class SensitivityContainer:
     """Sensitivity curve analysis
@@ -95,7 +97,7 @@ class SensitivityContainer:
                 f, h_n = read_noise_curve(sc, noise_type_in=self.noise_type_in[num],
                                           noise_type_out='char_strain')
                 if sc[-4:] == '.txt':
-                    key = sc.split('.')[0].split('/')[-1]
+                    key = sc.split('/')[-1].split('.')[0]
                 else:
                     key = sc
             elif isinstance(sc, list):
