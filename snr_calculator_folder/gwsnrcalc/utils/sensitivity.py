@@ -122,7 +122,7 @@ class SensitivityContainer:
             trans_dict = {}
             for sc in noise_lists.keys():
                 f_n, h_n = noise_lists[sc]
-                if self.add_wd_noise.lower() == 'both':
+                if str(self.add_wd_noise).lower() == 'both':
                     trans_dict[sc] = [f_n, h_n]
 
                 f_n, h_n = combine_with_wd_noise(f_n, h_n, f_n_wd, h_n_wd)

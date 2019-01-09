@@ -123,8 +123,7 @@ class SNR(SensitivityContainer, ParallelContainer, LSSTCalc):
         if self.num_processors is None:
             func_args = (0, binary_args) + other_args
             return self.snr_function(*func_args)
-        other_args = (self.wavegen, self.signal_type,
-                      self.noise_interpolants, self.prefactor,  self.verbose)
+
         self.prep_parallel(binary_args, other_args)
         return self.run_parallel(self.snr_function)
 

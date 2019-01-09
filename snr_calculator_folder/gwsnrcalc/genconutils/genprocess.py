@@ -58,12 +58,20 @@ class GenProcess:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+        """
         prop_default = {
             'ecc': False,
         }
 
         for prop, default in prop_default.items():
             setattr(self, prop, kwargs.get(prop, default))
+        """
+
+        if self.sensitivity_input['sensitivity_curves'] == ['LSST'] or self.sensitivity_input['sensitivity_curves'] == 'LSST':
+            self.em = True
+        else:
+            self.em = False
+
 
     def set_parameters(self):
         """Setup all the parameters for the binaries to be evaluated.
@@ -106,7 +114,7 @@ class GenProcess:
                     raise ValueError('If no observation time is provided, the time before'
                                      + 'merger must be the inital starting condition.')
                 self.observation_time = self.start_time  # small number so it is not zero
-        else:
+        elif self.em is False:
             if 'spin' in self.__dict__:
                 self.spin_1 = self.spin
                 self.spin_2 = self.spin
@@ -144,9 +152,13 @@ class GenProcess:
         if self.ecc:
             required_kwargs = {'dist_type': self.dist_type,
                                'initial_cond_type': self.initial_cond_type,
-                               'ecc': True}
+                               'calc_type': 'ecc'}
             input_args = [self.m1, self.m2, self.z_or_dist, self.initial_point,
                           self.eccentricity, self.observation_time]
+
+        elif self.em:
+            required_kwargs = {'dist_type': self.dist_type, 'calc_type': 'em'}
+            input_args = [self.total_mass, self.mass_ratio, self.z_or_dist]
 
         else:
             required_kwargs = {'dist_type': self.dist_type}

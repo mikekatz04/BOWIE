@@ -134,7 +134,7 @@ class Generate:
                 for options for the name.
 
         """
-        setattr(self.generate_info, name, val)
+        setattr(self.generate_info, name, float(val))
         return
 
 

@@ -29,13 +29,14 @@ class LSSTSNR:
             'throughputsDir': 'lsstutils/lsst_files/',
             'atmosDir': 'lsstutils/lsst_files/',
             'stdFilter': 'r',
-            'filterlist': ('u', 'g', 'r', 'i', 'z', 'y'),
+            'signal_type': ('u', 'g', 'r', 'i', 'z', 'y'),
             'filtercolors': {'u': 'b', 'g': 'c', 'r': 'g', 'i': 'y', 'z': 'r', 'y': 'm'},
         }
 
         for prop, default in prop_defaults.items():
             setattr(self, prop, kwargs.get(prop, default))
 
+        self.filterlist = self.signal_type
         self.setup_sed()
         self.setup_noise_info()
 
@@ -102,7 +103,12 @@ class LSSTSNR:
 
 class MBHEddMag:
     def __init__(self, **kwargs):
-        pass
+        prop_defaults = {
+            'dist_type': 'redshift',
+        }
+
+        for prop, default in prop_defaults.items():
+            setattr(self, prop, kwargs.get(prop, default))
 
     def _eddington_luminosity(self, mass):
         return 3e4*mass  # mass in solar masses returns solar luminosity unit
@@ -182,17 +188,39 @@ class MBHEddMag:
                     setattr(self, key, np.full((max_length,), local_dict[key]))
         return
 
-    def __call__(self, total_mass, q, z):
+    def __call__(self, total_mass, q, z_or_dist):
         """Calculate the detectability of EM observable.
 
         This assumes Eddington luminosity for smaller black hole of the pair.
 
         """
         self._broadcast_and_set_attrs(locals())
+
+        # based on distance inputs, need to find redshift and luminosity distance.
+        if self.dist_type == 'redshift':
+            self.z = self.z_or_dist
+            self.dist = cosmo.luminosity_distance(self.z).value
+
+        elif self.dist_type == 'luminosity_distance':
+            z_in = np.logspace(-3, 3, 10000)
+            lum_dis = cosmo.luminosity_distance(z_in).value
+
+            self.dist = self.z_or_dist
+            self.z = np.interp(self.dist, lum_dis, z_in)
+
+        elif self.dist_type == 'comoving_distance':
+            z_in = np.logspace(-3, 3, 10000)
+            lum_dis = cosmo.luminosity_distance(z_in).value
+            com_dis = cosmo.comoving_distance(z_in).value
+
+            comoving_distance = self.z_or_dist
+            self.z = np.interp(comoving_distance, com_dis, z_in)
+            self.dist = np.interp(comoving_distance, com_dis, lum_dis)
+
         self._sanity_check()
         m2 = self.total_mass*self.q/(1+self.q)
-        distance = cosmo.luminosity_distance(self.z).value*1e6
-        rel_mag = self._relative_mag(m2, distance)
+        self.dist = self.dist*1e6
+        rel_mag = self._relative_mag(m2, self.dist)
         return rel_mag, self.z
 
 
@@ -225,6 +253,8 @@ def parallel_em_snr_func(num, binary_args, mbheddmag,
     mag, z = mbheddmag(*binary_args)
 
     out_vals = noise_interpolants(mag, z)
+
+    out_vals = {'LSST_' + key: out_vals[key] for key in out_vals}
 
     if verbose > 0 and (num+1) % verbose == 0:
         print('Process ', (num+1), 'is finished.')

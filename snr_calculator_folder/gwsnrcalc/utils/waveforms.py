@@ -191,6 +191,8 @@ class PhenomDWaveforms:
         fmrg = fmrg_fpeak_cast()
         fpeak = fmrg_fpeak_cast()
 
+        #import pdb; pdb.set_trace()
+
         # Find hc
         c_obj.Amplitude(ctypes.byref(freqs), ctypes.byref(hc), ctypes.byref(fmrg),
                         ctypes.byref(fpeak),
@@ -547,6 +549,9 @@ class EccentricBinaries:
         e_vals, a_vals, t_vals = self._t_of_e(a0=self.a0, f0=self.f0,
                                               t_start=self.t_start, ef=None,
                                               t_obs=self.t_obs)
+        import sys
+        np.savetxt('trans_e0_check.txt', np.array([t_vals[:,0]/(ct.c*ct.Julian_year)]).T)
+        sys.exit
 
         f_mrg = 0.02/(self.m1 + self.m2)
         a_mrg = ((self.m1+self.m2)/f_mrg**2)**(1/3)
