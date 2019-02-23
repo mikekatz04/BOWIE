@@ -114,6 +114,7 @@ class GenProcess:
                     raise ValueError('If no observation time is provided, the time before'
                                      + 'merger must be the inital starting condition.')
                 self.observation_time = self.start_time  # small number so it is not zero
+
         elif self.em is False:
             if 'spin' in self.__dict__:
                 self.spin_1 = self.spin

@@ -231,7 +231,7 @@ class SensitivityInput:
         self.sensitivity_input.add_wd_noise = wd_noise
         return
 
-    def add_em_info(self, source, telescope_class):
+    def add_em_info(self, source, telescope_name, telescope_class):
         """Add EM source (for sed info) and telescope info
 
         Add information about the source and the telescope for which you want to calculate the snr.
@@ -244,8 +244,17 @@ class SensitivityInput:
                 :class:`gwsnrcalc.utils.emtelescopesetup.EMTelescope`.
 
         """
+        if 'sensitivity_curves' not in self.sensitivity_input.__dict__:
+            self.sensitivity_input.sensitivity_curves = []
+
+        if 'sensitivity_curves' not in self.sensitivity_input.__dict__:
+            self.sensitivity_input.telescopes = []
+
+        self.sensitivity_input.sensitivity_curves.append(telescope_name)
+
         self.sensitivity_input.telescope = telescope_class
         self.sensitivity_input.source = source
+        self.sensitivty_input.em = True
         return
 
 
