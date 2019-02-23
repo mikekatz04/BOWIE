@@ -9,7 +9,7 @@ class ParallelContainer:
     Calculate in parallel using multiprocessing module.
     This can be easily adaptable to other parallel functions.
 
-    Keyword Arguments:
+    Attributes:
         length (int): Number of binaries to process.
         num_processors (int or None, optional): If 0, run on single processor.
             If -1, use ```multiprocessing.cpu_count()`` to determine cpus to use.
@@ -18,31 +18,16 @@ class ParallelContainer:
         verbose (int, optional): Notify each time ``verbose`` processes finish.
             If -1, then no notification. Default is -1.
         timer (bool, optional): If True, time the parallel process. Default is False.
-
-    Attributes:
         args (list of tuple): List of arguments to passes to the parallel function.
-        Note: All kwargs above are stored as attributes.
 
     """
 
     def __init__(self, **kwargs):
 
-        prop_defaults = {
-            'num_processors': 0,
-            'num_splits': 1000,
-            'verbose': -1,
-            'timer': False,
-        }
+        # initialize to defaults
+        self.set_generation_type()
 
-        required_kwarg_keys = ['length']
-
-        for (prop, default) in prop_defaults.items():
-                setattr(self, prop, kwargs.get(prop, default))
-
-        for key in required_kwarg_keys:
-            setattr(self, key, kwargs[key])
-
-    def prep_parallel(self, binary_args, other_args):
+    def prep_parallel(self, length, *args, **kwargs):
         """Prepare the parallel calculations
 
         Prepares the arguments to be run in parallel.
@@ -105,3 +90,27 @@ class ParallelContainer:
         if self.timer:
             print("SNR calculation time:", time.time()-start_timer)
         return out
+
+    # inputs
+    def set_generation_type(self, num_processors=-1, num_splits=1000, verbose=-1, timer=False):
+        """Change generation type.
+
+        Choose weather to generate the data in parallel or on a single processor.
+
+        Args:
+            num_processors (int or None, optional): Number of parallel processors to use.
+                If ``num_processors==-1``, this will use multiprocessing module and use
+                available cpus. If single generation is desired, num_processors is set
+                to ``None``. Default is -1.
+            num_splits (int, optional): Number of binaries to run during each process.
+                Default is 1000.
+            verbose (int, optional): Describes the notification of when parallel processes
+                are finished. Value describes cadence of process completion notifications.
+                If ``verbose == -1``, no notifications are given. Default is -1.
+
+        """
+        self.num_processors = num_processors
+        self.num_splits = num_splits
+        self.verbose = verbose
+        self.timer = timer
+        return

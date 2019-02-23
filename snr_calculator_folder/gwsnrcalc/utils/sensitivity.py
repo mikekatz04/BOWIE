@@ -46,18 +46,14 @@ class SensitivityContainer:
 
     """
     def __init__(self, **kwargs):
-        prop_defaults = {
-            'sensitivity_curves': ['LPA'],
-            'add_wd_noise': 'Both',
-            'wd_noise': 'HB_wd_noise',
-            # TODO: add 'all' and 'full' capabilities
-            'noise_type_in': 'ASD',
-            'wd_noise_type_in': 'ASD',
-        }
 
-        for (prop, default) in prop_defaults.items():
-                setattr(self, prop, kwargs.get(prop, default))
+        # TODO: add 'all' and 'full' capabilities
 
+        # set defaults on WD noise
+        self.add_noise_curve(HB_wd_noise, noise_type='ASD', is_wd_background=True)
+        self.set_wd_noise('both')
+
+    def prep(self):
         self._prep_noise_interpolants()
 
     def _prep_noise_interpolants(self):
@@ -135,4 +131,68 @@ class SensitivityContainer:
             f_n, h_n = noise_lists[sc]
             self.noise_interpolants[sc] = (interpolate.interp1d(f_n, h_n,
                                            bounds_error=False, fill_value=1e30))
+        return
+
+    def add_noise_curve(self, name, noise_type='ASD', is_wd_background=False):
+        """Add a noise curve for generation.
+
+        This will add a noise curve for an SNR calculation by appending to the sensitivity_curves
+        list within the sensitivity_input dictionary.
+
+        The name of the noise curve prior to the file extension will appear as its
+        label in the final output dataset. Therefore, it is recommended prior to
+        running the generator that file names are renamed to simple names
+        for later reference.
+
+        Args:
+            name (str): Name of noise curve including file extension inside input_folder.
+            noise_type (str, optional): Type of noise. Choices are `ASD`, `PSD`, or `char_strain`.
+                Default is ASD.
+            is_wd_background (bool, optional): If True, this sensitivity is used as the white dwarf
+                background noise. Default is False.
+
+        """
+        if is_wd_background:
+            self.wd_noise = name
+            self.wd_noise_type_in = noise_type
+
+        else:
+            if 'sensitivity_curves' not in self.__dict__:
+                self.sensitivity_curves = []
+            if 'noise_type_in' not in self.__dict__:
+                self.noise_type_in = []
+
+            self.sensitivity_curves.append(name)
+            self.noise_type_in.append(noise_type)
+        return
+
+    def set_wd_noise(self, wd_noise):
+        """Add White Dwarf Background Noise
+
+        This adds the White Dwarf (WD) Background noise. This can either do calculations with,
+        without, or with and without WD noise.
+
+        Args:
+            wd_noise (bool or str, optional): Add or remove WD background noise. First option is to
+                have only calculations with the wd_noise. For this, use `yes` or True.
+                Second option is no WD noise. For this, use `no` or False. For both calculations
+                with and without WD noise, use `both`.
+
+        Raises:
+            ValueError: Input value is not one of the options.
+
+        """
+        if isinstance(wd_noise, bool):
+            wd_noise = str(wd_noise)
+
+        if wd_noise.lower() == 'yes' or wd_noise.lower() == 'true':
+            wd_noise = 'True'
+        elif wd_noise.lower() == 'no' or wd_noise.lower() == 'false':
+            wd_noise = 'False'
+        elif wd_noise.lower() == 'both':
+            wd_noise = 'Both'
+        else:
+            raise ValueError('wd_noise must be yes, no, True, False, or Both.')
+
+        self.add_wd_noise = wd_noise
         return

@@ -178,3 +178,65 @@ class FileReadOut:
         np.savetxt(self.WORKING_DIRECTORY + '/' + self.output_file_name,
                    data_out, delimiter='\t', header=header, comments='')
         return
+
+    def set_output_file(self, output_file_name):
+        """Add information for the ouput file.
+
+        Take information on the output file name, type, and folder.
+
+        Args:
+            output_file_name (str): String representing the name of the file
+                without the file extension.
+
+        """
+        self.output_info.output_file_name = output_file_name
+        return
+
+    def _set_column_name(self, which, col_name):
+        """Set a column name.
+
+        Sets the column name in the output file.
+
+        Args:
+            which (str): `x` or `y`.
+            col_name (str): Column name to be added.
+
+        """
+        setattr(self.output_info, which + '_col_name', col_name)
+        return
+
+    def set_y_col_name(self, y_col_name):
+        """Set y column name.
+
+        Sets the y column name in the output file.
+
+        Args:
+            y_col_name (str): y column name to be added.
+
+        """
+        self._set_column_name('y', y_col_name)
+        return
+
+    def set_x_col_name(self, x_col_name):
+        """Set x column name.
+
+        Sets the x column name in the output file.
+
+        Args:
+            x_col_name (str): x column name to be added.
+
+        """
+        self._set_column_name('x', x_col_name)
+        return
+
+    def add_note(self, note):
+        """Add a note to output file.
+
+        This will add a note of user input to the output file.
+
+        Args:
+            note (str): Note to be added.
+
+        """
+        self.output_info.added_note = note
+        return
