@@ -1,8 +1,8 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import numpy
-from .Sed import Sed
-from .Bandpass import Bandpass
+from .sed import Sed
+from .bandpass import Bandpass
 
 __all__ = ["FWHMeff2FWHMgeom", "FWHMgeom2FWHMeff",
            "calcNeff", "calcInstrNoiseSq", "calcTotalNonSourceNoiseSq", "calcSNR_sed"]
@@ -77,7 +77,7 @@ def calcInstrNoiseSq(photParams):
     return instNoiseSq
 
 
-def calcTotalNonSourceNoiseSq(skySed, hardwarebandpass, photParams, FWHMeff):
+def calcTotalNonSourceNoiseSq(skySed, totalbandpass, photParams, FWHMeff):
     """
     Calculate the noise due to things that are not the source being observed
     (i.e. intrumentation and sky background)
@@ -108,7 +108,7 @@ def calcTotalNonSourceNoiseSq(skySed, hardwarebandpass, photParams, FWHMeff):
     # skySed to be normalized such that calcADU gives counts per
     # square arc second, and we need to convert to counts per pixel.
 
-    skycounts = skySed.calcADU(hardwarebandpass, photParams=photParams) \
+    skycounts = skySed.calcADU(totalbandpass, photParams=photParams) \
                 * photParams.platescale * photParams.platescale
 
     # Calculate the square of the noise due to instrumental effects.
@@ -119,16 +119,10 @@ def calcTotalNonSourceNoiseSq(skySed, hardwarebandpass, photParams, FWHMeff):
     # Calculate the square of the noise due to sky background poisson noise
     noise_sky_sq = skycounts/photParams.gain
 
-    # Discount error in sky measurement for now
-    noise_skymeasurement_sq = 0
-
-    total_noise_sq = neff*(noise_sky_sq + noise_instr_sq + noise_skymeasurement_sq)
-
-    return total_noise_sq
+    return neff, noise_sky_sq, noise_instr_sq
 
 
-def calcSNR_sed(sourceSed, totalbandpass, skysed, hardwarebandpass,
-                    photParams, FWHMeff, verbose=False):
+def calcSNR_sed(sourceSed, totalbandpass, neff, noise_sky_sq, noise_instr_sq, photParams, verbose=False):
     """
     Calculate the signal to noise ratio for a source, given the bandpass(es) and sky SED.
 
@@ -165,25 +159,15 @@ def calcSNR_sed(sourceSed, totalbandpass, skysed, hardwarebandpass,
     # Calculate the (square of the) noise due to signal poisson noise.
     noise_source_sq = sourcecounts/photParams.gain
 
-    non_source_noise_sq = calcTotalNonSourceNoiseSq(skysed, hardwarebandpass, photParams, FWHMeff)
+    # Discount error in sky measurement for now
+    noise_skymeasurement_sq = 0
+
+    non_source_noise_sq = neff*(noise_sky_sq + noise_instr_sq + noise_skymeasurement_sq)
 
     # Calculate total noise
     noise = numpy.sqrt(noise_source_sq + non_source_noise_sq)
     # Calculate the signal to noise ratio.
     snr = sourcecounts / noise
-    import pdb; pdb.set_trace()
-    if verbose:
-        skycounts = skysed.calcADU(hardwarebandpass, photParams) * (photParams.platescale**2)
-        noise_sky_sq = skycounts/photParams.gain
-        neff = calcNeff(FWHMeff, photParams.platescale)
-        noise_instr_sq = calcInstrNoiseSq(photParams)
 
-        print("For Nexp %.1f of time %.1f: " % (photParams.nexp, photParams.exptime))
-        print("Counts from source: %.2f  Counts from sky: %.2f" %(sourcecounts, skycounts))
-        print("FWHMeff: %.2f('')  Neff pixels: %.3f(pix)" %(FWHMeff, neff))
-        print("Noise from sky: %.2f Noise from instrument: %.2f" \
-            %(numpy.sqrt(noise_sky_sq), numpy.sqrt(noise_instr_sq)))
-        print("Noise from source: %.2f" %(numpy.sqrt(noise_source_sq)))
-        print(" Total Signal: %.2f   Total Noise: %.2f    SNR: %.2f" %(sourcecounts, noise, snr))
-        # Return the signal to noise value.
+    # Return the signal to noise value.
     return snr
