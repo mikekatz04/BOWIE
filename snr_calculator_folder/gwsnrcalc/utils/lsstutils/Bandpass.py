@@ -64,8 +64,8 @@ import warnings
 import numpy
 import scipy.interpolate as interpolate
 import gzip
-from .PhysicalParameters import PhysicalParameters
-from .Sed import Sed  # For ZP_t and M5 calculations. And for 'fast mags' calculation.
+from .physicalparameters import PhysicalParameters
+from .sed import Sed  # For ZP_t and M5 calculations. And for 'fast mags' calculation.
 
 __all__ = ["Bandpass"]
 
@@ -160,24 +160,6 @@ class Bandpass(object):
         # Resample wavelen/sb onto grid.
         self.resampleBandpass(wavelen_min=wavelen_min, wavelen_max=wavelen_max, wavelen_step=wavelen_step)
         self.bandpassname = 'FromArrays'
-        return
-
-    def imsimBandpass(self, imsimwavelen=500.0,
-                      wavelen_min=None, wavelen_max=None, wavelen_step=None):
-        """
-        Populate bandpass data with sb=0 everywhere except sb=1 at imsimwavelen.
-
-        Sets wavelen/sb, with grid min/max/step as optional parameters. Does NOT set phi.
-        """
-        self.setWavelenLimits(wavelen_min, wavelen_max, wavelen_step)
-        # Set up arrays.
-        self.wavelen = numpy.arange(self.wavelen_min, self.wavelen_max+self.wavelen_step,
-                                    self.wavelen_step, dtype='float')
-        self.phi = None
-        # Set sb.
-        self.sb = numpy.zeros(len(self.wavelen), dtype='float')
-        self.sb[abs(self.wavelen-imsimwavelen)<self.wavelen_step/2.0] = 1.0
-        self.bandpassname = 'IMSIM'
         return
 
     def readThroughput(self, filename, wavelen_min=None, wavelen_max=None, wavelen_step=None):
@@ -373,8 +355,6 @@ class Bandpass(object):
             return
         return wavelen_grid, sb_grid
 
-    ## more complicated bandpass functions
-
     def sbTophi(self):
         """
         Calculate and set phi - the normalized system response.
@@ -408,73 +388,3 @@ class Bandpass(object):
         # Calculate new transmission - this is also new memory.
         sb_new = self.sb * sb_other
         return wavelen_new, sb_new
-
-    def calcZP_t(self, photometricParameters):
-        """
-        Calculate the instrumental zeropoint for a bandpass.
-
-        @param [in] photometricParameters is an instantiation of the
-        PhotometricParameters class that carries details about the
-        photometric response of the telescope.  Defaults to LSST values.
-        """
-        # ZP_t is the magnitude of a (F_nu flat) source which produced 1 count per second.
-        # This is often also known as the 'instrumental zeropoint'.
-        # Set gain to 1 if want to explore photo-electrons rather than adu.
-        # The typical LSST exposure time is 15s and this is default here, but typical zp_t definition is for 1s.
-        # SED class uses flambda in ergs/cm^2/s/nm, so need effarea in cm^2.
-        #
-        # Check dlambda value for integral.
-        dlambda = self.wavelen[1] - self.wavelen[0]
-        # Set up flat source of arbitrary brightness,
-        #   but where the units of fnu are Jansky (for AB mag zeropoint = -8.9).
-        flatsource = Sed()
-        flatsource.setFlatSED(wavelen_min=self.wavelen_min, wavelen_max=self.wavelen_max,
-                              wavelen_step=self.wavelen_step)
-        adu = flatsource.calcADU(self, photParams=photometricParameters)
-        # Scale fnu so that adu is 1 count/expTime.
-        flatsource.fnu = flatsource.fnu * (1/adu)
-        # Now need to calculate AB magnitude of the source with this fnu.
-        if self.phi is None:
-            self.sbTophi()
-        zp_t = flatsource.calcMag(self)
-        return zp_t
-
-
-    def calcEffWavelen(self):
-        """
-        Calculate effective wavelengths for filters.
-        """
-        # This is useful for summary numbers for filters.
-        # Calculate effective wavelength of filters.
-        if self.phi is None:
-            self.sbTophi()
-        effwavelenphi = (self.wavelen*self.phi).sum()/self.phi.sum()
-        effwavelensb = (self.wavelen*self.sb).sum()/self.sb.sum()
-        return effwavelenphi, effwavelensb
-
-
-    def writeThroughput(self, filename, print_header=None, write_phi=False):
-        """
-        Write throughput to a file.
-        """
-        # Useful if you build a throughput up from components and need to record the combined value.
-        f = open(filename, 'w')
-        # Print header.
-        if print_header is not None:
-            if not print_header.startswith('#'):
-                print_header = '#' + print_header
-            f.write(print_header)
-        if write_phi:
-            if self.phi is None:
-                self.sbTophi()
-            print("# Wavelength(nm)  Throughput(0-1)   Phi", file=f)
-        else:
-            print("# Wavelength(nm)  Throughput(0-1)", file=f)
-        # Loop through data, printing out to file.
-        for i in range(0, len(self.wavelen), 1):
-            if write_phi:
-                print(self.wavelen[i], self.sb[i], self.phi[i], file=f)
-            else:
-                print(self.wavelen[i], self.sb[i], file=f)
-        f.close()
-        return

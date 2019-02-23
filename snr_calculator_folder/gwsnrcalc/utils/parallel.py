@@ -11,7 +11,7 @@ class ParallelContainer:
 
     Keyword Arguments:
         length (int): Number of binaries to process.
-        num_processors (int or None, optional): If None, run on single processor.
+        num_processors (int or None, optional): If 0, run on single processor.
             If -1, use ```multiprocessing.cpu_count()`` to determine cpus to use.
             Otherwise, this is the number of processors to use. Default is -1.
         num_splits (int, optional): Number of binaries to run for each process. Default is 1000.
@@ -28,7 +28,7 @@ class ParallelContainer:
     def __init__(self, **kwargs):
 
         prop_defaults = {
-            'num_processors': None,
+            'num_processors': 0,
             'num_splits': 1000,
             'verbose': -1,
             'timer': False,
@@ -54,7 +54,7 @@ class ParallelContainer:
 
         """
         if self.length < 100:
-            raise Exception("Run this across 1 processor by setting num_processors kwarg to None.")
+            raise Exception("Run this across 1 processor by setting num_processors kwarg to 0.")
         if self.num_processors == -1:
             self.num_processors = mp.cpu_count()
 

@@ -34,6 +34,7 @@ This code is shared under the GNU Public License.
 
 import warnings
 import inspect
+from gwsnrcalc.utils.emutils.emtelescopesetup import EMTelescope
 
 
 class GenerateContainer:
@@ -138,6 +139,8 @@ class Generate:
         return
 
 
+
+
 class SensitivityInputContainer:
     """Holds all of the attributes related to the sensitivity_input dictionary.
 
@@ -226,6 +229,23 @@ class SensitivityInput:
             raise ValueError('wd_noise must be yes, no, True, False, or Both.')
 
         self.sensitivity_input.add_wd_noise = wd_noise
+        return
+
+    def add_em_info(self, source, telescope_class):
+        """Add EM source (for sed info) and telescope info
+
+        Add information about the source and the telescope for which you want to calculate the snr.
+
+        Args:
+            source (str): Source for em obvservations. Stock options are `mbh` or `wd`.
+                You can add a file to the sed folder `inside gwsnrcalc.utils.emutils.em_file.seds`.
+                In this case you provide the file name for source.
+            telescope_class (obj): Instantiated object of
+                :class:`gwsnrcalc.utils.emtelescopesetup.EMTelescope`.
+
+        """
+        self.sensitivity_input.telescope = telescope_class
+        self.sensitivity_input.source = source
         return
 
 
@@ -572,6 +592,9 @@ class MainContainer(Generate, SensitivityInput, SNRInput, ParallelInput, Output)
             except AttributeError:
                 pass
 
+            if isinstance(class_dict[key], EMTelescope):
+                val = class_dict[key]
+
             if type(val) is dict:
                 val = self._iterate_through_class(val)
 
@@ -590,4 +613,5 @@ class MainContainer(Generate, SensitivityInput, SNRInput, ParallelInput, Output)
 
             if val != {}:
                 output_dict[key] = val
+
         return output_dict

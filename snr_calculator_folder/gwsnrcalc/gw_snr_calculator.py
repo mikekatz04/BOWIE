@@ -16,14 +16,14 @@ It can also generate eccentric inspirals according to Peters evolution.
 
 import numpy as np
 
-from gwsnrcalc.utils.waveforms import PhenomDWaveforms, EccentricBinaries
-from gwsnrcalc.utils.csnr import csnr
-from gwsnrcalc.utils.sensitivity import SensitivityContainer
-from gwsnrcalc.utils.parallel import ParallelContainer
-from gwsnrcalc.utils.lsstsnr import LSSTCalc, MBHEddMag, parallel_em_snr_func
+from .utils.waveforms import PhenomDWaveforms, EccentricBinaries
+from .utils.csnr import csnr
+from .utils.sensitivity import SensitivityContainer
+from .utils.parallel import ParallelContainer
+from .utils.emsnr import EMCalc, MBHEddMag, parallel_em_snr_func
 
 
-class SNR(SensitivityContainer, ParallelContainer, LSSTCalc):
+class SNR(SensitivityContainer, ParallelContainer, EMCalc):
     """Main class for SNR calculations.
 
     This class performs gravitational wave SNR calculations with a matched
@@ -34,8 +34,8 @@ class SNR(SensitivityContainer, ParallelContainer, LSSTCalc):
         calc_type (str, optional): Options are `circ` for circular orbits
             and use of :class:`gwsnrcalc.utils.waveforms.PhenomDWaveforms`;
             `ecc` eccentric orbits and use of :class:`gwsnrcalc.utils.waveforms.EccentricBinaries`,
-             or `em` for LSST snr calculations for a quasar and use of
-             :class:`gwsnrcalc.utils.lsstsnr.LSSTSNR`. (For future usage.) Default is `circ`.
+             or `em` for em snr calculations for a quasar and use of
+             :class:`gwsnrcalc.utils.emsnr.EMSNR`. (For future usage.) Default is `circ`.
         **kwargs (dict): kwargs to be added to :class:`gwsnrcalc.utils.parallel.ParallelContainer`,
             waveform class (:class:`gwsnrcalc.utils.waveforms.PhenomDWaveforms`
             or :class:`gwsnrcalc.utils.waveforms.EccentricBinaries`) , and
@@ -78,7 +78,7 @@ class SNR(SensitivityContainer, ParallelContainer, LSSTCalc):
             SensitivityContainer.__init__(self, **kwargs)
 
         else:
-            LSSTCalc.__init__(self, **kwargs)
+            EMCalc.__init__(self, **kwargs)
 
         ParallelContainer.__init__(self, **kwargs)
 
@@ -120,7 +120,7 @@ class SNR(SensitivityContainer, ParallelContainer, LSSTCalc):
             other_args = (self.wavegen, self.noise_interpolants,
                           self.prefactor,  self.verbose)
 
-        if self.num_processors is None:
+        if self.num_processors == 0:
             func_args = (0, binary_args) + other_args
             return self.snr_function(*func_args)
 
