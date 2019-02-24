@@ -1,22 +1,34 @@
 from .readout import FileReadOut
 from .parallel import ParallelContainer
+from .waveforms import PhenomDWaveforms
+import numpy as np
 
 
 class BaseGenClass(FileReadOut, ParallelContainer):
 
-    def __init__(self, return_input='data', print_input=False):
+    def __init__(self, **kwargs):
+
+        prop_defaults = {
+            'return_output': np.ndarray,
+        }
+
+        for prop, default in prop_defaults.items():
+            setattr(self, prop, kwargs.get(prop, default))
 
         # initialize defaults
         self.set_working_directory()
         self.set_broadcast()
 
-        super(self, ParallelContainer).__init__()
+        ParallelContainer.__init__(self, **kwargs)
 
-        if return_input == 'file':
-            super(self, FileReadOut).__init__()
+        if isinstance(self.return_output, str):
+            print('Will return data in file {}'.format(self.return_output))
+            FileReadOut.__init__(self, self.return_output, **kwargs)
 
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
-    def _broadcast_and_set_attrs(self, local_dict):
+    def broadcast_and_set_attrs(self, local_dict):
         """Cast all inputs to correct dimensions.
 
         This method fixes inputs who have different lengths. Namely one input as
@@ -67,7 +79,7 @@ class BaseGenClass(FileReadOut, ParallelContainer):
                     setattr(self, key, np.full((max_length,), local_dict[key]))
         return
 
-    def _meshgrid_and_set_attrs(self, local_dict):
+    def meshgrid_and_set_attrs(self, local_dict):
         """Mesh all inputs with meshgrid.
 
         This method combines all inputs in a grid.
@@ -93,14 +105,38 @@ class BaseGenClass(FileReadOut, ParallelContainer):
                 # turn it into length-1 array for mesh
                 local_dict[key] = np.array([local_dict[key]])
 
-        trans = np.meshgrid([local_dict[key] for key in keys])
+        trans = np.meshgrid(*[local_dict[key] for key in keys])
         for key, arr in zip(keys, trans):
-            setattr(self, key, arr)
+            setattr(self, key, arr.ravel())
 
         return
 
-    def run(self):
-        self.prep_parallel()
+    def __run__(self, para_func):
+        params = [getattr(self, key) for key in self.args_list]
+        parallel_args = [getattr(self, key) for key in self.parallel_args
+                         if key != 'num' and key != 'params']
+
+        if len(params[0]) < 100 and self.num_processors != 0:
+            Warning("Run this across 1 processor by setting num_processors kwarg to 0.")
+            self.num_processors = 0
+
+        if self.num_processors == 0:
+            inputs = [0] + parallel_args + [0]
+            out = para_func(*inputs)
+
+        self.prep_parallel(params, parallel_args)
+
+        out = self.run_parallel(para_func)
+
+        if self.return_output == np.ndarray:
+            for key, arr in out.items():
+                setattr(self, key, arr)
+            return
+
+        elif self.return_output == dict:
+            return out
+
+        return self.return_output
 
     def set_working_directory(self, wd='.'):
         """Set the WORKING_DIRECTORY variable.
@@ -115,10 +151,10 @@ class BaseGenClass(FileReadOut, ParallelContainer):
         self.WORKING_DIRECTORY = wd
         return
 
-    def set_broadcast(broadcast='pure'):
-        """Set the broadcast_type variable.
+    def set_broadcast(self, broadcast='pure'):
+        """Set the broadcast variable.
 
-        Sets the broadcast_type. This determines if you want to broadcast or
+        Sets the broadcast. This determines if you want to broadcast or
         meshgrid input arrays.
 
         Args:
@@ -126,5 +162,5 @@ class BaseGenClass(FileReadOut, ParallelContainer):
                 Default is `mesh`.
 
         """
-        self.broadcast_type = broadcast
+        self.broadcast = broadcast
         return

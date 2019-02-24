@@ -27,7 +27,10 @@ class ParallelContainer:
         # initialize to defaults
         self.set_generation_type()
 
-    def prep_parallel(self, length, *args, **kwargs):
+        for key, item in kwargs.items():
+            setattr(self, key, item)
+
+    def prep_parallel(self, params, parallel_args):
         """Prepare the parallel calculations
 
         Prepares the arguments to be run in parallel.
@@ -38,8 +41,8 @@ class ParallelContainer:
             other_args (tuple of obj): tuple of other args for input into parallel snr function.
 
         """
-        if self.length < 100:
-            raise Exception("Run this across 1 processor by setting num_processors kwarg to 0.")
+        self.length = len(params[0])
+
         if self.num_processors == -1:
             self.num_processors = mp.cpu_count()
 
@@ -51,13 +54,10 @@ class ParallelContainer:
         self.args = []
         for i, ind_split in enumerate(inds_split_all):
             trans_args = []
-            for arg in binary_args:
-                try:
-                    trans_args.append(arg[ind_split])
-                except TypeError:
-                    trans_args.append(arg)
+            for arg in params:
+                trans_args.append(arg[ind_split])
 
-            self.args.append((i, tuple(trans_args)) + other_args)
+            self.args.append((i, tuple(trans_args)) + tuple(parallel_args))
         return
 
     def run_parallel(self, para_func):
@@ -76,9 +76,8 @@ class ParallelContainer:
             start_timer = time.time()
 
         # for testing
-        # check = parallel_snr_func(*self.args[10])
-        # import pdb
-        # pdb.set_trace()
+        # check = para_func(*self.args[0])
+        # import pdb; pdb.set_trace()
 
         with mp.Pool(self.num_processors) as pool:
             print('start pool with {} processors: {} total processes.\n'.format(

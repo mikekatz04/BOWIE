@@ -50,10 +50,19 @@ class SensitivityContainer:
         # TODO: add 'all' and 'full' capabilities
 
         # set defaults on WD noise
-        self.add_noise_curve(HB_wd_noise, noise_type='ASD', is_wd_background=True)
+        self.add_noise_curve('HB_wd_noise', noise_type='ASD', is_wd_background=True)
         self.set_wd_noise('both')
 
-    def prep(self):
+        for key, item in kwargs.items():
+            setattr(self, key, item)
+
+    def prep_noise(self):
+        try:
+            self.sensitivity_curves
+        except AttributeError:
+            self.sensitivity_curves = ['LPA']
+            self.noise_type_in = ['ASD']
+
         self._prep_noise_interpolants()
 
     def _prep_noise_interpolants(self):

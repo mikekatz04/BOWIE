@@ -15,13 +15,15 @@ It can also generate eccentric inspirals according to Peters evolution.
 """
 
 import numpy as np
+import inspect
 
 from .utils.waveforms import PhenomDWaveforms, EccentricBinaries
 from .utils.csnr import csnr
 from .utils.sensitivity import SensitivityContainer
 from .utils.parallel import ParallelContainer
 from .utils.emsnr import EMCalc, MBHEddMag, parallel_em_snr_func
-from .utils.gwwrappers import GWSNR, GWSNRWrapper
+from .utils.gwwrappers import GWSNRWrapper
+from .utils.gensnrclass import SNRGen
 
 
 class SNR(SensitivityContainer, ParallelContainer, EMCalc):
@@ -174,8 +176,7 @@ def parallel_ecc_snr_func(num, binary_args, eccwave, signal_type,
 
     return out_vals
 
-
-def snr(snr_class_gen_func=GWSNR, waveform_class=PhenomDWaveforms, *args, **kwargs):
+def snr(*args, **kwargs):
     """Compute the SNR of binaries.
 
     snr is a function that takes binary parameters and sensitivity curves as inputs,
@@ -196,28 +197,57 @@ def snr(snr_class_gen_func=GWSNR, waveform_class=PhenomDWaveforms, *args, **kwar
         (dict or list of dict): Signal-to-Noise Ratio dictionary for requested phases.
 
     """
+    prop_defaults = {
+        'snr_class': SNRGen,
+        'source_class': PhenomDWaveforms,
+        'snr_wrapper_class': GWSNRWrapper,
+        'return_output': dict,
+    }
 
-    snr_class = snr_class_gen_func(waveform_class)
+    snr_class = kwargs.get('snr_class', prop_defaults['snr_class'])
+    source_class = kwargs.get('source_class', prop_defaults['source_class'])
+    snr_wrapper_class = kwargs.get('snr_wrapper_class', prop_defaults['snr_wrapper_class'])
 
-    snr_class.prep_parallel()
-    squeeze = False
-    max_length = 0
-    for arg in args:
-        try:
-            length = len(arg)
-            if length > max_length:
-                max_length = length
+    try:
+        snr_class.instantiated
+        instantiated = True
 
-        except TypeError:
-            pass
+    except AttributeError:
+        instantiated = False
 
-    if max_length == 0:
-        squeeze = True
+    for prop, default in prop_defaults.items():
+        if prop in ['snr_class', 'source_class', 'snr_wrapper_class']:
+            continue
+        kwargs[prop] = kwargs.get(prop, default)
 
-    kwargs['length'] = max_length
+    if instantiated is False:
+        snr_class = snr_class(source_class=source_class, snr_wrapper_class=snr_wrapper_class, **kwargs)
+        snr_class.add_params(*args, **kwargs)
 
-    snr_main = SNR(**kwargs)
-    if squeeze:
-        snr_out = snr_main(*args)
-        return {key: np.squeeze(snr_out[key]) for key in snr_out}
-    return snr_main(*args)
+    if len(snr_class.args_list) != len(args) and len(args) != 0:
+        raise ValueError('Arg list should be exact arg list from '
+                         + '{} class __call__ function.'.format(waveform_class.__name__))
+
+    if snr_class.params_added:
+        snr_class.add_params(*args, **kwargs)
+
+    snr_out = snr_class.run()
+
+    if kwargs['return_output'] == dict:
+        squeeze = False
+        max_length = 0
+        for arg in args:
+            try:
+                length = len(arg)
+                if length > max_length:
+                    max_length = length
+
+            except TypeError:
+                pass
+
+        if max_length == 0:
+            squeeze = True
+
+        if squeeze:
+            return {key: snr_out[key].squeeze() for key in snr_out}
+    return snr_out

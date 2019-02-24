@@ -1,45 +1,61 @@
+import inspect
+import numpy as np
+import pdb
+
 from .sensitivity import SensitivityContainer
-from .waveforms import PhenomDWaveforms, EccentricBinaries
+from .waveforms import PhenomDWaveforms, EccentricBinaries, parallel_phenomd
 from .baseclass import BaseGenClass
-
-
-def GWSNR(waveform_class):
-    class GWTrans(waveform_class, GWSNRWrapper):
-        def __init__(self):
-            super(self, waveform_class).__init__()
-            super(self, GWSNRWrapper).__init__()
-
-            parallel_func = super(self, waveform_class).instantiate_parallel_func()
-
-    return GWTrans()
 
 
 class GWSNRWrapper(BaseGenClass, SensitivityContainer):
 
     def __init__(self, **kwargs):
         # initialize defaults
-        super(self, BaseGenClass).__init__()
-        super(self, SensitivityContainer).__init__()
+        BaseGenClass.__init__(self, **kwargs)
+        SensitivityContainer.__init__(self, **kwargs)
 
         self.set_signal_type()
         self.set_snr_prefactor()
         self.set_n_max()
 
-    def prep(self):
-        pass
+        for key, item in kwargs.items():
+            setattr(self, key, item)
 
-    def add_params(param_dict, broadcast=None):
+    def run(self):
+        self.prep_noise()
+        return self.__run__(globals()[self.parallel_func_name])
 
-        if broadcast is not None:
-            super(self, BaseGenClass).set_broadcast(broadcast=broadcast)
+    def add_params(self, *args, **kwargs):
+        if 'broadcast' in kwargs:
+            self.set_broadcast(broadcast=kwargs['broadcast'])
+
+        self.output_keys = []
 
         if self.broadcast == 'mesh':
-            self._meshgrid_and_set_attrs(param_dict)
+            if self.return_output == 'file':
+                for key, arr in zip(self.args_list, list(args)):
+                    if isinstance(arr, np.ndarray):
+                        if len(arr) > 1:
+                            self.output_keys.append(key)
+
+            self.meshgrid_and_set_attrs({key: value for key, value
+                                          in zip(self.args_list, list(args))})
 
         else:
-            self._broadcast_and_set_attrs(param_dict)
+            if 'x' not in kwargs or 'y' not in kwargs:
+                Warning("If using pure broadcasting and you want to"
+                              + "read out to a file, provide key mapping to x and y in kwargs.")
 
-        
+            else:
+                for key in ['x', 'y']:
+                    self.output_keys.append(kwargs[key])
+
+            self.broadcast_and_set_attrs({key: value for key, value
+                                          in zip(self.args_list, list(args))})
+
+        self.sources.not_broadcasted = False
+        self.params_added = True
+        return
 
     def set_signal_type(self, sig_type=['all']):
         """Set the signal type of interest.
