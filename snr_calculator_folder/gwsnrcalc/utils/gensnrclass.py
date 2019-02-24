@@ -3,7 +3,7 @@ from .gwwrappers import GWSNRWrapper
 import inspect
 
 def SNRGen(source_class=PhenomDWaveforms, snr_wrapper_class=GWSNRWrapper, **kwargs):
-    class SNR(source_class, snr_wrapper_class):
+    class SNR(snr_wrapper_class, source_class):
         def __init__(self, **kwargs):
             self.instantiated = True
             self.params_added = False

@@ -261,7 +261,7 @@ class PhenomDWaveforms(WaveformBase):
 
 
 def parallel_phenomd(num, params, sources, signal_type,
-                      noise_interpolants, prefactor, verbose):
+                     noise_interpolants, prefactor, verbose):
     """SNR calulation with PhenomDWaveforms
 
     Generate PhenomDWaveforms and calculate their SNR against sensitivity curves.

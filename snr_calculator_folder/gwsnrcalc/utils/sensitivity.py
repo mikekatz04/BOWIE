@@ -60,8 +60,12 @@ class SensitivityContainer:
         try:
             self.sensitivity_curves
         except AttributeError:
-            self.sensitivity_curves = ['LPA']
-            self.noise_type_in = ['ASD']
+            self.sensitivity_curves = 'LPA'
+
+        try:
+            self.noise_type_in
+        except AttributeError:
+            self.noise_type_in = 'ASD'
 
         self._prep_noise_interpolants()
 

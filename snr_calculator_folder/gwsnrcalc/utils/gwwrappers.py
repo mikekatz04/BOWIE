@@ -14,9 +14,7 @@ class GWSNRWrapper(BaseGenClass, SensitivityContainer):
         BaseGenClass.__init__(self, **kwargs)
         SensitivityContainer.__init__(self, **kwargs)
 
-        self.set_signal_type()
-        self.set_snr_prefactor()
-        self.set_n_max()
+        self.set_signal_type(['all'])
 
         for key, item in kwargs.items():
             setattr(self, key, item)
@@ -25,70 +23,21 @@ class GWSNRWrapper(BaseGenClass, SensitivityContainer):
         self.prep_noise()
         return self.__run__(globals()[self.parallel_func_name])
 
-    def add_params(self, *args, **kwargs):
-        if 'broadcast' in kwargs:
-            self.set_broadcast(broadcast=kwargs['broadcast'])
+    def set_num_waveform_points(self, num_wave_points=4096):
+        """Number of log-spaced points for waveforms.
 
-        self.output_keys = []
-
-        if self.broadcast == 'mesh':
-            if self.return_output == 'file':
-                for key, arr in zip(self.args_list, list(args)):
-                    if isinstance(arr, np.ndarray):
-                        if len(arr) > 1:
-                            self.output_keys.append(key)
-
-            self.meshgrid_and_set_attrs({key: value for key, value
-                                          in zip(self.args_list, list(args))})
-
-        else:
-            if 'x' not in kwargs or 'y' not in kwargs:
-                Warning("If using pure broadcasting and you want to"
-                              + "read out to a file, provide key mapping to x and y in kwargs.")
-
-            else:
-                for key in ['x', 'y']:
-                    self.output_keys.append(kwargs[key])
-
-            self.broadcast_and_set_attrs({key: value for key, value
-                                          in zip(self.args_list, list(args))})
-
-        self.sources.not_broadcasted = False
-        self.params_added = True
-        return
-
-    def set_signal_type(self, sig_type=['all']):
-        """Set the signal type of interest.
-
-        Sets the signal type for which the SNR is calculated.
-        This means inspiral, merger, and/or ringdown.
+        The number of points of the waveforms with asymptotically increase
+        the accuracy, but will lower the speed of generation.
 
         Args:
-            sig_type (str or list of str): Signal type desired by user.
-                Choices are `ins`, `mrg`, `rd`, `all` for circular waveforms created with PhenomD.
-                If eccentric waveforms are used, must be `all`.
+            num_wave_points (int): Number of log-spaced points for the waveforms.
 
         """
-        if isinstance(sig_type, str):
-            sig_type = [sig_type]
-        self.signal_type = sig_type
+        self.sources.num_points = num_wave_points
         return
 
-    def set_snr_prefactor(self, factor=1.0):
-        """Set the SNR multiplicative factor.
-
-        This factor will be multpilied by the SNR, not SNR^2.
-        This involves orientation, sky, and polarization averaging, as well
-        as any factors for the configuration.
-
-        For example, for LISA, this would be sqrt(2*16/5). The sqrt(2) is for
-        a six-link configuration and the 16/5 represents the averaging factors.
-
-        Args:
-            factor (float): Factor to multiply SNR by for averaging.
-
-        """
-        self.prefactor = factor
+    def set_dist_type(self, dist_type='redshift'):
+        self.sources.dist_type = dist_type
         return
 
     def set_n_max(self, n_max=20):
