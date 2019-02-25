@@ -1,6 +1,6 @@
 from .readout import FileReadOut
 from .parallel import ParallelContainer
-from .waveforms import PhenomDWaveforms
+from ..gwutils.waveforms import PhenomDWaveforms
 import numpy as np
 
 

@@ -4,7 +4,7 @@ import pdb
 
 from .sensitivity import SensitivityContainer
 from .waveforms import PhenomDWaveforms, EccentricBinaries, parallel_phenomd, parallel_ecc_snr_func
-from .baseclass import BaseGenClass
+from ..utils.baseclass import BaseGenClass
 
 
 class GWSNRWrapper(BaseGenClass, SensitivityContainer):

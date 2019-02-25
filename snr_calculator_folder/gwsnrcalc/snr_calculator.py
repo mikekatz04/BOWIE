@@ -17,12 +17,8 @@ It can also generate eccentric inspirals according to Peters evolution.
 import numpy as np
 import inspect
 
-from .utils.waveforms import PhenomDWaveforms, EccentricBinaries
-from .utils.csnr import csnr
-from .utils.sensitivity import SensitivityContainer
-from .utils.parallel import ParallelContainer
-from .utils.emsnr import EMCalc, MBHEddMag, parallel_em_snr_func
-from .utils.gwwrappers import GWSNRWrapper
+from .gwutils.waveforms import PhenomDWaveforms, EccentricBinaries
+from .gwutils.gwwrappers import GWSNRWrapper
 from .utils.gensnrclass import SNRGen
 
 

@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import interpolate
-from gwsnrcalc.utils.readnoisecurves import read_noise_curve, combine_with_wd_noise
+from .readnoisecurves import read_noise_curve, combine_with_wd_noise
 
 # TODO: Change wd_background to background
 
