@@ -121,6 +121,9 @@ class FileReadOut:
             header += '#' + which + '_name: {}\n'.format(self.kwargs[which + '_name'])
             i += 1
 
+        for key, arg in self.additional_params.items():
+            header += '#' + key + ': {}\n'.format(arg)
+
         """
         ecc = 'eccentricity' in self.__dict__
         if ecc:
@@ -143,8 +146,6 @@ class FileReadOut:
 
         if 'added_note' in self.__dict__:
             header += '#Added note: ' + self.added_note + '\n'
-        else:
-            header += '#Added note: None\n'
 
         header += '#--------------------\n'
 
@@ -173,19 +174,6 @@ class FileReadOut:
 
         np.savetxt(self.WORKING_DIRECTORY + '/' + self.output_file_name,
                    data_out, delimiter='\t', header=header, comments='')
-        return
-
-    def set_output_file(self, output_file_name):
-        """Add information for the ouput file.
-
-        Take information on the output file name, type, and folder.
-
-        Args:
-            output_file_name (str): String representing the name of the file
-                without the file extension.
-
-        """
-        self.output_file_name = output_file_name
         return
 
     def _set_column_name(self, which, col_name):
@@ -237,7 +225,16 @@ class FileReadOut:
         self.added_note = note
         return
 
-    def set_return_output(self, fp, **kwargs):
+    def set_output_file(self, fp, **kwargs):
+        """Add information for the ouput file.
+
+        Take information on the output file name, type, and folder.
+
+        Args:
+            output_file_name (str): String representing the name of the file
+                without the file extension.
+
+        """
         if 'dim1' not in kwargs or 'dim2' not in kwargs:
             raise ValueError("If using mesh broadcasting and you want to "
                              + "read out to a file, provide key mapping "
@@ -257,7 +254,8 @@ class FileReadOut:
             if 'dim{}_name'.format(i) in kwargs:
                 self.output_key_names['dim{}_name'.format(i)] = kwargs['dim{}_name'.format(i)]
             else:
-                self.output_key_names['dim{}_name'.format(i)] = 'dim{}'.format(i)
+                self.output_key_names['dim{}_name'.format(i)] =  kwargs['dim{}'.format(i)]
+                self.kwargs['dim{}_name'.format(i)] =  kwargs['dim{}'.format(i)]
 
             i += 1
 

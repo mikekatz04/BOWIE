@@ -108,8 +108,15 @@ class BaseGenClass(FileReadOut, ParallelContainer):
                 local_dict[key] = np.array([local_dict[key]])
 
         if 'output_keys' in self.__dict__:
-            keys.insert(0, keys.pop(keys.index(self.output_keys[1])))
-            keys.insert(0, keys.pop(keys.index(self.output_keys[0])))
+            output_key_trans = []
+            for i in range(len(self.output_keys)):
+                if self.output_keys[i] in ['M', 'q']:
+                    output_key_trans.append('m1' if self.output_keys[i] == 'M' else 'm2')
+                else:
+                    output_key_trans.append(self.output_keys[i])
+
+            keys.insert(0, keys.pop(keys.index(output_key_trans[1])))
+            keys.insert(0, keys.pop(keys.index(output_key_trans[0])))
 
         trans = np.meshgrid(*[local_dict[key] for key in keys])
 
@@ -148,6 +155,21 @@ class BaseGenClass(FileReadOut, ParallelContainer):
         return self.return_output
 
     def add_params(self, *args, **kwargs):
+        self.additional_params = {}
+        for key, arg in zip(self.args_list, args):
+            if isinstance(arg, float):
+                self.additional_params[key] = arg
+
+            elif len(arg) < 2:
+                self.additional_params[key] = arg[0]
+
+        if 'mt_mr_map' in kwargs:
+            if kwargs['mt_mr_map']:
+                if 'm1' in self.additional_params:
+                    self.additional_params['M'] = self.additional_params.pop('m1')
+                if 'm2' in self.additional_params:
+                    self.additional_params['q'] = self.additional_params.pop('m2')
+
         if 'broadcast' in kwargs:
             self.set_broadcast(broadcast=kwargs['broadcast'])
 
@@ -163,7 +185,12 @@ class BaseGenClass(FileReadOut, ParallelContainer):
             self.broadcast_and_set_attrs({key: value for key, value
                                           in zip(self.args_list, list(args))})
 
-
+        if 'mt_mr_map' in kwargs:
+            if kwargs['mt_mr_map']:
+                self.M = self.m1
+                self.q = self.m2
+                self.m1 = self.M/(1+self.q)
+                self.m2 = self.M*self.q/(1+self.q)
 
         self.sources.not_broadcasted = False
         self.params_added = True
