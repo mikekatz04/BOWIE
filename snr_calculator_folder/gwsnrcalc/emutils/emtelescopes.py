@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class EMTelescope:
     def _get_source_counts(self, m, band):
         # counts per second
@@ -8,11 +9,12 @@ class EMTelescope:
         return counts*self.t_exp
 
     def _get_sky_counts(self, band):
-        #counts per pixel
+        # counts per pixel
         band_ref = self.source_counts_ref[band]
         m_sky = self.sky_brightness_dict[band]
         m_pix = m_sky - 2.5*np.log10(self.platescale**2)
-        return self.t_exp*(band_ref['count_ref']*10**(0.4*(band_ref['m_ref'] - m_pix)))  # time * counts/time/pix
+        # time * counts/time/pix
+        return self.t_exp*(band_ref['count_ref']*10**(0.4*(band_ref['m_ref'] - m_pix)))
 
     def _get_n_eff(self, band):
         # number of pixels
@@ -21,7 +23,8 @@ class EMTelescope:
         return n_eff
 
     def _get_instumental_noise(self):
-        self.instrumental_noisesq = (self.read_noise**2 + (self.dark_current * self.t_exp))*self.n_exp
+        self.instrumental_noisesq = (self.read_noise**2
+                                     + (self.dark_current * self.t_exp))*self.n_exp
         return
 
     def get_snr(self, m, band):
@@ -35,7 +38,7 @@ class EMTelescope:
 
 
 class LSSTDefaults(EMTelescope):
-    def __init__(self):
+    def __init__(self, **kwargs):
 
         # instrumental zero-pionts (counts/sec)
         self.source_counts_ref = {'u': {'m_ref': 26.50, 'count_ref': 1},
@@ -81,8 +84,12 @@ class LSSTDefaults(EMTelescope):
                                     'z': 19.60,
                                     'y': 19.60}
 
+        for key, item in kwargs.items():
+            setattr(self, key, item)
+
+
 class SDSSDefaults(EMTelescope):
-    def __init__(self):
+    def __init__(self, **kwargs):
 
         # instrumental zero-pionts (counts/sec)
         self.source_counts_ref = {'u': {'m_ref': 25.0, 'count_ref': 18},
@@ -106,10 +113,17 @@ class SDSSDefaults(EMTelescope):
                                     'z': 18.6}
 
         self.Q_dict = {'u': 0.0116,  # m''
-                                    'g': 0.113,
-                                    'r': 0.114,
-                                    'i': 0.0824,
-                                    'z': 0.0182}
+                       'g': 0.113,
+                       'r': 0.114,
+                       'i': 0.0824,
+                       'z': 0.0182}
+
+        # counts per pixel
+        self.sky_brightness_counts = {'u': 40,
+                                      'g': 390,
+                                      'r': 670,
+                                      'i': 1110,
+                                      'z': 1090}
 
         # arcseconds per pixel
         self.platescale = 0.396
@@ -131,19 +145,25 @@ class SDSSDefaults(EMTelescope):
 
         self._get_instumental_noise()
 
+        for key, item in kwargs.items():
+            setattr(self, key, item)
+
     def _get_source_counts(self, m, band):
         Q_val = self.Q_dict[band]
         return 1.96e11*self.t_exp*Q_val*10**(-0.4*m)
 
+    def _get_sky_counts(self, band):
+        sky_counts = self.sky_brightness_counts[band]
+        return sky_counts
 
 
 if __name__ == '__main__':
-    m_rel = 17.0
-    band = 'r'
+    m_rel = 25.0
+    band = 'u'
     lsst = LSSTDefaults()
     snr_lsst = lsst.get_snr(m_rel, band)
 
     sdss = SDSSDefaults()
     snr_sdss = sdss.get_snr(m_rel, band)
-    import pdb;
+    import pdb
     pdb.set_trace()
