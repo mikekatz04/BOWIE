@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import copy
+import inspect
 
 from astropy.cosmology import Planck15 as cosmo
 
@@ -18,12 +19,12 @@ class EMTelescope:
     def __init__(self, **kwargs):
 
         self.seeing = 0.7
-        self.gain = 1.0
 
         self.set_telescope_name()
         self.set_throughputs_dir()
         self.set_total_throughput_file_string()
         self.set_darksky_path()
+        self.set_telescope_parameters()
 
         for key, item in kwargs.items():
             setattr(self, key, item)
@@ -60,6 +61,22 @@ class EMTelescope:
             self.total_throughput_file_string = total_throughput_file_string
         return
 
+    def set_telescope_parameters(self,
+                                 seeing=None,
+                                 exptime=None,
+                                 nexp=None,
+                                 effarea=None,
+                                 gain=None,
+                                 readnoise=None,
+                                 darkcurrent=None,
+                                 othernoise=None,
+                                 platescale=None,
+                                 sigmaSys=None):
+
+        for key, item in locals().items():
+            setattr(self, key, item)
+        return
+
     def prep_telescope(self):
 
         # assume dark sky sed from lsst
@@ -67,11 +84,15 @@ class EMTelescope:
         self.darksky.readSED_flambda(self.base_dir + self.darksky_path)
 
         # Set up the photometric parameters for noise
-        self.photParams = PhotometricParameters(gain=self.gain)
+        photParms_args = inspect.getfullargspec(PhotometricParameters.__init__).args
+        self.photParams = PhotometricParameters(**{key: getattr(self, key)
+                                                   for key in photParms_args
+                                                   if key != 'self' and key != 'bandpass'})
+
         # Set up the seeing. "seeing" traditional = FWHMgeom in our terms
         #  (i.e. the physical size of a double-gaussian or von Karman PSF)
         # But we use the equivalent FWHM of a single gaussian in the SNR calculation, so convert.
-        self.FWHMeff = signaltonoise.FWHMgeom2FWHMeff(self.seeing)
+        self.FWHMeff = signaltonoise.FWHMgeom2FWHMeff(self.photParams.seeing)
 
         self.telescope = {}
         for f in self.filterlist:
