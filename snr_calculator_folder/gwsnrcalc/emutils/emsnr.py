@@ -84,7 +84,7 @@ class EMSNR:
         return snr_out
 
 
-def parallel_em_snr_func(num, binary_args, em_mag,
+def parallel_em_snr_func(num, params, sources,
                          noise_interpolants, prefactor, verbose):
     """SNR calulation with eccentric waveforms
 

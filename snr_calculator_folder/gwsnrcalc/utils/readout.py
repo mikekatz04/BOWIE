@@ -235,10 +235,10 @@ class FileReadOut:
                 without the file extension.
 
         """
-        if 'dim1' not in kwargs or 'dim2' not in kwargs:
+        if 'dim1' not in kwargs:
             raise ValueError("If using mesh broadcasting and you want to "
                              + "read out to a file, provide key mapping "
-                             + "to dim1 and dim2 in kwargs.")
+                             + "to dim(i) where i is 1 to the ndim (ex dim2).")
 
         self.output_keys = []
         self.output_key_names = {}

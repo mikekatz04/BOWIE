@@ -23,10 +23,11 @@ import scipy.constants as ct
 from scipy.special import jv  # bessel function of the first kind
 
 from .csnr import csnr
+from ..utils.sourcebase import SourceBase
 
 M_sun = 1.989e30  # kg
 
-class WaveformBase:
+class WaveformBase(SourceBase):
 
     def __init__(self, **kwargs):
         self.set_num_waveform_points()
@@ -47,50 +48,6 @@ class WaveformBase:
 
         """
         self.num_points = num_wave_points
-        return
-
-    def set_dist_type(self, dist_type='redshift'):
-        self.dist_type = dist_type
-        if self.dist_type not in ['redshift', 'luminosity_distance', 'comoving_distance']:
-            raise ValueError("dist_type needs to be redshift, comoving_distance,"
-                             + "or luminosity_distance")
-        return
-
-    def _check_if_broadcasted(self, locals):
-        # cast binary inputs to same shape
-        if self.not_broadcasted:
-            self.broadcast_and_set_attrs(locals)
-
-        else:
-            for key, arr in locals.items():
-                if key == 'self':
-                    continue
-                setattr(self, key, arr)
-        return
-
-    def _adjust_distances(self):
-
-        # based on distance inputs, need to find redshift and luminosity distance.
-        if self.dist_type == 'redshift':
-            self.z = self.z_or_dist
-            self.dist = cosmo.luminosity_distance(self.z).value
-
-        elif self.dist_type == 'luminosity_distance':
-            z_in = np.logspace(-3, 3, 10000)
-            lum_dis = cosmo.luminosity_distance(z_in).value
-
-            self.dist = self.z_or_dist
-            self.z = np.interp(self.dist, lum_dis, z_in)
-
-        elif self.dist_type == 'comoving_distance':
-            z_in = np.logspace(-3, 3, 10000)
-            lum_dis = cosmo.luminosity_distance(z_in).value
-            com_dis = cosmo.comoving_distance(z_in).value
-
-            comoving_distance = self.z_or_dist
-            self.z = np.interp(comoving_distance, com_dis, z_in)
-            self.dist = np.interp(comoving_distance, com_dis, lum_dis)
-
         return
 
 
@@ -133,7 +90,8 @@ class PhenomDWaveforms(WaveformBase):
     def __init__(self, **kwargs):
 
         WaveformBase.__init__(self, **kwargs)
-
+        self.set_distance_unit(dist_unit='Mpc')
+        self.unit_out = 'Mpc'
         # get path to c code
         cfd = os.path.dirname(os.path.abspath(__file__))
         if 'phenomd.cpython-35m-darwin.so' in os.listdir(cfd):
@@ -360,6 +318,8 @@ class EccentricBinaries(WaveformBase):
     """
     def __init__(self, **kwargs):
         WaveformBase.__init__(self, **kwargs)
+        self.set_distance_unit(dist_unit='Mpc')
+        self.unit_out = 'm'
         self.set_initial_cond_type()
         self.set_n_max()
 

@@ -1,6 +1,5 @@
 from .readout import FileReadOut
 from .parallel import ParallelContainer
-from ..gwutils.waveforms import PhenomDWaveforms
 import numpy as np
 
 
@@ -108,15 +107,13 @@ class BaseGenClass(FileReadOut, ParallelContainer):
                 local_dict[key] = np.array([local_dict[key]])
 
         if 'output_keys' in self.__dict__:
-            output_key_trans = []
-            for i in range(len(self.output_keys)):
+            for i in np.arange(len(self.output_keys))[::-1]:
                 if self.output_keys[i] in ['M', 'q']:
-                    output_key_trans.append('m1' if self.output_keys[i] == 'M' else 'm2')
+                    output_key_trans = 'm1' if self.output_keys[i] == 'M' else 'm2'
                 else:
-                    output_key_trans.append(self.output_keys[i])
+                    output_key_trans = self.output_keys[i]
 
-            keys.insert(0, keys.pop(keys.index(output_key_trans[1])))
-            keys.insert(0, keys.pop(keys.index(output_key_trans[0])))
+                keys.insert(0, keys.pop(keys.index(output_key_trans)))
 
         trans = np.meshgrid(*[local_dict[key] for key in keys])
 

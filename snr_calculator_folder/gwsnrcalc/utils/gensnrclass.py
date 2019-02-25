@@ -1,5 +1,7 @@
 from ..gwutils.waveforms import PhenomDWaveforms, parallel_phenomd, EccentricBinaries, parallel_ecc_snr_func
 from ..gwutils.gwwrappers import GWSNRWrapper
+from ..emutils.emwrappers import EMSNRWrapper
+from ..emutils.emsources import MBHEddMag, parallel_em_snr_func
 import inspect
 
 def SNRGen(source_class=PhenomDWaveforms, snr_wrapper_class=GWSNRWrapper, **kwargs):
