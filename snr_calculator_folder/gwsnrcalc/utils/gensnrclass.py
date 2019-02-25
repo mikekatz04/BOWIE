@@ -1,4 +1,4 @@
-from .waveforms import PhenomDWaveforms, parallel_phenomd
+from .waveforms import PhenomDWaveforms, parallel_phenomd, EccentricBinaries, parallel_ecc_snr_func
 from .gwwrappers import GWSNRWrapper
 import inspect
 

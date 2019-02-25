@@ -3,7 +3,7 @@ import numpy as np
 import pdb
 
 from .sensitivity import SensitivityContainer
-from .waveforms import PhenomDWaveforms, EccentricBinaries, parallel_phenomd
+from .waveforms import PhenomDWaveforms, EccentricBinaries, parallel_phenomd, parallel_ecc_snr_func
 from .baseclass import BaseGenClass
 
 
@@ -38,6 +38,15 @@ class GWSNRWrapper(BaseGenClass, SensitivityContainer):
 
     def set_dist_type(self, dist_type='redshift'):
         self.sources.dist_type = dist_type
+        if self.sources.dist_type not in ['redshift', 'luminosity_distance', 'comoving_distance']:
+            raise ValueError("dist_type needs to be redshift, comoving_distance,"
+                             + "or luminosity_distance")
+        return
+
+    def set_initial_cond_type(self, initial_cond_type='time'):
+        self.sources.initial_cond_type = initial_cond_type
+        if self.sources.initial_cond_type not in ['frequency', 'time', 'separation']:
+            raise ValueError("initial_cond_type must be either frequency, time, or separation.")
         return
 
     def set_n_max(self, n_max=20):
@@ -50,5 +59,5 @@ class GWSNRWrapper(BaseGenClass, SensitivityContainer):
             n_max (int): Maximium modes for eccentric signal.
 
         """
-        self.n_max = n_max
+        self.sources.n_max = n_max
         return

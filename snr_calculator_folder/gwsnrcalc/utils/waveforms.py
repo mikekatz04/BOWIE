@@ -51,6 +51,46 @@ class WaveformBase:
 
     def set_dist_type(self, dist_type='redshift'):
         self.dist_type = dist_type
+        if self.dist_type not in ['redshift', 'luminosity_distance', 'comoving_distance']:
+            raise ValueError("dist_type needs to be redshift, comoving_distance,"
+                             + "or luminosity_distance")
+        return
+
+    def _check_if_broadcasted(self, locals):
+        # cast binary inputs to same shape
+        if self.not_broadcasted:
+            self.broadcast_and_set_attrs(locals)
+
+        else:
+            for key, arr in locals.items():
+                if key == 'self':
+                    continue
+                setattr(self, key, arr)
+        return
+
+    def _adjust_distances(self):
+
+        # based on distance inputs, need to find redshift and luminosity distance.
+        if self.dist_type == 'redshift':
+            self.z = self.z_or_dist
+            self.dist = cosmo.luminosity_distance(self.z).value
+
+        elif self.dist_type == 'luminosity_distance':
+            z_in = np.logspace(-3, 3, 10000)
+            lum_dis = cosmo.luminosity_distance(z_in).value
+
+            self.dist = self.z_or_dist
+            self.z = np.interp(self.dist, lum_dis, z_in)
+
+        elif self.dist_type == 'comoving_distance':
+            z_in = np.logspace(-3, 3, 10000)
+            lum_dis = cosmo.luminosity_distance(z_in).value
+            com_dis = cosmo.comoving_distance(z_in).value
+
+            comoving_distance = self.z_or_dist
+            self.z = np.interp(comoving_distance, com_dis, z_in)
+            self.dist = np.interp(comoving_distance, com_dis, lum_dis)
+
         return
 
 
@@ -181,14 +221,8 @@ class PhenomDWaveforms(WaveformBase):
                         ctypes.c_int(self.length), ctypes.c_int(self.num_points))
 
         # turn output into numpy arrays
-        self.freqs, self.hc = np.ctypeslib.as_array(freqs), np.ctypeslib.as_array(hc)
-        self.fmrg, self.fpeak = np.ctypeslib.as_array(fmrg), np.ctypeslib.as_array(fpeak)
-
-        # remove an axis if inputs were scalar.
-        if self.remove_axis:
-            self.freqs, self.hc, = np.squeeze(self.freqs), np.squeeze(self.hc)
-            self.fmrg, self.fpeak = self.fmrg[0], self.fpeak[0]
-
+        self.freqs, self.hc = np.squeeze(np.ctypeslib.as_array(freqs)), np.squeeze(np.ctypeslib.as_array(hc))
+        self.fmrg, self.fpeak = np.squeeze(np.ctypeslib.as_array(fmrg)), np.squeeze(np.ctypeslib.as_array(fpeak))
         return
 
     def instantiate_parallel_func(self):
@@ -220,40 +254,8 @@ class PhenomDWaveforms(WaveformBase):
                 end of the merger phase. This is determined using 1 PN order. (>0.0)
 
         """
-        # cast binary inputs to same shape
-        if self.not_broadcasted:
-            self.broadcast_and_set_attrs(locals())
-
-        else:
-            self.remove_axis = True
-            for key, arr in locals().items():
-                if key == 'self':
-                    continue
-                if len(arr) > 1 and self.remove_axis is True:
-                    self.remove_axis = False
-                setattr(self, key, arr)
-
-        # based on distance inputs, need to find redshift and luminosity distance.
-        if self.dist_type == 'redshift':
-            self.z = self.z_or_dist
-            self.dist = cosmo.luminosity_distance(self.z).value
-
-        elif self.dist_type == 'luminosity_distance':
-            z_in = np.logspace(-3, 3, 10000)
-            lum_dis = cosmo.luminosity_distance(z_in).value
-
-            self.dist = self.z_or_dist
-            self.z = np.interp(self.dist, lum_dis, z_in)
-
-        elif self.dist_type == 'comoving_distance':
-            z_in = np.logspace(-3, 3, 10000)
-            lum_dis = cosmo.luminosity_distance(z_in).value
-            com_dis = cosmo.comoving_distance(z_in).value
-
-            comoving_distance = self.z_or_dist
-            self.z = np.interp(comoving_distance, com_dis, z_in)
-            self.dist = np.interp(comoving_distance, com_dis, lum_dis)
-
+        self._check_if_broadcasted(locals())
+        self._adjust_distances()
         self.length = len(self.m1)
         self._sanity_check()
         self._create_waveforms()
@@ -305,7 +307,7 @@ def parallel_phenomd(num, params, sources, signal_type,
     return out_vals
 
 
-class EccentricBinaries:
+class EccentricBinaries(WaveformBase):
     """Generate eccentric inspiral waveforms
 
     EccentricBinaries is a class that takes binary parameters as inputs, and adds
@@ -357,70 +359,27 @@ class EccentricBinaries:
 
     """
     def __init__(self, **kwargs):
-        prop_default = {
-            'dist_type': 'redshift',
-            'initial_cond_type': 'time',
-            'num_points': 1024,
-            'n_max': 100,
-        }
+        WaveformBase.__init__(self, **kwargs)
+        self.set_initial_cond_type()
+        self.set_n_max()
 
-        for prop, default in prop_default.items():
-            setattr(self, prop, kwargs.get(prop, default))
-
-        if self.dist_type not in ['redshift', 'luminosity_distance', 'comoving_distance']:
-            raise ValueError("dist_type needs to be redshift, comoving_distance,"
-                             + "or luminosity_distance")
-
+    def set_initial_cond_type(self, initial_cond_type='time'):
+        self.initial_cond_type = initial_cond_type
         if self.initial_cond_type not in ['frequency', 'time', 'separation']:
             raise ValueError("initial_cond_type must be either frequency, time, or separation.")
+        return
 
-    def _broadcast_and_set_attrs(self, local_dict):
-        """Cast all inputs to correct dimensions.
+    def set_n_max(self, n_max=20):
+        """Maximium modes for eccentric signal.
 
-        This method fixes inputs who have different lengths. Namely one input as
-        an array and others that are scalara or of len-1.
+        The number of modes to be considered when calculating the SNR for an
+        eccentric signal. This will only matter when calculating eccentric signals.
 
-        Raises:
-            Value Error: Multiple length arrays of len>1
+        Args:
+            n_max (int): Maximium modes for eccentric signal.
 
         """
-        del local_dict['self']
-        self.remove_axis = False
-        max_length = 0
-        for key in local_dict:
-            try:
-                length = len(local_dict[key])
-                if length > max_length:
-                    max_length = length
-
-            except TypeError:
-                pass
-
-        if max_length == 0:
-            self.remove_axis = True
-            for key in local_dict:
-                setattr(self, key, np.array([local_dict[key]]))
-
-        # check for bad length arrays
-        else:
-            for key in local_dict:
-                try:
-                    if len(local_dict[key]) < max_length and len(local_dict[key]) > 1:
-                        raise ValueError("Casting parameters not correct."
-                                         + " Need all at a maximum shape and the rest being"
-                                         + "len-1 arrays or scalars")
-                except TypeError:
-                    pass
-
-            # broadcast arrays
-            for key in local_dict:
-                try:
-                    if len(local_dict[key]) == max_length:
-                        setattr(self, key, local_dict[key])
-                    elif len(local_dict[key]) == 1:
-                        setattr(self, key, np.full((max_length,), local_dict[key][0]))
-                except TypeError:
-                    setattr(self, key, np.full((max_length,), local_dict[key]))
+        self.n_max = n_max
         return
 
     def _sanity_check(self):
@@ -456,6 +415,9 @@ class EccentricBinaries:
             raise ValueError("e0 greater than 1.")
 
         return
+
+    def instantiate_parallel_func(self):
+        return 'parallel_ecc_snr_func'
 
     def _convert_units(self):
         """Convert units to geometrized units.
@@ -581,9 +543,6 @@ class EccentricBinaries:
         e_vals, a_vals, t_vals = self._t_of_e(a0=self.a0, f0=self.f0,
                                               t_start=self.t_start, ef=None,
                                               t_obs=self.t_obs)
-        import sys
-        np.savetxt('trans_e0_check.txt', np.array([t_vals[:,0]/(ct.c*ct.Julian_year)]).T)
-        sys.exit
 
         f_mrg = 0.02/(self.m1 + self.m2)
         a_mrg = ((self.m1+self.m2)/f_mrg**2)**(1/3)
@@ -656,9 +615,7 @@ class EccentricBinaries:
             t_obs (float or 1D array of floats): Observation time of binary. (>0.0)
 
         """
-
-        # cast binary inputs to same shape
-        self._broadcast_and_set_attrs(locals())
+        self._check_if_broadcasted(locals())
 
         self.f0 = None
         self.t_start = None
@@ -674,28 +631,55 @@ class EccentricBinaries:
 
         setattr(self, initial_cond_set_attr[self.initial_cond_type], self.initial_point)
 
-        # based on distance inputs, need to find redshift and luminosity distance.
-        if self.dist_type == 'redshift':
-            self.z = self.z_or_dist
-            self.dist = cosmo.luminosity_distance(self.z).value*ct.parsec*1e6
-
-        elif self.dist_type == 'luminosity_distance':
-            z_in = np.logspace(-3, 3, 10000)
-            lum_dis = cosmo.luminosity_distance(z_in).value
-
-            self.dist = self.z_or_dist*ct.parsec*1e6
-            self.z = np.interp(self.z_or_dist, lum_dis, z_in)
-
-        elif self.dist_type == 'comoving_distance':
-            z_in = np.logspace(-3, 3, 10000)
-            lum_dis = cosmo.luminosity_distance(z_in).value
-            com_dis = cosmo.comoving_distance(z_in).value
-
-            comoving_distance = self.z_or_dist
-            self.z = np.interp(comoving_distance, com_dis, z_in)
-            self.dist = np.interp(comoving_distance, com_dis, lum_dis)*ct.parsec*1e6
+        self._adjust_distances()
 
         self.length = len(self.m1)
         self._sanity_check()
         self._create_waveforms()
         return self
+
+
+def parallel_ecc_snr_func(num, params, sources, signal_type,
+                          noise_interpolants, prefactor, verbose):
+    """SNR calulation with eccentric waveforms
+
+    Generate eccentric waveforms and calculate their SNR against sensitivity curves.
+
+    Args:
+        num (int): Process number. If only a single process, num=0.
+        binary_args (tuple): Binary arguments for
+            :meth:`gwsnrcalc.utils.waveforms.EccentricBinaries.__call__`.
+        eccwave (obj): Initialized class of
+            :class:`gwsnrcalc.utils.waveforms.EccentricBinaries`.
+        signal_type (list of str): List with types of SNR to calculate.
+            `all` for quadrature sum of modes or `modes` for SNR from each mode.
+            This must be `all` if generating contour data with
+            :mod:`gwsnrcalc.generate_contour_data`.
+        noise_interpolants (dict): All the noise noise interpolants generated by
+            :mod:`gwsnrcalc.utils.sensitivity`.
+        prefactor (float): Prefactor to multiply SNR by (not SNR^2).
+        verbose (int): Notify each time ``verbose`` processes finish. If -1, then no notification.
+
+    Returns:
+        (dict): Dictionary with the SNR output from the calculation.
+
+    """
+    wave = sources(*params)
+
+    out_vals = {}
+
+    for key in noise_interpolants:
+        hn_vals = noise_interpolants[key](wave.freqs)
+        integrand = 1./wave.freqs * (wave.hc**2/hn_vals**2)
+        snr_squared_out = np.trapz(integrand, x=wave.freqs)
+
+        if 'modes' in signal_type:
+            out_vals[key + '_' + 'modes'] = prefactor*np.sqrt(snr_squared_out)
+
+        if 'all' in signal_type:
+            out_vals[key + '_' + 'all'] = prefactor*np.sqrt(np.sum(snr_squared_out, axis=-1))
+
+    if verbose > 0 and (num+1) % verbose == 0:
+        print('Process ', (num+1), 'is finished.')
+
+    return out_vals
