@@ -17,7 +17,7 @@ It can also generate eccentric inspirals according to Peters evolution.
 import numpy as np
 import inspect
 
-from .gwutils.waveforms import PhenomDWaveforms, EccentricBinaries
+from .gwutils.waveforms import PhenomDWaveforms
 from .gwutils.gwwrappers import GWSNRWrapper
 from .utils.gensnrclass import SNRGen
 
@@ -96,4 +96,5 @@ def snr(*args, **kwargs):
 
         if squeeze:
             return {key: snr_out[key].squeeze() for key in snr_out}
+
     return snr_out

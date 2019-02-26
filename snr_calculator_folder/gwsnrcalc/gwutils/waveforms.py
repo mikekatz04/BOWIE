@@ -21,6 +21,7 @@ import numpy as np
 import os
 import scipy.constants as ct
 from scipy.special import jv  # bessel function of the first kind
+import warnings
 
 from .csnr import csnr
 from ..utils.sourcebase import SourceBase
@@ -212,8 +213,8 @@ class PhenomDWaveforms(WaveformBase):
                 end of the merger phase. This is determined using 1 PN order. (>0.0)
 
         """
-        self._check_if_broadcasted(locals())
-        self._adjust_distances()
+        self.check_if_broadcasted(locals())
+        self.adjust_distances()
         self.length = len(self.m1)
         self._sanity_check()
         self._create_waveforms()
@@ -575,7 +576,7 @@ class EccentricBinaries(WaveformBase):
             t_obs (float or 1D array of floats): Observation time of binary. (>0.0)
 
         """
-        self._check_if_broadcasted(locals())
+        self.check_if_broadcasted(locals())
 
         self.f0 = None
         self.t_start = None
@@ -591,7 +592,7 @@ class EccentricBinaries(WaveformBase):
 
         setattr(self, initial_cond_set_attr[self.initial_cond_type], self.initial_point)
 
-        self._adjust_distances()
+        self.adjust_distances()
 
         self.length = len(self.m1)
         self._sanity_check()
@@ -638,6 +639,236 @@ def parallel_ecc_snr_func(num, params, sources, signal_type,
 
         if 'all' in signal_type:
             out_vals[key + '_' + 'all'] = prefactor*np.sqrt(np.sum(snr_squared_out, axis=-1))
+
+    if verbose > 0 and (num+1) % verbose == 0:
+        print('Process ', (num+1), 'is finished.')
+
+    return out_vals
+
+
+class WDBinaries(WaveformBase):
+    """Generate eccentric inspiral waveforms
+
+    EccentricBinaries is a class that takes binary parameters as inputs, and adds
+    characteristic strain waveforms as attributes to self.
+
+    Keyword Arguments:
+        dist_type (str, optional): Which type of distance is used. Default is 'redshift'.
+            This is stored as an attributed.
+        num_points (int, optional): Number of points to use in the waveform.
+            The frequency points are log-spaced. Default is 8192. This is stored as an attributed.
+        initial_cond_type (str, optional): Initial value representing the start of evolution.
+            Options are `time`, `frequency`, or `separation`. Default is time.
+        n_max (int, optional): Maximum number of higher order harmonics to analyze in the SNR.
+            Default is 100.
+
+    Attributes:
+        freqs (1D or 2D array of floats): Frequencies corresponding to the waveforms.
+            Shape is (num binaries, num_points) if 2D.
+            Shape is (num_points,) if 1D for one binary.
+        hc (1D or 2D array of floats): Characteristic strain of the waveforms.
+            Shape is (num binaries, num_points) if 2D.
+            Shape is (num_points,) if 1D for one binary.
+        z (float or 1D array of floats): Redshift equivalent of the z_or_dist given.
+        dist (float or 1D array of floats): Luminosity distance equivalent of the z_or_dist given.
+        f0 (float, 1D array of floats, or None): Initial orbital frequencies.
+            If ``initial_cond_type == 'frequency'``, initial values are stored here. Optional.
+            Default is None.
+        a0 (float, 1D array of floats, or None): Initial orbital semi-major axes.
+            If ``initial_cond_type == 'separation'``, initial values are stored here. Optional.
+            Default is None.
+        t_start (float, 1D array of floats, or None): Initial times before merger.
+            If ``initial_cond_type == 'time'``, initial values are stored here. Optional.
+            Default is None.
+        e_vals (2D array of floats): Eccentricity values over time.
+        a_vals (2D array of floats): Semi-major axis values over time.
+        t_vals (2D array of floats): Time values corresponding to e_vals and a_vals.
+        freqs_orb (2D array of floats): Orbital frequencies over time.
+        n (2D array of ints): Radiation mode values.
+        ef (1D array of floats): Final eccentricity for each binary.
+        remove_axis (bool): Remove axis based on if it is one or more than one binary.
+        length (int): Number of binaries.
+        Note: All args from :meth:`gwsnrcalc.utils.pyphenomd.PhenomDWaveforms.__call__`
+                are stored as attributes.
+        Note: All kwargs from above are stored as attributes.
+
+    Raises:
+        ValueError: dist_type is not one of the three options.
+        ValueError: initial_cond_type is not one of the three options.
+
+    """
+    def __init__(self, **kwargs):
+        WaveformBase.__init__(self, **kwargs)
+        self.set_distance_unit(dist_unit='pc')
+        self.unit_out = 'm'
+        self.set_initial_cond_type()
+
+    def set_initial_cond_type(self, initial_cond_type='frequency'):
+        self.initial_cond_type = initial_cond_type
+        if self.initial_cond_type not in ['frequency', 'separation']:
+            raise ValueError("initial_cond_type must be either frequency or separation.")
+        return
+
+
+    def _sanity_check(self):
+        """Check if parameters are okay.
+
+        Sanity check makes sure each parameter is within an allowable range.
+
+        Raises:
+            ValueError: Problem with a specific parameter.
+
+        """
+        if any(self.m1 < 0.0):
+            raise ValueError("Mass 1 is negative.")
+        if any(self.m2 < 0.0):
+            raise ValueError("Mass 2 is negative.")
+
+        if any(self.m1 > 1.4*1.989e30*ct.G/ct.c**2):
+            warnings.ValueWarning("Mass 1 is above Chandrasekhar limit.")
+        if any(self.m2 > 1.4*1.989e30*ct.G/ct.c**2):
+            warnings.ValueWarning("Mass 2 is above Chandrasekhar limit.")
+
+        if any(self.z <= 0.0):
+            raise ValueError("Redshift is zero or negative.")
+
+        if any(self.dist <= 0.0):
+            raise ValueError("Distance is zero or negative.")
+
+        if any(self.initial_point < 0.0):
+            raise ValueError("initial_point is negative.")
+
+        if any(self.t_obs < 0.0):
+            raise ValueError("t_obs is negative.")
+
+        return
+
+    def instantiate_parallel_func(self):
+        return 'parallel_wd_snr_func'
+
+    def _convert_units(self):
+        """Convert units to geometrized units.
+
+        Change to G=c=1 (geometrized) units for ease in calculations.
+
+        """
+        self.m1 = self.m1*M_sun*ct.G/ct.c**2
+        self.m2 = self.m2*M_sun*ct.G/ct.c**2
+        initial_cond_type_conversion = {
+            'frequency': 1./ct.c,
+            'separation': ct.parsec,
+        }
+
+        self.initial_point = self.initial_point*initial_cond_type_conversion[self.initial_cond_type]
+
+        self.t_obs = self.t_obs*ct.c*ct.Julian_year
+        return
+
+    def _chirp_mass(self):
+        """Chirp mass calculation
+
+        """
+        return (self.m1*self.m2)**(3./5.)/(self.m1+self.m2)**(1./5.)
+
+    def _get_start_frequency(self):
+        self.f_in = ((self.m1 + self.m2)/(4*np.pi**2*self.a_in**3))**(1/2)
+        return
+
+    def _set_freq(self):
+        self.freq = self.f_in*ct.c
+        return
+
+    def _get_strain(self):
+        """Create the eccentric waveforms
+
+        """
+        if self.initial_cond_type == 'separation':
+            self._get_start_frequency()
+        self._set_freq()
+
+        M_c = self._chirp_mass()
+        h_gb_num = 8.*self.t_obs**(1/2) * M_c**(5/3) * np.pi**(2/3) * self.f_in**(2/3)
+        h_gb_denom = 5.**(1/2) * self.dist
+        self.h_gb = np.squeeze(h_gb_num/h_gb_denom)/ct.c**(1/2)
+        return
+
+    def __call__(self, m1, m2, z_or_dist, initial_point, t_obs):
+        """Run the waveform creator.
+
+        Create eccentric inspiral waveforms in the amplitude frequency domain.
+
+        **Warning**: Binary parameters have to one of three shapes: scalar, len-1 array,
+        or array of len MAX. All scalar quantities or len-1 arrays are cast to len-MAX arrays.
+        If arrays of different lengths (len>1) are given, a ValueError will be raised.
+
+        Arguments:
+            m1 (float or 1D array of floats): Mass 1 in Solar Masses. (>0.0)
+            m2 (float or 1D array of floats): Mass 2 in Solar Masses. (>0.0)
+            z_or_dist (float or 1D array of floats): Distance measure to the binary.
+                This can take three forms: redshift (dimensionless, *default*),
+                luminosity distance (Mpc), comoving_distance (Mpc).
+                The type used must be specified in 'dist_type' parameter. (>0.0)
+            initial_point (float or 1D array of floats): Initial description point of binary.
+                This can either be the start time, frequency, separation. This must be the same
+                quantity as ``initial_cond_type``. (>0.0)
+            e0 (float or 1D array of floats): Inital eccentricity of binary. (0<e<1)
+            t_obs (float or 1D array of floats): Observation time of binary. (>0.0)
+
+        """
+        self.check_if_broadcasted(locals())
+
+        self.f_in = None
+        self.a_in = None
+
+        self._convert_units()
+
+        initial_cond_set_attr = {
+            'frequency': 'f_in',
+            'separation': 'a_in'
+        }
+
+        setattr(self, initial_cond_set_attr[self.initial_cond_type], self.initial_point)
+
+        self.adjust_distances()
+
+        self.length = len(self.m1)
+        self._sanity_check()
+        self._get_strain()
+        return self
+
+
+def parallel_wd_snr_func(num, params, sources, signal_type,
+                          noise_interpolants, prefactor, verbose):
+    """SNR calulation with eccentric waveforms
+
+    Generate eccentric waveforms and calculate their SNR against sensitivity curves.
+
+    Args:
+        num (int): Process number. If only a single process, num=0.
+        binary_args (tuple): Binary arguments for
+            :meth:`gwsnrcalc.utils.waveforms.EccentricBinaries.__call__`.
+        eccwave (obj): Initialized class of
+            :class:`gwsnrcalc.utils.waveforms.EccentricBinaries`.
+        signal_type (list of str): List with types of SNR to calculate.
+            `all` for quadrature sum of modes or `modes` for SNR from each mode.
+            This must be `all` if generating contour data with
+            :mod:`gwsnrcalc.generate_contour_data`.
+        noise_interpolants (dict): All the noise noise interpolants generated by
+            :mod:`gwsnrcalc.utils.sensitivity`.
+        prefactor (float): Prefactor to multiply SNR by (not SNR^2).
+        verbose (int): Notify each time ``verbose`` processes finish. If -1, then no notification.
+
+    Returns:
+        (dict): Dictionary with the SNR output from the calculation.
+
+    """
+    wave = sources(*params)
+
+    out_vals = {}
+    for key in noise_interpolants:
+        Sn_vals = noise_interpolants[key](wave.freq)/np.sqrt(wave.freq)  # per rt hz
+        snr = wave.h_gb/Sn_vals
+        out_vals[key] = prefactor*snr
 
     if verbose > 0 and (num+1) % verbose == 0:
         print('Process ', (num+1), 'is finished.')

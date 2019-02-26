@@ -119,7 +119,6 @@ class BaseGenClass(FileReadOut, ParallelContainer):
 
         for key, arr in zip(keys, trans):
             setattr(self, key, arr.ravel())
-        print('done')
         return
 
     def __run__(self, para_func):

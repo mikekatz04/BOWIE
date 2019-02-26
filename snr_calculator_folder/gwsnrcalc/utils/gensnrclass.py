@@ -1,4 +1,9 @@
-from ..gwutils.waveforms import PhenomDWaveforms, parallel_phenomd, EccentricBinaries, parallel_ecc_snr_func
+from ..gwutils.waveforms import (PhenomDWaveforms,
+                                 parallel_phenomd,
+                                 EccentricBinaries,
+                                 parallel_ecc_snr_func,
+                                 WDBinaries,
+                                 parallel_wd_snr_func)
 from ..gwutils.gwwrappers import GWSNRWrapper
 from ..emutils.emwrappers import EMSNRWrapper
 from ..emutils.emsources import MBHEddMag, parallel_em_snr_func
@@ -12,7 +17,7 @@ def SNRGen(source_class=PhenomDWaveforms, snr_wrapper_class=GWSNRWrapper, **kwar
             self.sources = source_class(**kwargs)
             self.args_list = inspect.getfullargspec(self.sources.__call__).args
             self.args_list.remove('self')
-            
+
             snr_wrapper_class.__init__(self, **kwargs)
 
             for key in kwargs:

@@ -2,7 +2,14 @@ import numpy as np
 import pdb
 
 from .sensitivity import SensitivityContainer
-from .waveforms import PhenomDWaveforms, EccentricBinaries, parallel_phenomd, parallel_ecc_snr_func
+from .waveforms import (PhenomDWaveforms,
+                        EccentricBinaries,
+                        WDBinaries,
+                        parallel_phenomd,
+                        parallel_ecc_snr_func,
+                        parallel_wd_snr_func)
+
+
 from ..utils.baseclass import BaseGenClass
 
 
