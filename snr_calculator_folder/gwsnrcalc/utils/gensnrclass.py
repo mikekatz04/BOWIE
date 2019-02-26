@@ -12,6 +12,7 @@ def SNRGen(source_class=PhenomDWaveforms, snr_wrapper_class=GWSNRWrapper, **kwar
             self.sources = source_class(**kwargs)
             self.args_list = inspect.getfullargspec(self.sources.__call__).args
             self.args_list.remove('self')
+            
             snr_wrapper_class.__init__(self, **kwargs)
 
             for key in kwargs:

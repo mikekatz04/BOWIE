@@ -19,7 +19,7 @@ class EMTelescope:
     def _get_n_eff(self, band):
         # number of pixels
         FWHM_eff = self.FWHM_eff[band]
-        n_eff = 1.0*(FWHM_eff/self.platescale)**2  # factor of order unity ignored outfront
+        n_eff = 2.266*(FWHM_eff/self.platescale)**2  # factor of order unity ignored outfront
         return n_eff
 
     def _get_instumental_noise(self):
@@ -28,6 +28,9 @@ class EMTelescope:
         return
 
     def get_snr(self, m, band):
+        if band not in self.available_bands:
+            raise ValueError("{} band not availabe for {}.".format(band, self.name))
+
         source_counts = self._get_source_counts(m, band)
         sky_counts = self._get_sky_counts(band)
         n_eff = self._get_n_eff(band)
@@ -37,9 +40,14 @@ class EMTelescope:
         return snr_num/snr_denom
 
 
-class LSSTDefaults(EMTelescope):
+class LSST(EMTelescope):
     def __init__(self, **kwargs):
 
+        self.name = 'LSST'
+        self.available_bands = ['u', 'g', 'r', 'i', 'z', 'y']
+        self.kwargs = kwargs
+
+    def prep_telescope(self):
         # instrumental zero-pionts (counts/sec)
         self.source_counts_ref = {'u': {'m_ref': 26.50, 'count_ref': 1},
                                   'g': {'m_ref': 28.30, 'count_ref': 1},
@@ -84,12 +92,18 @@ class LSSTDefaults(EMTelescope):
                                     'z': 19.60,
                                     'y': 19.60}
 
-        for key, item in kwargs.items():
+        for key, item in self.kwargs.items():
             setattr(self, key, item)
 
 
-class SDSSDefaults(EMTelescope):
+class SDSS(EMTelescope):
     def __init__(self, **kwargs):
+
+        self.name = 'SDSS'
+        self.available_bands = ['u', 'g', 'r', 'i', 'z']
+        self.kwargs = kwargs
+
+    def prep_telescope(self):
 
         # instrumental zero-pionts (counts/sec)
         self.source_counts_ref = {'u': {'m_ref': 25.0, 'count_ref': 18},
@@ -99,11 +113,11 @@ class SDSSDefaults(EMTelescope):
                                   'z': {'m_ref': 25.0, 'count_ref': 20}}
 
         # arcseconds
-        self.FWHM_eff = {'u': 0.8,  # m''
-                         'g': 0.8,
-                         'r': 0.8,
-                         'i': 0.8,
-                         'z': 0.8}
+        self.seeing = {'u': 1.1,  # m''
+                         'g': 1.1,
+                         'r': 1.1,
+                         'i': 1.1,
+                         'z': 1.1}
 
         # mag/arcsecond
         self.sky_brightness_dict = {'u': 22.1,  # m''
@@ -145,7 +159,7 @@ class SDSSDefaults(EMTelescope):
 
         self._get_instumental_noise()
 
-        for key, item in kwargs.items():
+        for key, item in self.kwargs.items():
             setattr(self, key, item)
 
     def _get_source_counts(self, m, band):
@@ -156,14 +170,24 @@ class SDSSDefaults(EMTelescope):
         sky_counts = self.sky_brightness_counts[band]
         return sky_counts
 
+    def _get_n_eff(self, band):
+        # number of pixels
+        seeing = self.seeing[band]
+        #seeing = 0.663 * 0.400 * np.sqrt(neff)
+        # https://www.sdss.org/dr12/algorithms/masks/
+        n_eff = seeing/(0.663*0.400)
+        #FWHM_eff = (seeing - 0.052)/0.822
+        #n_eff = 2.266*(FWHM_eff/self.platescale)**2  # factor of order unity ignored outfront
+        return n_eff
+
 
 if __name__ == '__main__':
-    m_rel = 25.0
-    band = 'u'
-    lsst = LSSTDefaults()
-    snr_lsst = lsst.get_snr(m_rel, band)
-
-    sdss = SDSSDefaults()
-    snr_sdss = sdss.get_snr(m_rel, band)
+    lsst = LSST()
+    sdss = SDSS()
+    for m_rel in [17.0, 20.0, 25.0]:
+        for band in ['u', 'g', 'r', 'i', 'z']:
+            snr_lsst = lsst.get_snr(m_rel, band)
+            snr_sdss = sdss.get_snr(m_rel, band)
+            print(band, m_rel, snr_sdss, snr_lsst)
     import pdb
     pdb.set_trace()
