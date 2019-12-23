@@ -48,6 +48,9 @@ Installation
 Begin with updating conda:
   ``conda update conda``
 
+Create a conda environment (change the name as desired. Default: bowie_env):
+  ``conda create -n bowie_env numpy scipy astropy h5py gsl matplotlib jupyter ipython python=3.7``
+
 Installation is done two ways:
 
 1) using pip

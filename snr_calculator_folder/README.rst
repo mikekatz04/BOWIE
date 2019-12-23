@@ -44,6 +44,9 @@ Installation
 Begin with updating conda:
   ``conda update conda``
 
+Create a conda environment (change the name as desired. Default: gwsnr_env):
+  ``conda create -n gwsnr_env numpy scipy astropy h5py gsl matplotlib jupyter ipython python=3.7``
+
 Installation is done two ways:
 
 1) using pip
