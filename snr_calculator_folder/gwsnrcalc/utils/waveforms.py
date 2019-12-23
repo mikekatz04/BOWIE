@@ -8,19 +8,21 @@ This code is licensed with the GNU public license.
 
 This python code impliments circular PhenomD waveforms from Husa et al 2016 (arXiv:1508.07250)
 and Khan et al 2016 (arXiv:1508.07253). It wraps the accompanying c code, `phenomd/phenomd.c`,
-with ``ctypes``. `phenomd/phenomd.c` is mostly from LALsuite. See `phenomd/phenomd.c` for specifics.
+with ``cython``. `phenomd/phenomd.c` is mostly from LALsuite. See `phenomd/phenomd.c` for specifics.
 Please cite these papers if circular waveforms are generated.
 
 It also implements eccentric inpspiral waveforms according to Peters (1964).
 
 """
 
-import ctypes
 from astropy.cosmology import Planck15 as cosmo
 import numpy as np
 import os
 import scipy.constants as ct
 from scipy.special import jv  # bessel function of the first kind
+
+import PhenomD
+
 
 M_sun = 1.989e30  # kg
 
@@ -64,24 +66,12 @@ class PhenomDWaveforms:
     def __init__(self, **kwargs):
         prop_defaults = {
             # TODO: add 'all' and 'full' capabilities
-            'num_points': 8192,
-            'dist_type': 'redshift'
+            "num_points": 8192,
+            "dist_type": "redshift",
         }
 
         for (prop, default) in prop_defaults.items():
-                setattr(self, prop, kwargs.get(prop, default))
-
-        # get path to c code
-        cfd = os.path.dirname(os.path.abspath(__file__))
-        if 'phenomd.cpython-35m-darwin.so' in os.listdir(cfd):
-            self.exec_call = cfd + '/phenomd.cpython-35m-darwin.so'
-
-        else:
-            self.exec_call = cfd + '/phenomd/phenomd.so'
-
-        if self.dist_type not in ['redshift', 'luminosity_distance', 'comoving_distance']:
-            raise ValueError("dist_type needs to be redshift, comoving_distance,"
-                             + "or luminosity_distance")
+            setattr(self, prop, kwargs.get(prop, default))
 
     def _sanity_check(self):
         """Check if parameters are okay.
@@ -118,7 +108,7 @@ class PhenomDWaveforms:
         if len(np.where(self.st < self.et)[0]) != 0:
             raise ValueError("Start Time is less than End time.")
 
-        if any(self.m1/self.m2 > 1.0000001e4) or any(self.m1/self.m2 < 9.999999e-5):
+        if any(self.m1 / self.m2 > 1.0000001e4) or any(self.m1 / self.m2 < 9.999999e-5):
             raise ValueError("Mass Ratio too far from unity.")
 
         return
@@ -133,7 +123,7 @@ class PhenomDWaveforms:
             Value Error: Multiple length arrays of len>1
 
         """
-        del local_dict['self']
+        del local_dict["self"]
         self.remove_axis = False
         max_length = 0
         for key in local_dict:
@@ -155,9 +145,11 @@ class PhenomDWaveforms:
             for key in local_dict:
                 try:
                     if len(local_dict[key]) < max_length and len(local_dict[key]) > 1:
-                        raise ValueError("Casting parameters not correct."
-                                         + " Need all at a maximum shape and the rest being"
-                                         + "len-1 arrays or scalars")
+                        raise ValueError(
+                            "Casting parameters not correct."
+                            + " Need all at a maximum shape and the rest being"
+                            + "len-1 arrays or scalars"
+                        )
                 except TypeError:
                     pass
 
@@ -180,38 +172,19 @@ class PhenomDWaveforms:
 
         """
 
-        c_obj = ctypes.CDLL(self.exec_call)
-
-        # prepare ctypes arrays
-        freq_amp_cast = ctypes.c_double*self.num_points*self.length
-        freqs = freq_amp_cast()
-        hc = freq_amp_cast()
-
-        fmrg_fpeak_cast = ctypes.c_double*self.length
-        fmrg = fmrg_fpeak_cast()
-        fpeak = fmrg_fpeak_cast()
-
         # Find hc
-        c_obj.Amplitude(ctypes.byref(freqs), ctypes.byref(hc), ctypes.byref(fmrg),
-                        ctypes.byref(fpeak),
-                        self.m1.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                        self.m2.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                        self.chi_1.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                        self.chi_2.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                        self.dist.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                        self.z.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                        self.st.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                        self.et.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                        ctypes.c_int(self.length), ctypes.c_int(self.num_points))
-
-        # turn output into numpy arrays
-        self.freqs, self.hc = np.ctypeslib.as_array(freqs), np.ctypeslib.as_array(hc)
-        self.fmrg, self.fpeak = np.ctypeslib.as_array(fmrg), np.ctypeslib.as_array(fpeak)
-
-        # remove an axis if inputs were scalar.
-        if self.remove_axis:
-            self.freqs, self.hc, = np.squeeze(self.freqs), np.squeeze(self.hc)
-            self.fmrg, self.fpeak = self.fmrg[0], self.fpeak[0]
+        self.freqs, self.hc, self.fmrg, self.fpeak = PhenomD.GetAmplitude(
+            self.m1,
+            self.m2,
+            self.chi_1,
+            self.chi_2,
+            self.dist,
+            self.z,
+            self.st,
+            self.et,
+            self.length,
+            self.num_points,
+        )
 
         return
 
@@ -245,18 +218,18 @@ class PhenomDWaveforms:
         self._broadcast_and_set_attrs(locals())
 
         # based on distance inputs, need to find redshift and luminosity distance.
-        if self.dist_type == 'redshift':
+        if self.dist_type == "redshift":
             self.z = self.z_or_dist
             self.dist = cosmo.luminosity_distance(self.z).value
 
-        elif self.dist_type == 'luminosity_distance':
+        elif self.dist_type == "luminosity_distance":
             z_in = np.logspace(-3, 3, 10000)
             lum_dis = cosmo.luminosity_distance(z_in).value
 
             self.dist = self.z_or_dist
             self.z = np.interp(self.dist, lum_dis, z_in)
 
-        elif self.dist_type == 'comoving_distance':
+        elif self.dist_type == "comoving_distance":
             z_in = np.logspace(-3, 3, 10000)
             lum_dis = cosmo.luminosity_distance(z_in).value
             com_dis = cosmo.comoving_distance(z_in).value
@@ -322,23 +295,32 @@ class EccentricBinaries:
         ValueError: initial_cond_type is not one of the three options.
 
     """
+
     def __init__(self, **kwargs):
         prop_default = {
-            'dist_type': 'redshift',
-            'initial_cond_type': 'time',
-            'num_points': 1024,
-            'n_max': 100,
+            "dist_type": "redshift",
+            "initial_cond_type": "time",
+            "num_points": 1024,
+            "n_max": 100,
         }
 
         for prop, default in prop_default.items():
             setattr(self, prop, kwargs.get(prop, default))
 
-        if self.dist_type not in ['redshift', 'luminosity_distance', 'comoving_distance']:
-            raise ValueError("dist_type needs to be redshift, comoving_distance,"
-                             + "or luminosity_distance")
+        if self.dist_type not in [
+            "redshift",
+            "luminosity_distance",
+            "comoving_distance",
+        ]:
+            raise ValueError(
+                "dist_type needs to be redshift, comoving_distance,"
+                + "or luminosity_distance"
+            )
 
-        if self.initial_cond_type not in ['frequency', 'time', 'separation']:
-            raise ValueError("initial_cond_type must be either frequency, time, or separation.")
+        if self.initial_cond_type not in ["frequency", "time", "separation"]:
+            raise ValueError(
+                "initial_cond_type must be either frequency, time, or separation."
+            )
 
     def _broadcast_and_set_attrs(self, local_dict):
         """Cast all inputs to correct dimensions.
@@ -350,7 +332,7 @@ class EccentricBinaries:
             Value Error: Multiple length arrays of len>1
 
         """
-        del local_dict['self']
+        del local_dict["self"]
         self.remove_axis = False
         max_length = 0
         for key in local_dict:
@@ -372,9 +354,11 @@ class EccentricBinaries:
             for key in local_dict:
                 try:
                     if len(local_dict[key]) < max_length and len(local_dict[key]) > 1:
-                        raise ValueError("Casting parameters not correct."
-                                         + " Need all at a maximum shape and the rest being"
-                                         + "len-1 arrays or scalars")
+                        raise ValueError(
+                            "Casting parameters not correct."
+                            + " Need all at a maximum shape and the rest being"
+                            + "len-1 arrays or scalars"
+                        )
                 except TypeError:
                     pass
 
@@ -416,7 +400,9 @@ class EccentricBinaries:
             raise ValueError("t_obs is negative.")
 
         if any(self.e0 <= 0.0):
-            raise ValueError("e0 must be greater than zero when using EccentricBinaries class.")
+            raise ValueError(
+                "e0 must be greater than zero when using EccentricBinaries class."
+            )
 
         if any(self.e0 > 1.0):
             raise ValueError("e0 greater than 1.")
@@ -429,36 +415,51 @@ class EccentricBinaries:
         Change to G=c=1 (geometrized) units for ease in calculations.
 
         """
-        self.m1 = self.m1*M_sun*ct.G/ct.c**2
-        self.m2 = self.m2*M_sun*ct.G/ct.c**2
+        self.m1 = self.m1 * M_sun * ct.G / ct.c ** 2
+        self.m2 = self.m2 * M_sun * ct.G / ct.c ** 2
         initial_cond_type_conversion = {
-            'time': ct.c*ct.Julian_year,
-            'frequency': 1./ct.c,
-            'separation': ct.parsec,
+            "time": ct.c * ct.Julian_year,
+            "frequency": 1.0 / ct.c,
+            "separation": ct.parsec,
         }
 
-        self.initial_point = self.initial_point*initial_cond_type_conversion[self.initial_cond_type]
+        self.initial_point = (
+            self.initial_point * initial_cond_type_conversion[self.initial_cond_type]
+        )
 
-        self.t_obs = self.t_obs*ct.c*ct.Julian_year
+        self.t_obs = self.t_obs * ct.c * ct.Julian_year
         return
 
     def _find_integrand(self, e):
         """Integrand in Peters eq. 5.4
 
         """
-        return e**(29./19.)*(1.+(121./304.)*e**2.)**(1181./2299.)/(1.-e**2)**(3./2.)
+        return (
+            e ** (29.0 / 19.0)
+            * (1.0 + (121.0 / 304.0) * e ** 2.0) ** (1181.0 / 2299.0)
+            / (1.0 - e ** 2) ** (3.0 / 2.0)
+        )
 
     def _f_e(self, e):
         """Integrand in Peters eq. 5.4
 
         """
-        return e**(12./19.)*(1.+(121./304.)*e**2.)**(870./2299.)/(1.-e**2)
+        return (
+            e ** (12.0 / 19.0)
+            * (1.0 + (121.0 / 304.0) * e ** 2.0) ** (870.0 / 2299.0)
+            / (1.0 - e ** 2)
+        )
 
     def _c0_func(self, a0, e0):
         """Constant of integration from Peters 1964 equation 5.11.
 
         """
-        return a0*(1.-e0**2)/e0**(12./19.) * (1.+(121./304.)*e0**2)**(-870./2299.)
+        return (
+            a0
+            * (1.0 - e0 ** 2)
+            / e0 ** (12.0 / 19.0)
+            * (1.0 + (121.0 / 304.0) * e0 ** 2) ** (-870.0 / 2299.0)
+        )
 
     def _t_of_e(self, a0=None, t_start=None, f0=None, ef=None, t_obs=5.0):
         """Rearranged versions of Peters equations
@@ -467,28 +468,38 @@ class EccentricBinaries:
 
         """
         if ef is None:
-            ef = np.ones_like(self.e0)*0.0000001
+            ef = np.ones_like(self.e0) * 0.0000001
 
-        beta = 64.0/5.0*self.m1*self.m2*(self.m1+self.m2)
+        beta = 64.0 / 5.0 * self.m1 * self.m2 * (self.m1 + self.m2)
 
-        e_vals = np.asarray([np.linspace(ef[i], self.e0[i], self.num_points)
-                            for i in range(len(self.e0))])
+        e_vals = np.asarray(
+            [
+                np.linspace(ef[i], self.e0[i], self.num_points)
+                for i in range(len(self.e0))
+            ]
+        )
         integrand = self._find_integrand(e_vals)
-        integral = np.asarray([np.trapz(integrand[:, i:], x=e_vals[:, i:])
-                              for i in range(e_vals.shape[1])]).T
+        integral = np.asarray(
+            [
+                np.trapz(integrand[:, i:], x=e_vals[:, i:])
+                for i in range(e_vals.shape[1])
+            ]
+        ).T
 
         if a0 is None and f0 is None:
 
-            a0 = (19./12.*t_start*beta*1/integral[:, 0])**(1./4.) * self._f_e(e_vals[:, -1])
+            a0 = (19.0 / 12.0 * t_start * beta * 1 / integral[:, 0]) ** (
+                1.0 / 4.0
+            ) * self._f_e(e_vals[:, -1])
 
         elif a0 is None:
-            a0 = ((self.m1 + self.m2)/self.f0**2)**(1./3.)
+            a0 = ((self.m1 + self.m2) / self.f0 ** 2) ** (1.0 / 3.0)
 
         c0 = self._c0_func(a0, self.e0)
 
-        a_vals = c0[:, np.newaxis]*self._f_e(e_vals)
+        a_vals = c0[:, np.newaxis] * self._f_e(e_vals)
 
-        delta_t = 12./19*c0[:, np.newaxis]**4/beta[:, np.newaxis]*integral
+        delta_t = 12.0 / 19 * c0[:, np.newaxis] ** 4 / beta[:, np.newaxis] * integral
 
         return e_vals, a_vals, delta_t
 
@@ -496,29 +507,46 @@ class EccentricBinaries:
         """Chirp mass calculation
 
         """
-        return (self.m1*self.m2)**(3./5.)/(self.m1+self.m2)**(1./5.)
+        return (self.m1 * self.m2) ** (3.0 / 5.0) / (self.m1 + self.m2) ** (1.0 / 5.0)
 
     def _f_func(self):
         """Eq. 17 from Peters and Mathews 1963.
 
         """
-        return ((1.+(73./24.)*self.e_vals**2.+(37./96.)
-                * self.e_vals**4.)/(1.-self.e_vals**2.)**(7./2.))
+        return (
+            1.0
+            + (73.0 / 24.0) * self.e_vals ** 2.0
+            + (37.0 / 96.0) * self.e_vals ** 4.0
+        ) / (1.0 - self.e_vals ** 2.0) ** (7.0 / 2.0)
 
     def _g_func(self):
         """Eq. 20 in Peters and Mathews 1963.
 
         """
-        return (self.n**4./32.
-                * ((jv(self.n-2., self.n*self.e_vals)
-                   - 2. * self.e_vals*jv(self.n-1., self.n*self.e_vals)
-                   + 2./self.n * jv(self.n, self.n*self.e_vals)
-                   + 2.*self.e_vals*jv(self.n+1., self.n*self.e_vals)
-                   - jv(self.n+2., self.n*self.e_vals))**2.
-                   + (1.-self.e_vals**2.) * (jv(self.n-2., self.n*self.e_vals)
-                   - 2.*jv(self.n, self.n*self.e_vals)
-                   + jv(self.n+2., self.n*self.e_vals))**2.
-                   + 4./(3.*self.n**2.)*(jv(self.n, self.n*self.e_vals))**2.))
+        return (
+            self.n ** 4.0
+            / 32.0
+            * (
+                (
+                    jv(self.n - 2.0, self.n * self.e_vals)
+                    - 2.0 * self.e_vals * jv(self.n - 1.0, self.n * self.e_vals)
+                    + 2.0 / self.n * jv(self.n, self.n * self.e_vals)
+                    + 2.0 * self.e_vals * jv(self.n + 1.0, self.n * self.e_vals)
+                    - jv(self.n + 2.0, self.n * self.e_vals)
+                )
+                ** 2.0
+                + (1.0 - self.e_vals ** 2.0)
+                * (
+                    jv(self.n - 2.0, self.n * self.e_vals)
+                    - 2.0 * jv(self.n, self.n * self.e_vals)
+                    + jv(self.n + 2.0, self.n * self.e_vals)
+                )
+                ** 2.0
+                + 4.0
+                / (3.0 * self.n ** 2.0)
+                * (jv(self.n, self.n * self.e_vals)) ** 2.0
+            )
+        )
 
     def _dEndfr(self):
         """Eq. 4 from Orazio and Samsing (2018)
@@ -527,15 +555,24 @@ class EccentricBinaries:
 
         """
         Mc = self._chirp_mass()
-        return (np.pi**(2./3.)*Mc**(5./3.)/(3.*(1.+self.z)**(1./3.)
-                * (self.freqs_orb/(1.+self.z))**(1./3.))*(2./self.n)**(2./3.)
-                * self._g_func()/self._f_func())
+        return (
+            np.pi ** (2.0 / 3.0)
+            * Mc ** (5.0 / 3.0)
+            / (
+                3.0
+                * (1.0 + self.z) ** (1.0 / 3.0)
+                * (self.freqs_orb / (1.0 + self.z)) ** (1.0 / 3.0)
+            )
+            * (2.0 / self.n) ** (2.0 / 3.0)
+            * self._g_func()
+            / self._f_func()
+        )
 
     def _hcn_func(self):
         """Eq. 56 from Barack and Cutler 2004
 
         """
-        self.hc = 1./(np.pi*self.dist)*np.sqrt(2.*self._dEndfr())
+        self.hc = 1.0 / (np.pi * self.dist) * np.sqrt(2.0 * self._dEndfr())
         return
 
     def _create_waveforms(self):
@@ -544,40 +581,47 @@ class EccentricBinaries:
         """
 
         # find eccentricity and semi major axis over time until e=0.
-        e_vals, a_vals, t_vals = self._t_of_e(a0=self.a0, f0=self.f0,
-                                              t_start=self.t_start, ef=None,
-                                              t_obs=self.t_obs)
+        e_vals, a_vals, t_vals = self._t_of_e(
+            a0=self.a0, f0=self.f0, t_start=self.t_start, ef=None, t_obs=self.t_obs
+        )
 
-        f_mrg = 0.02/(self.m1 + self.m2)
-        a_mrg = ((self.m1+self.m2)/f_mrg**2)**(1/3)
+        f_mrg = 0.02 / (self.m1 + self.m2)
+        a_mrg = ((self.m1 + self.m2) / f_mrg ** 2) ** (1 / 3)
 
         # limit highest frequency to ISCO even though this is not innermost orbit for eccentric
         # binaries
         # find where binary goes farther than observation time or merger frequency limit.
-        a_ind_start = np.asarray([np.where(a_vals[i] > a_mrg[i])[0][0] for i in range(len(a_vals))])
-        t_ind_start = np.asarray([np.where(t_vals[i] < self.t_obs[i])[0][0]
-                                 for i in range(len(t_vals))])
+        a_ind_start = np.asarray(
+            [np.where(a_vals[i] > a_mrg[i])[0][0] for i in range(len(a_vals))]
+        )
+        t_ind_start = np.asarray(
+            [np.where(t_vals[i] < self.t_obs[i])[0][0] for i in range(len(t_vals))]
+        )
 
-        ind_start = (a_ind_start*(a_ind_start >= t_ind_start)
-                     + t_ind_start*(a_ind_start < t_ind_start))
+        ind_start = a_ind_start * (a_ind_start >= t_ind_start) + t_ind_start * (
+            a_ind_start < t_ind_start
+        )
 
         self.ef = np.asarray([e_vals[i][ind] for i, ind in enumerate(ind_start)])
 
         # higher resolution over the eccentricities seen during observation
-        self.e_vals, self.a_vals, self.t_vals = self._t_of_e(a0=a_vals[:, -1],
-                                                             ef=self.ef,
-                                                             t_obs=self.t_obs)
+        self.e_vals, self.a_vals, self.t_vals = self._t_of_e(
+            a0=a_vals[:, -1], ef=self.ef, t_obs=self.t_obs
+        )
 
-        self.freqs_orb = np.sqrt((self.m1[:, np.newaxis]+self.m2[:, np.newaxis])/self.a_vals**3)
+        self.freqs_orb = np.sqrt(
+            (self.m1[:, np.newaxis] + self.m2[:, np.newaxis]) / self.a_vals ** 3
+        )
 
         # tile for efficient calculation across modes.
-        for attr in ['e_vals', 'a_vals', 't_vals', 'freqs_orb']:
+        for attr in ["e_vals", "a_vals", "t_vals", "freqs_orb"]:
             arr = getattr(self, attr)
-            new_arr = (np.flip(
-                       np.tile(arr, self.n_max).reshape(len(arr)*self.n_max, len(arr[0])), -1))
+            new_arr = np.flip(
+                np.tile(arr, self.n_max).reshape(len(arr) * self.n_max, len(arr[0])), -1
+            )
             setattr(self, attr, new_arr)
 
-        for attr in ['m1', 'm2', 'z', 'dist']:
+        for attr in ["m1", "m2", "z", "dist"]:
             arr = getattr(self, attr)
             new_arr = np.repeat(arr, self.n_max)[:, np.newaxis]
             setattr(self, attr, new_arr)
@@ -589,9 +633,10 @@ class EccentricBinaries:
 
         # reshape hc
         self.hc = self.hc.reshape(self.length, self.n_max, self.hc.shape[-1])
-        self.freqs = np.reshape(self.n*self.freqs_orb/(1+self.z)
-                                * ct.c,
-                                (self.length, self.n_max, self.freqs_orb.shape[-1]))
+        self.freqs = np.reshape(
+            self.n * self.freqs_orb / (1 + self.z) * ct.c,
+            (self.length, self.n_max, self.freqs_orb.shape[-1]),
+        )
 
         self.hc, self.freqs = np.squeeze(self.hc), np.squeeze(self.freqs)
         return
@@ -630,33 +675,33 @@ class EccentricBinaries:
         self._convert_units()
 
         initial_cond_set_attr = {
-            'time': 't_start',
-            'frequency': 'f0',
-            'separation': 'a0'
+            "time": "t_start",
+            "frequency": "f0",
+            "separation": "a0",
         }
 
         setattr(self, initial_cond_set_attr[self.initial_cond_type], self.initial_point)
 
         # based on distance inputs, need to find redshift and luminosity distance.
-        if self.dist_type == 'redshift':
+        if self.dist_type == "redshift":
             self.z = self.z_or_dist
-            self.dist = cosmo.luminosity_distance(self.z).value*ct.parsec*1e6
+            self.dist = cosmo.luminosity_distance(self.z).value * ct.parsec * 1e6
 
-        elif self.dist_type == 'luminosity_distance':
+        elif self.dist_type == "luminosity_distance":
             z_in = np.logspace(-3, 3, 10000)
             lum_dis = cosmo.luminosity_distance(z_in).value
 
-            self.dist = self.z_or_dist*ct.parsec*1e6
+            self.dist = self.z_or_dist * ct.parsec * 1e6
             self.z = np.interp(self.z_or_dist, lum_dis, z_in)
 
-        elif self.dist_type == 'comoving_distance':
+        elif self.dist_type == "comoving_distance":
             z_in = np.logspace(-3, 3, 10000)
             lum_dis = cosmo.luminosity_distance(z_in).value
             com_dis = cosmo.comoving_distance(z_in).value
 
             comoving_distance = self.z_or_dist
             self.z = np.interp(comoving_distance, com_dis, z_in)
-            self.dist = np.interp(comoving_distance, com_dis, lum_dis)*ct.parsec*1e6
+            self.dist = np.interp(comoving_distance, com_dis, lum_dis) * ct.parsec * 1e6
 
         self.length = len(self.m1)
         self._sanity_check()

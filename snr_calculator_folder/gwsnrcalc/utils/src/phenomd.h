@@ -1,7 +1,7 @@
-/* 
+/*
   This code was constructed by Michael Katz using LALSimIMRPhenomD.c, LALSimIMRPhenomD.h, LALSimIMRPhenomD_internals.c, and LALSimIMRPhenomD_internals.h from LALsuite as templates. Here, only the amplitude is implemented so far. The phase may be added in the future. The top part of the code (break will be made clear below) was originally authored by Michael Puerrer, Sebastian Khan, Frank Ohme, Ofek Birnholtz, Lionel London. Below is their license for the redistribution of the LAL codes mentioned above. This code was strategically copied to remove any dependencies on other LAL programs. Below the break, the code was authored by Michael Katz, using the original LAL codes as a guide. PhenomD can be found in Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016 (arXiv:1508.07253).
 
-  This was used in "Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253). 
+  This was used in "Evaluating Black Hole Detectability with LISA" (arXiv:1508.07253).
 */
 
 /*
@@ -23,9 +23,12 @@
  *  MA  02111-1307  USA
  */
 
-/* 
-  Michael Katz affirms the shame redistributive license under the GNU General Public License. It is recommended to use the original LAL documentation and source code rather than this copy. Any questions regarding this code specifically, email Michael Katz at mikekatz04@gmail.com 
- */ 
+/*
+  Michael Katz affirms the shame redistributive license under the GNU General Public License. It is recommended to use the original LAL documentation and source code rather than this copy. Any questions regarding this code specifically, email Michael Katz at mikekatz04@gmail.com
+ */
+
+#ifndef __PHENOMD_H__
+#define __PHENOMD_H__
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -186,7 +189,7 @@ static double Amp0_from_dist_mass (double M, double distance);
 
 /**
 
-THE BREAK FROM LAL OCCURS HERE. The rest is authored by Michael Katz with the LAL source codes as guides. 
+THE BREAK FROM LAL OCCURS HERE. The rest is authored by Michael Katz with the LAL source codes as guides.
 
 **/
 
@@ -196,13 +199,6 @@ static double eta_func(double m1, double m2);
 static double find_frequency_from_time_before_merger (double time_before_merger, double eta, double M_redshifted_time);
 
 ////////////////// Functions called through ctypes
-int Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, double *m1, double*m2, double *chi1, double *chi2, double *dist, double *z, double *start_time, double *end_time, int length_of_arrays, int num_points);
+void Amplitude(double *freqs, double *amplitude, double *fmrg, double *fpeak, double *m1, double*m2, double *chi1, double *chi2, double *dist, double *z, double *start_time, double *end_time, int length_of_arrays, int num_points);
 
-int SNR_function(double *snr_all, double *snr_ins, double *snr_mrg, double *snr_rd, double *freqs, double *hc, double *hn, double *fmrg, double *fpeak, int length_of_signal, int num_binaries);
-
-
-
-
-
-
-
+#endif // __PHENOMD_H__

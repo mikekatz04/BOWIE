@@ -6,7 +6,7 @@ as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE).
 This code is licensed with the GNU public license.
 
 This python code impliments a fast SNR calculator for binary black hole waveforms in c. It wraps the
-accompanying c code, `phenomd/phenomd.c`, with ``ctypes``.
+accompanying c code, `phenomd/phenomd.c`, with ``cython``.
 `phenomd/phenomd.c` is mostly from LALsuite. See `phenomd/phenomd.c` for specifics.
 
 Please cite all of the arXiv papers above if you use this code in a publication.
@@ -14,8 +14,9 @@ Please cite all of the arXiv papers above if you use this code in a publication.
 """
 
 import numpy as np
-import ctypes
 import os
+
+import Csnr
 
 
 def csnr(freqs, hc, hn, fmrg, fpeak, prefactor=1.0):
@@ -47,14 +48,6 @@ def csnr(freqs, hc, hn, fmrg, fpeak, prefactor=1.0):
         (dict): Dictionary with SNRs from each phase.
 
     """
-    cfd = os.path.dirname(os.path.abspath(__file__))
-    if 'phenomd.cpython-35m-darwin.so' in os.listdir(cfd):
-        exec_call = cfd + '/phenomd.cpython-35m-darwin.so'
-
-    else:
-        exec_call = cfd + '/phenomd/phenomd.so'
-
-    c_obj = ctypes.CDLL(exec_call)
 
     # check dimensionality
     remove_axis = False
@@ -72,31 +65,24 @@ def csnr(freqs, hc, hn, fmrg, fpeak, prefactor=1.0):
 
     num_binaries, length_of_signal = hc.shape
 
-    # prepare outout arrays
-    snr_cast = ctypes.c_double*num_binaries
-    snr_all = snr_cast()
-    snr_ins = snr_cast()
-    snr_mrg = snr_cast()
-    snr_rd = snr_cast()
-
     # find SNR values
-    c_obj.SNR_function(ctypes.byref(snr_all), ctypes.byref(snr_ins),
-                       ctypes.byref(snr_mrg), ctypes.byref(snr_rd),
-                       freqs_in.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                       hc_in.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                       hn_in.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                       fmrg.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                       fpeak.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-                       ctypes.c_int(length_of_signal), ctypes.c_int(num_binaries))
-
-    # make into numpy arrays
-    snr_all, snr_ins, = np.ctypeslib.as_array(snr_all), np.ctypeslib.as_array(snr_ins)
-    snr_mrg, snr_rd = np.ctypeslib.as_array(snr_mrg), np.ctypeslib.as_array(snr_rd)
+    snr_all, snr_ins, snr_mrg, snr_rd = Csnr.GetSNR(
+        freqs_in, hc_in, hn_in, fmrg, fpeak, length_of_signal, num_binaries
+    )
 
     # remove axis if one binary
     if remove_axis:
-        snr_all, snr_ins, snr_mrg, snr_rd = snr_all[0], snr_ins[0], snr_mrg[0], snr_rd[0]
+        snr_all, snr_ins, snr_mrg, snr_rd = (
+            snr_all[0],
+            snr_ins[0],
+            snr_mrg[0],
+            snr_rd[0],
+        )
 
     # prepare output by multiplying by prefactor
-    return ({'all': snr_all*prefactor, 'ins': snr_ins*prefactor,
-            'mrg': snr_mrg*prefactor, 'rd': snr_rd*prefactor})
+    return {
+        "all": snr_all * prefactor,
+        "ins": snr_ins * prefactor,
+        "mrg": snr_mrg * prefactor,
+        "rd": snr_rd * prefactor,
+    }
