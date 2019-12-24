@@ -84,7 +84,7 @@ Please read `CONTRIBUTING.md`_ for details on our code of conduct, and the proce
 Versioning
 =============
 
-Current version is 1.0.0.
+Current version is 1.1.0.
 
 We use `SemVer`_ for versioning.
 
