@@ -1,9 +1,0 @@
-include gwsnrcalc/utils/noise_curves/PL.txt
-include gwsnrcalc/utils/noise_curves/LPA.txt
-include gwsnrcalc/utils/noise_curves/CL.txt
-include gwsnrcalc/utils/noise_curves/CLLF.txt
-include gwsnrcalc/utils/noise_curves/PLHB.txt
-include gwsnrcalc/utils/noise_curves/PLCS.txt
-include gwsnrcalc/utils/noise_curves/HB_wd_noise.txt
-include gwsnrcalc/utils/src/phenomd.h
-include gwsnrcalc/utils/src/ringdown_spectrum_fitting.h
