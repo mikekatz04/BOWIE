@@ -1,0 +1,1984 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>gwsnrcalc package &#8212; bowie  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="BOWIE: Binary Observability With Illustrative Exploration" href="makeplot.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="makeplot.html" title="BOWIE: Binary Observability With Illustrative Exploration"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">bowie  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="gwsnrcalc-package">
+<h1>gwsnrcalc package<a class="headerlink" href="#gwsnrcalc-package" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">gwsnrcalc</span></code> is a package designed for fast signal-to-noise ratio (SNR) calculations for single gravitational wave sources using a matched filtering SNR approach. It was originally designed to support <a class="reference external" href="https://mikekatz04.github.io/BOWIE/">BOWIE</a> for <cite>Evaluating Black Hole Detectability with LISA</cite> (<a class="reference external" href="https://arxiv.org/abs/">arXiv:1807.02511</a>). It provides a fast SNR calculator, frequency-domain amplitude waveforms for binary black holes, and a SNR grid generator for binary black holes.</p>
+<p>The main snr function is <code class="docutils literal notranslate"><span class="pre">gwsnrcalc.gw_snr_calculator.snr</span></code>. It has the capability to perform calculations in parallel across processors for faster calculation.</p>
+<p>The waveform generator (<code class="docutils literal notranslate"><span class="pre">gwsnrcalc.utils.waveforms</span></code>) creates either circular or eccentric waveforms.</p>
+<p>Circular waveforms are created with PhenomD amplitude waveforms for binary black hole inspiral, merger, and ringdown. PhenomD is from Husa et al 2016 (<a class="reference external" href="https://arxiv.org/abs/1508.07250">arXiv:1508.07250</a>) and Khan et al 2016 (<a class="reference external" href="https://arxiv.org/abs/1508.07253">arXiv:1508.07253</a>). The current waveforms returned are in units of characteristic strain.</p>
+<p>Eccentric waveforms are generated according to Peters evolution only for the inspiral phase.</p>
+<p>The snr grid generator: <code class="docutils literal notranslate"><span class="pre">gwsnrcalc.generate_contour_data</span></code> uses <code class="docutils literal notranslate"><span class="pre">gwsnrcalc.gw_snr_calculator.snr</span></code> to create SNR grids for contour plots (like those used in BOWIE).</p>
+<p>Available via pip and on github: <a class="reference external" href="https://github.com/mikekatz04/BOWIE/">https://github.com/mikekatz04/BOWIE/</a></p>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>These instructions will get you a copy of the project up and running on your local machine for usage and testing purposes.</p>
+</div>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>It is best to run out of conda environment. It will handle the dependencies better. If you have issues with certain modules, try to update them.</p>
+<p>Software installation/usage only requires a few specific libraries in python. All libraries are included with Anaconda. If you do not run python in an anaconda environment, you  will need the following libraries and modules to run with all capabilities: Numpy, Scipy, collections, sys, json, multiprocessing, datetime, time, astropy, and h5py. All can be installed with pip. For example, within your python environment of choice:</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">astropy</span></code></p>
+<p>In order to properly create waveforms with ctypes, you will need complex, gsl, and math c libraries. For installing gsl, refer to <a class="reference external" href="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</a> or install it through anaconda.</p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>Begin with updating conda:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">update</span> <span class="pre">conda</span></code></p>
+</dd>
+<dt>Create a conda environment (change the name as desired. Default: gwsnr_env):</dt><dd><p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">gwsnr_env</span> <span class="pre">numpy</span> <span class="pre">scipy</span> <span class="pre">astropy</span> <span class="pre">h5py</span> <span class="pre">gsl</span> <span class="pre">matplotlib</span> <span class="pre">jupyter</span> <span class="pre">ipython</span> <span class="pre">python=3.7</span></code></p>
+</dd>
+</dl>
+<p>Installation is done two ways:</p>
+<ol class="arabic simple">
+<li><p>using pip</p></li>
+</ol>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">gwsnrcalc</span></code></p>
+<p>This will download the all necessary packages to your current environment. It will not download the notebooks for testing and example usage.</p>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Clone the git repo on the command line, or downloading it from github. This is for all the modules, example jupyter notebooks, and extra files. This method will include BOWIE if pip install is used on the outer directory. To just download specific files that do not come with pip (e.g. jupyter notebook with examples), just download the files from the github.</p></li>
+</ol>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><p>navigate to the directory of your choice.</p></li>
+<li><p>clone the git repo on the command line.</p></li>
+</ol>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/mikekatz04/BOWIE.git</span></code></p>
+</div></blockquote>
+<ol class="loweralpha simple" start="3">
+<li><p>pip install the local code to add the modules to your environment and compile the c codes.</p></li>
+</ol>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">./BOWIE/snr_calculator_folder/</span></code></p>
+</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="testing-and-running-an-example">
+<h2>Testing and Running an Example<a class="headerlink" href="#testing-and-running-an-example" title="Permalink to this headline">¶</a></h2>
+<p>To test the codes, you run the guide notebook.</p>
+<p><code class="docutils literal notranslate"><span class="pre">jupyter</span> <span class="pre">notebook</span> <span class="pre">pyphenomd_guide.ipynb</span></code></p>
+</div>
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>Please read <a class="reference external" href="https://gist.github.com/PurpleBooth/b24679402957c63ec426">CONTRIBUTING.md</a> for details on our code of conduct, and the process for submitting pull requests to us.</p>
+</div>
+<div class="section" id="versioning">
+<h2>Versioning<a class="headerlink" href="#versioning" title="Permalink to this headline">¶</a></h2>
+<p>Current version is 1.0.0.</p>
+<p>We use <a class="reference external" href="http://semver.org/">SemVer</a> for versioning.</p>
+</div>
+<div class="section" id="authors">
+<h2>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Michael Katz</strong> - <a class="reference external" href="https://github.com/mikekatz04/">mikekatz04</a></p></li>
+</ul>
+<p>Please email the author with any bugs or requests.</p>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>This project is licensed under the GNU License - see the <a class="reference external" href="https://github.com/mikekatz04/BOWIE/blob/master/LICENSE">LICENSE.md</a> file for details.</p>
+</div>
+<div class="section" id="acknowledgments">
+<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Thanks to Michael Puerrer, Sebastian Khan, Frank Ohme, Ofek Birnholtz, Lionel London for authorship of the original c code for PhenomD within LALsuite.</p></li>
+</ul>
+</div>
+<div class="section" id="gwsnrcalc-pacakge-documentation">
+<h2>gwsnrcalc pacakge documentation:<a class="headerlink" href="#gwsnrcalc-pacakge-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="user-interfacing-modules">
+<h3>User interfacing modules:<a class="headerlink" href="#user-interfacing-modules" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="module-gwsnrcalc.gw_snr_calculator">
+<span id="gw-snr-calculator-module"></span><h4>gw_snr_calculator module<a class="headerlink" href="#module-gwsnrcalc.gw_snr_calculator" title="Permalink to this headline">¶</a></h4>
+<p>Calculate gravitational wave SNRs.</p>
+<p>This was used in “Evaluating Black Hole Detectability with LISA” (arXiv:1508.07253),
+as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE). Please cite this
+when using this code.</p>
+<p>This code is licensed with the GNU public license.</p>
+<p>This python code impliments PhenomD waveforms from Husa et al 2016 (arXiv:1508.07250)
+and Khan et al 2016 (arXiv:1508.07253). Please cite these papers if PhenomD waveforms are used.</p>
+<p>It can also generate eccentric inspirals according to Peters evolution.</p>
+<dl class="class">
+<dt id="gwsnrcalc.gw_snr_calculator.SNR">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.gw_snr_calculator.</code><code class="sig-name descname">SNR</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.gw_snr_calculator.SNR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gwsnrcalc.utils.sensitivity.SensitivityContainer" title="gwsnrcalc.utils.sensitivity.SensitivityContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.sensitivity.SensitivityContainer</span></code></a>, <a class="reference internal" href="#gwsnrcalc.utils.parallel.ParallelContainer" title="gwsnrcalc.utils.parallel.ParallelContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.parallel.ParallelContainer</span></code></a>, <a class="reference internal" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms" title="gwsnrcalc.utils.waveforms.PhenomDWaveforms"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.waveforms.PhenomDWaveforms</span></code></a></p>
+<p>Main class for SNR calculations.</p>
+<p>This class performs gravitational wave SNR calculations with a matched
+filtering approach. It can generate SNRs for single sources or arrays of sources.
+It can run in parallel or on a single processor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ecc</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, use the eccentric SNR calculator. If False,
+use PhenomDWaveforms. (For future usage.) Default is False.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – kwargs to be added to ParallelContainer, PhenomDWaveforms, and
+SensitivityContainer.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Keyworkd Arguments:</dt><dd><dl class="simple">
+<dt>signal_type (scalar or list of str, optional): Phase of snr.</dt><dd><p>Options are ‘all’ for all phases;
+‘ins’ for inspiral; ‘mrg’ for merger; or ‘rd’ for ringdown. Default is ‘all’.</p>
+</dd>
+<dt>prefactor (float, optional): Factor to multiply snr (not snr^2) integral values by.</dt><dd><p>Default is 1.0.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="gwsnrcalc.gw_snr_calculator.SNR.snr_function">
+<code class="sig-name descname">snr_function</code><a class="headerlink" href="#gwsnrcalc.gw_snr_calculator.SNR.snr_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function object representing the snr function to use.
+This is form future use with other snr calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.gw_snr_calculator.SNR.phenomdwave">
+<code class="sig-name descname">phenomdwave</code><a class="headerlink" href="#gwsnrcalc.gw_snr_calculator.SNR.phenomdwave" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.pyphenomd.PhenomDWaveforms</span></code>
+object for storing initial kwargs and passing to snr function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.gw_snr_calculator.SNR.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.gw_snr_calculator.SNR.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>All kwargs are stored as attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">Note</code></dt>
+<dd><p>Attributes are inherited from inherited classes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.gw_snr_calculator.SNR.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param">*binary_args</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.gw_snr_calculator.SNR.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input binary parameters and calculate the SNR</p>
+<p>Binary parameters are read in and adjusted based on shapes. They are then
+fed into <code class="docutils literal notranslate"><span class="pre">run</span></code> for calculation of the snr.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>*args</strong> – Arguments for binary parameters (see <cite>:meth:gwsnrcalc.utils.pyphenomd.__call__</cite>)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the SNR output from the calculation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.gw_snr_calculator.parallel_ecc_snr_func">
+<code class="sig-prename descclassname">gwsnrcalc.gw_snr_calculator.</code><code class="sig-name descname">parallel_ecc_snr_func</code><span class="sig-paren">(</span><em class="sig-param">num</em>, <em class="sig-param">binary_args</em>, <em class="sig-param">eccwave</em>, <em class="sig-param">signal_type</em>, <em class="sig-param">noise_interpolants</em>, <em class="sig-param">prefactor</em>, <em class="sig-param">verbose</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.gw_snr_calculator.parallel_ecc_snr_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>SNR calulation with eccentric waveforms</p>
+<p>Generate PhenomDWaveforms and calculate their SNR against sensitivity curves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num</strong> (<em>int</em>) – Process number. If only a single process, num=0.</p></li>
+<li><p><strong>binary_args</strong> (<em>tuple</em>) – Binary arguments for
+<a class="reference internal" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.__call__" title="gwsnrcalc.utils.waveforms.EccentricBinaries.__call__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">gwsnrcalc.utils.waveforms.EccentricBinaries.__call__()</span></code></a>.</p></li>
+<li><p><strong>eccwave</strong> (<em>obj</em>) – Initialized class of
+<a class="reference internal" href="#gwsnrcalc.utils.waveforms.EccentricBinaries" title="gwsnrcalc.utils.waveforms.EccentricBinaries"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.waveforms.EccentricBinaries</span></code></a>.</p></li>
+<li><p><strong>signal_type</strong> (<em>list of str</em>) – List with types of SNR to calculate.
+<cite>all</cite> for quadrature sum of modes or <cite>modes</cite> for SNR from each mode.
+This must be <cite>all</cite> if generating contour data with
+<a class="reference internal" href="#module-gwsnrcalc.generate_contour_data" title="gwsnrcalc.generate_contour_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">gwsnrcalc.generate_contour_data</span></code></a>.</p></li>
+<li><p><strong>noise_interpolants</strong> (<em>dict</em>) – All the noise noise interpolants generated by
+<a class="reference internal" href="#module-gwsnrcalc.utils.sensitivity" title="gwsnrcalc.utils.sensitivity"><code class="xref py py-mod docutils literal notranslate"><span class="pre">gwsnrcalc.utils.sensitivity</span></code></a>.</p></li>
+<li><p><strong>prefactor</strong> (<em>float</em>) – Prefactor to multiply SNR by (not SNR^2).</p></li>
+<li><p><strong>verbose</strong> (<em>int</em>) – Notify each time <code class="docutils literal notranslate"><span class="pre">verbose</span></code> processes finish. If -1, then no notification.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the SNR output from the calculation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.gw_snr_calculator.parallel_snr_func">
+<code class="sig-prename descclassname">gwsnrcalc.gw_snr_calculator.</code><code class="sig-name descname">parallel_snr_func</code><span class="sig-paren">(</span><em class="sig-param">num</em>, <em class="sig-param">binary_args</em>, <em class="sig-param">phenomdwave</em>, <em class="sig-param">signal_type</em>, <em class="sig-param">noise_interpolants</em>, <em class="sig-param">prefactor</em>, <em class="sig-param">verbose</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.gw_snr_calculator.parallel_snr_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>SNR calulation with PhenomDWaveforms</p>
+<p>Generate PhenomDWaveforms and calculate their SNR against sensitivity curves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num</strong> (<em>int</em>) – Process number. If only a single process, num=0.</p></li>
+<li><p><strong>binary_args</strong> (<em>tuple</em>) – Binary arguments for
+<a class="reference internal" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.__call__" title="gwsnrcalc.utils.waveforms.EccentricBinaries.__call__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">gwsnrcalc.utils.waveforms.EccentricBinaries.__call__()</span></code></a>.</p></li>
+<li><p><strong>phenomdwave</strong> (<em>obj</em>) – Initialized class of
+<a class="reference internal" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms" title="gwsnrcalc.utils.waveforms.PhenomDWaveforms"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.waveforms.PhenomDWaveforms</span></code></a>.</p></li>
+<li><p><strong>signal_type</strong> (<em>list of str</em>) – List with types of SNR to calculate.
+Options are <cite>all</cite> for full wavefrom,
+<cite>ins</cite> for inspiral, <cite>mrg</cite> for merger, and/or <cite>rd</cite> for ringdown.</p></li>
+<li><p><strong>noise_interpolants</strong> (<em>dict</em>) – All the noise noise interpolants generated by
+<a class="reference internal" href="#module-gwsnrcalc.utils.sensitivity" title="gwsnrcalc.utils.sensitivity"><code class="xref py py-mod docutils literal notranslate"><span class="pre">gwsnrcalc.utils.sensitivity</span></code></a>.</p></li>
+<li><p><strong>prefactor</strong> (<em>float</em>) – Prefactor to multiply SNR by (not SNR^2).</p></li>
+<li><p><strong>verbose</strong> (<em>int</em>) – Notify each time <code class="docutils literal notranslate"><span class="pre">verbose</span></code> processes finish. If -1, then no notification.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with the SNR output from the calculation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.gw_snr_calculator.snr">
+<code class="sig-prename descclassname">gwsnrcalc.gw_snr_calculator.</code><code class="sig-name descname">snr</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.gw_snr_calculator.snr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the SNR of binaries.</p>
+<p>snr is a function that takes binary parameters and sensitivity curves as inputs,
+and returns snr for chosen phases.</p>
+<p>Warning: All binary parameters must be either scalar, len-1 arrays,
+or arrays of the same length. All of these can be used at once. However,
+you cannot input multiple arrays of different lengths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – Arguments for <code class="xref py py-meth docutils literal notranslate"><span class="pre">gwsnrcalc.utils.pyphenomd.PhenomDWaveforms.__call__()</span></code></p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments related to
+parallel generation (see <a class="reference internal" href="#module-gwsnrcalc.utils.parallel" title="gwsnrcalc.utils.parallel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.parallel</span></code></a>),
+waveforms (see <code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.pyphenomd</span></code>),
+or sensitivity information (see <a class="reference internal" href="#module-gwsnrcalc.utils.sensitivity" title="gwsnrcalc.utils.sensitivity"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.sensitivity</span></code></a>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Signal-to-Noise Ratio dictionary for requested phases.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(dict or list of dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-gwsnrcalc.utils.waveforms">
+<span id="waveforms-module"></span><h4>waveforms module<a class="headerlink" href="#module-gwsnrcalc.utils.waveforms" title="Permalink to this headline">¶</a></h4>
+<p>Author: Michael Katz guided by lal implimentation of PhenomD.
+This was used in “Evaluating Black Hole Detectability with LISA” (arXiv:1508.07253),
+as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE). Please cite this paper
+when using this code.</p>
+<p>This code is licensed with the GNU public license.</p>
+<p>This python code impliments circular PhenomD waveforms from Husa et al 2016 (arXiv:1508.07250)
+and Khan et al 2016 (arXiv:1508.07253). It wraps the accompanying c code, <cite>phenomd/phenomd.c</cite>,
+with <code class="docutils literal notranslate"><span class="pre">cython</span></code>. <cite>phenomd/phenomd.c</cite> is mostly from LALsuite. See <cite>phenomd/phenomd.c</cite> for specifics.
+Please cite these papers if circular waveforms are generated.</p>
+<p>It also implements eccentric inpspiral waveforms according to Peters (1964).</p>
+<dl class="class">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.utils.waveforms.</code><code class="sig-name descname">EccentricBinaries</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generate eccentric inspiral waveforms</p>
+<p>EccentricBinaries is a class that takes binary parameters as inputs, and adds
+characteristic strain waveforms as attributes to self.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dist_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Which type of distance is used. Default is ‘redshift’.
+This is stored as an attributed.</p></li>
+<li><p><strong>num_points</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of points to use in the waveform.
+The frequency points are log-spaced. Default is 8192. This is stored as an attributed.</p></li>
+<li><p><strong>initial_cond_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Initial value representing the start of evolution.
+Options are <cite>time</cite>, <cite>frequency</cite>, or <cite>separation</cite>. Default is time.</p></li>
+<li><p><strong>n_max</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of higher order harmonics to analyze in the SNR.
+Default is 100.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.freqs">
+<code class="sig-name descname">freqs</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.freqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Frequencies corresponding to the waveforms.
+Shape is (num binaries, num_points) if 2D.
+Shape is (num_points,) if 1D for one binary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>1D or 2D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.hc">
+<code class="sig-name descname">hc</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.hc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Characteristic strain of the waveforms.
+Shape is (num binaries, num_points) if 2D.
+Shape is (num_points,) if 1D for one binary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>1D or 2D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.z">
+<code class="sig-name descname">z</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redshift equivalent of the z_or_dist given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float or 1D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.dist">
+<code class="sig-name descname">dist</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Luminosity distance equivalent of the z_or_dist given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float or 1D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.f0">
+<code class="sig-name descname">f0</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.f0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial orbital frequencies.
+If <code class="docutils literal notranslate"><span class="pre">initial_cond_type</span> <span class="pre">==</span> <span class="pre">'frequency'</span></code>, initial values are stored here. Optional.
+Default is None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float, 1D array of floats, or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.a0">
+<code class="sig-name descname">a0</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.a0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial orbital semi-major axes.
+If <code class="docutils literal notranslate"><span class="pre">initial_cond_type</span> <span class="pre">==</span> <span class="pre">'separation'</span></code>, initial values are stored here. Optional.
+Default is None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float, 1D array of floats, or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.t_start">
+<code class="sig-name descname">t_start</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.t_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial times before merger.
+If <code class="docutils literal notranslate"><span class="pre">initial_cond_type</span> <span class="pre">==</span> <span class="pre">'time'</span></code>, initial values are stored here. Optional.
+Default is None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float, 1D array of floats, or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.e_vals">
+<code class="sig-name descname">e_vals</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.e_vals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Eccentricity values over time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>2D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.a_vals">
+<code class="sig-name descname">a_vals</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.a_vals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Semi-major axis values over time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>2D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.t_vals">
+<code class="sig-name descname">t_vals</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.t_vals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time values corresponding to e_vals and a_vals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>2D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.freqs_orb">
+<code class="sig-name descname">freqs_orb</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.freqs_orb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Orbital frequencies over time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>2D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.n">
+<code class="sig-name descname">n</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Radiation mode values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>2D array of ints</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.ef">
+<code class="sig-name descname">ef</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.ef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Final eccentricity for each binary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>1D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.remove_axis">
+<code class="sig-name descname">remove_axis</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.remove_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove axis based on if it is one or more than one binary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.length">
+<code class="sig-name descname">length</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of binaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>All args from <code class="xref py py-meth docutils literal notranslate"><span class="pre">gwsnrcalc.utils.pyphenomd.PhenomDWaveforms.__call__()</span></code>
+are stored as attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">Note</code></dt>
+<dd><p>All kwargs from above are stored as attributes.</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – dist_type is not one of the three options.</p></li>
+<li><p><strong>ValueError</strong> – initial_cond_type is not one of the three options.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="gwsnrcalc.utils.waveforms.EccentricBinaries.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param">m1</em>, <em class="sig-param">m2</em>, <em class="sig-param">z_or_dist</em>, <em class="sig-param">initial_point</em>, <em class="sig-param">e0</em>, <em class="sig-param">t_obs</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.waveforms.EccentricBinaries.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the waveform creator.</p>
+<p>Create eccentric inspiral waveforms in the amplitude frequency domain.</p>
+<p><strong>Warning</strong>: Binary parameters have to one of three shapes: scalar, len-1 array,
+or array of len MAX. All scalar quantities or len-1 arrays are cast to len-MAX arrays.
+If arrays of different lengths (len&gt;1) are given, a ValueError will be raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m1</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – Mass 1 in Solar Masses. (&gt;0.0)</p></li>
+<li><p><strong>m2</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – Mass 2 in Solar Masses. (&gt;0.0)</p></li>
+<li><p><strong>z_or_dist</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – Distance measure to the binary.
+This can take three forms: redshift (dimensionless, <em>default</em>),
+luminosity distance (Mpc), comoving_distance (Mpc).
+The type used must be specified in ‘dist_type’ parameter. (&gt;0.0)</p></li>
+<li><p><strong>initial_point</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – Initial description point of binary.
+This can either be the start time, frequency, separation. This must be the same
+quantity as <code class="docutils literal notranslate"><span class="pre">initial_cond_type</span></code>. (&gt;0.0)</p></li>
+<li><p><strong>e0</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – Inital eccentricity of binary. (0&lt;e&lt;1)</p></li>
+<li><p><strong>t_obs</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – Observation time of binary. (&gt;0.0)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.utils.waveforms.</code><code class="sig-name descname">PhenomDWaveforms</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generate phenomd waveforms</p>
+<p>PhenomDWaveforms is a class that takes binary parameters as inputs, and adds
+characteristic strain waveforms as attributes to self.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dist_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Which type of distance is used. Default is ‘redshift’.
+This is stored as an attributed.</p></li>
+<li><p><strong>num_points</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of points to use in the waveform.
+The frequency points are log-spaced. Default is 8192. This is stored as an attributed.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms.freqs">
+<code class="sig-name descname">freqs</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms.freqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Frequencies corresponding to the waveforms.
+Shape is (num binaries, num_points) if 2D.
+Shape is (num_points,) if 1D for one binary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>1D or 2D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms.hc">
+<code class="sig-name descname">hc</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms.hc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Characteristic strain of the waveforms.
+Shape is (num binaries, num_points) if 2D.
+Shape is (num_points,) if 1D for one binary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>1D or 2D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms.fmrg">
+<code class="sig-name descname">fmrg</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms.fmrg" title="Permalink to this definition">¶</a></dt>
+<dd><p>(scalar float or 1D array of floats): Merger frequency of each binary separating
+inspiral from merger phase. (0.014/M) Shape is (num binaries,) if more than one binary.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms.fpeak">
+<code class="sig-name descname">fpeak</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms.fpeak" title="Permalink to this definition">¶</a></dt>
+<dd><p>(scalar float or 1D array of floats): Peak frequency of each binary separating
+merger from ringdown phase. (0.014/M) Shape is (num binaries,) if more than one binary.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms.z">
+<code class="sig-name descname">z</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms.z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redshift equivalent of the z_or_dist given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float or 1D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms.dist">
+<code class="sig-name descname">dist</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms.dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Luminosity distance equivalent of the z_or_dist given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float or 1D array of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms.remove_axis">
+<code class="sig-name descname">remove_axis</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms.remove_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove axis based on if it is one or more than one binary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms.length">
+<code class="sig-name descname">length</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of binaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>All args from <code class="xref py py-meth docutils literal notranslate"><span class="pre">gwsnrcalc.utils.pyphenomd.PhenomDWaveforms.__call__()</span></code>
+are stored as attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">Note</code></dt>
+<dd><p>All kwargs from above are stored as attributes.</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – dist_type is not one of the three options.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="gwsnrcalc.utils.waveforms.PhenomDWaveforms.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param">m1</em>, <em class="sig-param">m2</em>, <em class="sig-param">chi_1</em>, <em class="sig-param">chi_2</em>, <em class="sig-param">z_or_dist</em>, <em class="sig-param">st</em>, <em class="sig-param">et</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.waveforms.PhenomDWaveforms.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the waveform creator.</p>
+<p>Create phenomd waveforms in the amplitude frequency domain.</p>
+<p><strong>Warning</strong>: Binary parameters have to one of three shapes: scalar, len-1 array,
+or array of len MAX. All scalar quantities or len-1 arrays are cast to len-MAX arrays.
+If arrays of different lengths (len&gt;1) are given, a ValueError will be raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m1</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – Mass 1 in Solar Masses. (&gt;0.0)</p></li>
+<li><p><strong>m2</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – Mass 2 in Solar Masses. (&gt;0.0)</p></li>
+<li><p><strong>chi_1</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – dimensionless spin of mass 1
+aligned to orbital angular momentum. Default is None (not 0.0). [-1.0, 1.0]</p></li>
+<li><p><strong>chi_2</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – dimensionless spin of mass 2
+aligned to orbital angular momentum. Default is None (not 0.0). [-1.0, 1.0]</p></li>
+<li><p><strong>z_or_dist</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – Distance measure to the binary.
+This can take three forms: redshift (dimensionless, <em>default</em>),
+luminosity distance (Mpc), comoving_distance (Mpc).
+The type used must be specified in ‘dist_type’ parameter. (&gt;0.0)</p></li>
+<li><p><strong>st</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – Start time of waveform in years before
+end of the merger phase. This is determined using 1 PN order. (&gt;0.0)</p></li>
+<li><p><strong>et</strong> (<em>float</em><em> or </em><em>1D array of floats</em>) – End time of waveform in years before
+end of the merger phase. This is determined using 1 PN order. (&gt;0.0)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-gwsnrcalc.utils.readnoisecurves">
+<span id="readnoisecurves-module"></span><h4>readnoisecurves module<a class="headerlink" href="#module-gwsnrcalc.utils.readnoisecurves" title="Permalink to this headline">¶</a></h4>
+<p>Author: Michael Katz. This code is a simple auxillary function that returns sensitivity curvesself.
+This was used in “Evaluating Black Hole Detectability with LISA” (arXiv:1508.07253),
+as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE).</p>
+<p>Please cite this paper if you use this code in a publication.</p>
+<p>This code is licensed with the GNU public license.</p>
+<dl class="function">
+<dt id="gwsnrcalc.utils.readnoisecurves.asd_to_char_strain">
+<code class="sig-prename descclassname">gwsnrcalc.utils.readnoisecurves.</code><code class="sig-name descname">asd_to_char_strain</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">amp</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.readnoisecurves.asd_to_char_strain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert asd to char_strain</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>float array</em>) – Frequencies.</p></li>
+<li><p><strong>amp</strong> (<em>float array</em>) – Amplitude Spectral Density values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Characteristic strain values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.utils.readnoisecurves.asd_to_psd">
+<code class="sig-prename descclassname">gwsnrcalc.utils.readnoisecurves.</code><code class="sig-name descname">asd_to_psd</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">amp</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.readnoisecurves.asd_to_psd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert asd to psd</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>float array</em>) – Frequencies.</p></li>
+<li><p><strong>amp</strong> (<em>float array</em>) – Amplitude Spectral Density values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Power Spectral Density values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.utils.readnoisecurves.char_strain_to_asd">
+<code class="sig-prename descclassname">gwsnrcalc.utils.readnoisecurves.</code><code class="sig-name descname">char_strain_to_asd</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">amp</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.readnoisecurves.char_strain_to_asd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert char_strain to asd</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>float array</em>) – Frequencies.</p></li>
+<li><p><strong>amp</strong> (<em>float array</em>) – Characteristic strain values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Amplitude Spectral Density values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.utils.readnoisecurves.char_strain_to_psd">
+<code class="sig-prename descclassname">gwsnrcalc.utils.readnoisecurves.</code><code class="sig-name descname">char_strain_to_psd</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">amp</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.readnoisecurves.char_strain_to_psd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert char_strain to psd</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>float array</em>) – Frequencies.</p></li>
+<li><p><strong>amp</strong> (<em>float array</em>) – Characteristic strain values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Power Spectral Density values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.utils.readnoisecurves.combine_with_wd_noise">
+<code class="sig-prename descclassname">gwsnrcalc.utils.readnoisecurves.</code><code class="sig-name descname">combine_with_wd_noise</code><span class="sig-paren">(</span><em class="sig-param">f_n</em>, <em class="sig-param">amp_n</em>, <em class="sig-param">f_n_wd</em>, <em class="sig-param">amp_n_wd</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.readnoisecurves.combine_with_wd_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combine noise with wd noise.</p>
+<p>Combines noise and white dwarf background noise based on greater
+amplitude value at each noise curve step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f_n</strong> (<em>float array</em>) – Frequencies of noise curve.</p></li>
+<li><p><strong>amp_n</strong> (<em>float array</em>) – Amplitude values of noise curve.</p></li>
+<li><p><strong>f_n_wd</strong> (<em>float array</em>) – Frequencies of wd noise.</p></li>
+<li><p><strong>amp_n_wd</strong> (<em>float array</em>) – Amplitude values of wd noise.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Amplitude values of combined noise curve.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(tuple of float arrays)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.utils.readnoisecurves.psd_to_asd">
+<code class="sig-prename descclassname">gwsnrcalc.utils.readnoisecurves.</code><code class="sig-name descname">psd_to_asd</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">amp</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.readnoisecurves.psd_to_asd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert psd to asd</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>float array</em>) – Frequencies.</p></li>
+<li><p><strong>amp</strong> (<em>float array</em>) – Power Spectral Density values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Amplitude Spectral Density values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.utils.readnoisecurves.psd_to_char_strain">
+<code class="sig-prename descclassname">gwsnrcalc.utils.readnoisecurves.</code><code class="sig-name descname">psd_to_char_strain</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">amp</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.readnoisecurves.psd_to_char_strain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert psd to char_strain</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>float array</em>) – Frequencies.</p></li>
+<li><p><strong>amp</strong> (<em>float array</em>) – Power Spectral Density values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Characteristic strain values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.utils.readnoisecurves.read_noise_curve">
+<code class="sig-prename descclassname">gwsnrcalc.utils.readnoisecurves.</code><code class="sig-name descname">read_noise_curve</code><span class="sig-paren">(</span><em class="sig-param">noise_curve</em>, <em class="sig-param">noise_type_in='ASD'</em>, <em class="sig-param">noise_type_out='ASD'</em>, <em class="sig-param">add_wd_noise=False</em>, <em class="sig-param">wd_noise='HB_wd_noise'</em>, <em class="sig-param">wd_noise_type_in='ASD'</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.readnoisecurves.read_noise_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple auxillary function that can read noise curves in.</p>
+<p>This function can read in noise curves from a provided file or those that are preinstalled
+with this installation. All pre-installed noise curves are in the form of
+an amplitude spectral density. Information on each one is found in each specific file.
+These are located in the <cite>noise_curves</cite> folder.</p>
+<p>Pre-installed really just means in the noise_curves folder. Therefore, curves can be added
+and called with only a string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noise_curve</strong> (<em>str</em>) – Either a file path to a noise curve
+or a str represented pre-loaded sensitivity curve. If using pre-loaded curve,
+choices are LPA (LISA Phase A), PL (Proposed LISA), CL (Classic LISA),
+CLLF (Classic LISA Low Frequency), PLCS (Proposed LISA Constant Slope),
+or PLHB (Proposed LISA Higher Break).
+See the arXiv paper above for the meaning behind each choice and a plot with each curve.</p></li>
+<li><p><strong>noise_type_in/noise_type_out</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of noise input/output.
+Choices are <cite>ASD</cite>, <cite>PSD</cite>, or <cite>char_strain</cite>. Default for both is <cite>ASD</cite>.</p></li>
+<li><p><strong>add_wd_noise</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, include wd noise.</p></li>
+<li><p><strong>wd_noise</strong> (<em>str</em><em>, </em><em>optional</em>) – File path to wd background noise or string representing
+those in the noise curves folder. Default is the Hiscock et al 2000 approximation
+of the Hils &amp; Bender 1997 white dwarf background (<cite>HB_wd_noise</cite>).</p></li>
+<li><p><strong>wd_noise_type_in</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of wd noise input.
+The output will be the same as <code class="docutils literal notranslate"><span class="pre">noise_type_out</span></code>.
+Choices are <cite>ASD</cite>, <cite>PSD</cite>, or <cite>char_strain</cite>. Default for both is <cite>ASD</cite>.</p></li>
+<li><p><strong>Returns</strong> – (tuple of arrays): Frequency and amplitude arrays of type <code class="docutils literal notranslate"><span class="pre">noise_type_out</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="gwsnrcalc.utils.readnoisecurves.show_available_noise_curves">
+<code class="sig-prename descclassname">gwsnrcalc.utils.readnoisecurves.</code><code class="sig-name descname">show_available_noise_curves</code><span class="sig-paren">(</span><em class="sig-param">return_curves=True</em>, <em class="sig-param">print_curves=False</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.readnoisecurves.show_available_noise_curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>List available sensitivity curves</p>
+<p>This function lists the available sensitivity curve strings in noise_curves folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>return_curves</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return a list of curve options.</p></li>
+<li><p><strong>print_curves</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, print each curve option.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of curve options.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(optional list of str)</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Both args are False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-gwsnrcalc.generate_contour_data">
+<span id="generate-contour-data-module"></span><h4>generate_contour_data module<a class="headerlink" href="#module-gwsnrcalc.generate_contour_data" title="Permalink to this headline">¶</a></h4>
+<p>Generate gridded data for contour plots with PhenomD waveform.
+It is part of the BOWIE analysis tool.
+Author: Michael Katz. Please cite “Evaluating Black Hole Detectability with LISA” (arXiv:1807.02511)
+for usage of this code.</p>
+<p>PhenomD waveforms are generated according to Husa et al 2016 (arXiv:1508.07250) and Khan et al 2016
+(arXiv:1508.07253). Please cite these papers if the PhenomD waveform is used.</p>
+<p>Eccentric inspiral waveforms are also possible according to Peters evolution.</p>
+<p>generate_contour_data produces gridded data sets based on an input class or dictionary.
+It can take any basic set of parameters for binary black holes and produce waveforms
+and SNR calculations for each phase of binary black hole coalescence
+(only inspiral for eccentric binaries). It reads in sensitivity curves from .txt files.
+The outputs can either be .txt or .hdf5.
+It can run in parallel or on a single processor. See the example notebooks for usage of this module.</p>
+<p>This code is licensed under the GNU public license.</p>
+<dl class="function">
+<dt id="gwsnrcalc.generate_contour_data.generate_contour_data">
+<code class="sig-prename descclassname">gwsnrcalc.generate_contour_data.</code><code class="sig-name descname">generate_contour_data</code><span class="sig-paren">(</span><em class="sig-param">pid</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.generate_contour_data.generate_contour_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main function for this program.</p>
+<p>This will read in sensitivity_curves and binary parameters; calculate snrs
+with a matched filtering approach; and then read the contour data out to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pid</strong> (<em>obj</em><em> or </em><em>dict</em>) – GenInput class or dictionary containing all of the input information for
+the generation. See BOWIE documentation and example notebooks for usage of
+this class.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-gwsnrcalc.genconutils.forminput">
+<span id="forminput-module"></span><h4>forminput module<a class="headerlink" href="#module-gwsnrcalc.genconutils.forminput" title="Permalink to this headline">¶</a></h4>
+<p>Documentation is provided for creating the main input dictionary for <code class="docutils literal notranslate"><span class="pre">make_plot.py</span></code>.
+A dictionary is passed into the main function of the code, providing the preferences of the user.
+A dictionary in python is contained within {} (see 5.5 Dictionaries at
+<a class="reference external" href="https://docs.python.org/3/tutorial/datastructures.html">https://docs.python.org/3/tutorial/datastructures.html</a>).</p>
+<p>This documentation will direct the user to all choices related to this dictionary
+included required and optional parameters.</p>
+<p>These dictionaries can be used in a python code or jupyter notebook by importing the main functions
+from each script. They can also be implemented with .json files similar to those included
+in the repository. If .json is used, the function call is
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">make_plot.py</span> <span class="pre">make_plot_config.json</span></code>.</p>
+<p>This code is part of the BOWIE analysis tool. Author: Michael Katz. Please see
+“Evaluating Black Hole Detectability with LISA” (arXiv:1807.02511) for example usage.
+Please cite arXiv:1807.02511 for its usage.</p>
+<p>This code is shared under the GNU Public License.</p>
+<dl>
+<dt><strong>NOTE</strong>: This code associates classes with a name (e.g. Label) and a Container</dt><dd><p>class for storing its information (e.g. LabelContainer). This is due to the need to inherit
+methods in a separate way from where the information is actually stored.</p>
+<p>Therefore, when reading the documentation, the main classes (without Container)
+will describe the methods for adding information for plotting. This includes
+required values and default values for optional Args <strong>related to the methods
+themselves and not the defaults and required values within the actual plotting module code.</strong></p>
+<p>The Container classes have descriptions of their attributes. Their attributes involve
+the same requirements and default/optional Args as the plotting code itself.</p>
+</dd>
+</dl>
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.GeneralContainer">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">GeneralContainer</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.GeneralContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Holds all of the attributes related to the general dictionary.</p>
+<p>This class is used to store the information when methods
+are called by the MainContainer class.</p>
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.GeneralContainer.WORKING_DIRECTORY">
+<code class="sig-name descname">WORKING_DIRECTORY</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.GeneralContainer.WORKING_DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Working directory for file export and retrieval.
+Default is <code class="docutils literal notranslate"><span class="pre">'.'</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.Generate">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">Generate</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.Generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generate contains the methods inherited by MainContainer.</p>
+<p>These methods are used by MainContainer class to add generation specific
+information to the generate_info dict.</p>
+<p>All attributes are appended to the GenerateContainer class.
+The GenerateContainer class is contained in the generate_info attribute
+in the MainContainer class.</p>
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.Generate.add_fixed_parameter">
+<code class="sig-name descname">add_fixed_parameter</code><span class="sig-paren">(</span><em class="sig-param">val</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.Generate.add_fixed_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the fixed parameters for SNR calculation.</p>
+<p>The fixed parameters represent those that a fixed for the entire 2D grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>val</strong> (<em>float</em>) – Value of parameter.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name representing the axis. See GenerateContainer documentation
+for options for the name.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.Generate.set_x_grid_info">
+<code class="sig-name descname">set_x_grid_info</code><span class="sig-paren">(</span><em class="sig-param">x_low</em>, <em class="sig-param">x_high</em>, <em class="sig-param">num_x</em>, <em class="sig-param">xscale</em>, <em class="sig-param">xval_name</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.Generate.set_x_grid_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the grid values for x.</p>
+<p>Create information for the grid of x values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_x</strong> (<em>int</em>) – Number of points on axis.</p></li>
+<li><p><strong>x_low/x_high</strong> (<em>float</em>) – Lowest/highest value for the axis.</p></li>
+<li><p><strong>xscale</strong> (<em>str</em>) – Scale of the axis. Choices are ‘log’ or ‘lin’.</p></li>
+<li><p><strong>xval_name</strong> (<em>str</em>) – Name representing the axis. See GenerateContainer documentation
+for options for the name.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.Generate.set_y_grid_info">
+<code class="sig-name descname">set_y_grid_info</code><span class="sig-paren">(</span><em class="sig-param">y_low</em>, <em class="sig-param">y_high</em>, <em class="sig-param">num_y</em>, <em class="sig-param">yscale</em>, <em class="sig-param">yval_name</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.Generate.set_y_grid_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the grid values for y.</p>
+<p>Create information for the grid of y values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_y</strong> (<em>int</em>) – Number of points on axis.</p></li>
+<li><p><strong>y_low/y_high</strong> (<em>float</em>) – Lowest/highest value for the axis.</p></li>
+<li><p><strong>yscale</strong> (<em>str</em>) – Scale of the axis. Choices are ‘log’ or ‘lin’.</p></li>
+<li><p><strong>yval_name</strong> (<em>str</em>) – Name representing the axis. See GenerateContainer documentation
+for options for the name.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.GenerateContainer">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">GenerateContainer</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.GenerateContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Holds all of the attributes related to the generate_info dictionary.</p>
+<p>This class is used to store the information when methods from Generate class
+are called by the MainContainer class.</p>
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.GenerateContainer.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.GenerateContainer.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attributes represent the kwargs from
+<a class="reference internal" href="#gwsnrcalc.genconutils.genprocess.GenProcess" title="gwsnrcalc.genconutils.genprocess.GenProcess"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.genconutils.genprocess.GenProcess</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.MainContainer">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">MainContainer</code><span class="sig-paren">(</span><em class="sig-param">print_input=False</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.MainContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gwsnrcalc.genconutils.forminput.Generate" title="gwsnrcalc.genconutils.forminput.Generate"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.genconutils.forminput.Generate</span></code></a>, <a class="reference internal" href="#gwsnrcalc.genconutils.forminput.SensitivityInput" title="gwsnrcalc.genconutils.forminput.SensitivityInput"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.genconutils.forminput.SensitivityInput</span></code></a>, <a class="reference internal" href="#gwsnrcalc.genconutils.forminput.SNRInput" title="gwsnrcalc.genconutils.forminput.SNRInput"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.genconutils.forminput.SNRInput</span></code></a>, <a class="reference internal" href="#gwsnrcalc.genconutils.forminput.ParallelInput" title="gwsnrcalc.genconutils.forminput.ParallelInput"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.genconutils.forminput.ParallelInput</span></code></a>, <a class="reference internal" href="#gwsnrcalc.genconutils.forminput.Output" title="gwsnrcalc.genconutils.forminput.Output"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.genconutils.forminput.Output</span></code></a></p>
+<p>Main class for creating input dictionary to <code class="docutils literal notranslate"><span class="pre">generate_contour_data.py</span></code>.</p>
+<p>This class creates a pythonic way to add information to the input dictionary
+to <code class="docutils literal notranslate"><span class="pre">generate_contour_data.py</span></code>. It creates and can read out this dictionary.</p>
+<p>MainContainer inherits methods from Generate, SensitivityInput, SNRInput,
+ParallelInput, and Output classes so that it can
+add respective dictionary information to MainContainer class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>print_input</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, print the dictionary created by MainContainer
+class after it is completed.</p>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.MainContainer.general">
+<code class="sig-name descname">general</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.MainContainer.general" title="Permalink to this definition">¶</a></dt>
+<dd><p>GeneralContainer class for holding information for general dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.MainContainer.generate_info">
+<code class="sig-name descname">generate_info</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.MainContainer.generate_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>GenerateContainer class for holding information
+for generate_info dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.MainContainer.sensitivity_input">
+<code class="sig-name descname">sensitivity_input</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.MainContainer.sensitivity_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>InputContainer class for holding information for
+sensitivty_input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.MainContainer.snr_input">
+<code class="sig-name descname">snr_input</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.MainContainer.snr_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>SNRInputContainer class for holding information for
+snr_input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.MainContainer.parallel_input">
+<code class="sig-name descname">parallel_input</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.MainContainer.parallel_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>ParallelInputContainer class for holding information for
+parallel_input dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.MainContainer.output_info">
+<code class="sig-name descname">output_info</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.MainContainer.output_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>OutputContainer class for holding information for output_info dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.MainContainer.print_input">
+<code class="sig-name descname">print_input</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.MainContainer.print_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, print the dictionary created by MainContainer
+class after it is completed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.MainContainer.return_dict">
+<code class="sig-name descname">return_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.MainContainer.return_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output dictionary for <a class="reference internal" href="#module-gwsnrcalc.generate_contour_data" title="gwsnrcalc.generate_contour_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">gwsnrcalc.generate_contour_data</span></code></a> input.</p>
+<p>Iterates through the entire MainContainer class turning its contents
+into dictionary form. This dictionary becomes the input for
+<a class="reference internal" href="#module-gwsnrcalc.generate_contour_data" title="gwsnrcalc.generate_contour_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">gwsnrcalc.generate_contour_data</span></code></a>.</p>
+<p>If <cite>print_input</cite> attribute is True, the entire dictionary will be printed
+prior to returning the dicitonary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dicitonary for input into</dt><dd><p><a class="reference internal" href="#module-gwsnrcalc.generate_contour_data" title="gwsnrcalc.generate_contour_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">gwsnrcalc.generate_contour_data</span></code></a>.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>output_dict</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.MainContainer.set_working_directory">
+<code class="sig-name descname">set_working_directory</code><span class="sig-paren">(</span><em class="sig-param">wd</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.MainContainer.set_working_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the WORKING_DIRECTORY variable.</p>
+<p>Sets the WORKING_DIRECTORY. The code will then use all paths as relative paths
+to the WORKING_DIRECTORY. In code default is current directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>wd</strong> (<em>str</em>) – Absolute or relative path to working directory.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.Output">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">Output</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.Output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Output contains the methods inherited by MainContainer.</p>
+<p>These methods are used by MainContainer class to add
+information pertaining to the output of the grid creation.</p>
+<p>All attributes are appended to the OutputContainer class.
+The OutputContainer class is contained in the output_info attribute
+in the SinglePlot class.</p>
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.Output.add_note">
+<code class="sig-name descname">add_note</code><span class="sig-paren">(</span><em class="sig-param">note</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.Output.add_note" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a note to output file.</p>
+<p>This will add a note of user input to the output file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>note</strong> (<em>str</em>) – Note to be added.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.Output.set_output_file">
+<code class="sig-name descname">set_output_file</code><span class="sig-paren">(</span><em class="sig-param">output_file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.Output.set_output_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add information for the ouput file.</p>
+<p>Take information on the output file name, type, and folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>output_file_name</strong> (<em>str</em>) – String representing the name of the file
+without the file extension.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.Output.set_x_col_name">
+<code class="sig-name descname">set_x_col_name</code><span class="sig-paren">(</span><em class="sig-param">x_col_name</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.Output.set_x_col_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set x column name.</p>
+<p>Sets the x column name in the output file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x_col_name</strong> (<em>str</em>) – x column name to be added.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.Output.set_y_col_name">
+<code class="sig-name descname">set_y_col_name</code><span class="sig-paren">(</span><em class="sig-param">y_col_name</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.Output.set_y_col_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set y column name.</p>
+<p>Sets the y column name in the output file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>y_col_name</strong> (<em>str</em>) – y column name to be added.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.OutputContainer">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">OutputContainer</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.OutputContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Holds all of the attributes related to the output_info dictionary.</p>
+<p>This class is used to store the information when methods from Output class
+are called by the MainContainer class.</p>
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.OutputContainer.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.OutputContainer.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attributes represent the kwargs from
+<a class="reference internal" href="#gwsnrcalc.genconutils.readout.FileReadOut" title="gwsnrcalc.genconutils.readout.FileReadOut"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.genconutils.readout.FileReadOut</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.ParallelInput">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">ParallelInput</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.ParallelInput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>General contains the methods inherited by MainContainer.</p>
+<p>These methods are used by MainContainer class to add information that applies
+to parallel generation. This information is stored in a ParallelInputContainer
+class object.</p>
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.ParallelInput.set_generation_type">
+<code class="sig-name descname">set_generation_type</code><span class="sig-paren">(</span><em class="sig-param">num_processors=-1</em>, <em class="sig-param">num_splits=1000</em>, <em class="sig-param">verbose=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.ParallelInput.set_generation_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change generation type.</p>
+<p>Choose weather to generate the data in parallel or on a single processor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_processors</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Number of parallel processors to use.
+If <code class="docutils literal notranslate"><span class="pre">num_processors==-1</span></code>, this will use multiprocessing module and use
+available cpus. If single generation is desired, num_processors is set
+to <code class="docutils literal notranslate"><span class="pre">None</span></code>. Default is -1.</p></li>
+<li><p><strong>num_splits</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of binaries to run during each process.
+Default is 1000.</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – Describes the notification of when parallel processes
+are finished. Value describes cadence of process completion notifications.
+If <code class="docutils literal notranslate"><span class="pre">verbose</span> <span class="pre">==</span> <span class="pre">-1</span></code>, no notifications are given. Default is -1.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.ParallelInputContainer">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">ParallelInputContainer</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.ParallelInputContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Holds all of the attributes related to the parallel_input dictionary.</p>
+<p>This class is used to store the information when methods from ParallelInput class
+are called by the MainContainer class.</p>
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.ParallelInputContainer.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.ParallelInputContainer.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attributes represent the kwargs from
+<a class="reference internal" href="#gwsnrcalc.utils.parallel.ParallelContainer" title="gwsnrcalc.utils.parallel.ParallelContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.parallel.ParallelContainer</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.SNRInput">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">SNRInput</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SNRInput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>General contains the methods inherited by MainContainer.</p>
+<p>These methods are used by MainContainer class to add information that applies
+to all plots or the figure as a whole. Many of its settings pertaining to plots
+can be overriden with methods in SinglePlot.</p>
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.SNRInput.set_n_max">
+<code class="sig-name descname">set_n_max</code><span class="sig-paren">(</span><em class="sig-param">n_max</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SNRInput.set_n_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximium modes for eccentric signal.</p>
+<p>The number of modes to be considered when calculating the SNR for an
+eccentric signal. This will only matter when calculating eccentric signals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_max</strong> (<em>int</em>) – Maximium modes for eccentric signal.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.SNRInput.set_num_waveform_points">
+<code class="sig-name descname">set_num_waveform_points</code><span class="sig-paren">(</span><em class="sig-param">num_wave_points</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SNRInput.set_num_waveform_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of log-spaced points for waveforms.</p>
+<p>The number of points of the waveforms with asymptotically increase
+the accuracy, but will lower the speed of generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>num_wave_points</strong> (<em>int</em>) – Number of log-spaced points for the waveforms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.SNRInput.set_signal_type">
+<code class="sig-name descname">set_signal_type</code><span class="sig-paren">(</span><em class="sig-param">sig_type</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SNRInput.set_signal_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the signal type of interest.</p>
+<p>Sets the signal type for which the SNR is calculated.
+This means inspiral, merger, and/or ringdown.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sig_type</strong> (<em>str</em><em> or </em><em>list of str</em>) – Signal type desired by user.
+Choices are <cite>ins</cite>, <cite>mrg</cite>, <cite>rd</cite>, <cite>all</cite> for circular waveforms created with PhenomD.
+If eccentric waveforms are used, must be <cite>all</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.SNRInput.set_snr_prefactor">
+<code class="sig-name descname">set_snr_prefactor</code><span class="sig-paren">(</span><em class="sig-param">factor</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SNRInput.set_snr_prefactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the SNR multiplicative factor.</p>
+<p>This factor will be multpilied by the SNR, not SNR^2.
+This involves orientation, sky, and polarization averaging, as well
+as any factors for the configuration.</p>
+<p>For example, for LISA, this would be sqrt(2*16/5). The sqrt(2) is for
+a six-link configuration and the 16/5 represents the averaging factors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> (<em>float</em>) – Factor to multiply SNR by for averaging.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.SNRInputContainer">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">SNRInputContainer</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SNRInputContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Holds all of the attributes related to the snr_input dictionary.</p>
+<p>This class is used to store the information when methods from SNRInput class
+are called by the MainContainer class.</p>
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.SNRInputContainer.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SNRInputContainer.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attributes represent the kwargs from <a class="reference internal" href="#gwsnrcalc.gw_snr_calculator.SNR" title="gwsnrcalc.gw_snr_calculator.SNR"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.gw_snr_calculator.SNR</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.SensitivityInput">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">SensitivityInput</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SensitivityInput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Input contains the methods inherited by MainContainer.</p>
+<p>These methods are used by MainContainer class to add noise curve
+information.</p>
+<p>All attributes are appended to the SensitivityInputContainer class.
+The SensitivityInputContainer class is contained in the sensitivty_input attribute
+in the MainContainer class.</p>
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.SensitivityInput.add_noise_curve">
+<code class="sig-name descname">add_noise_curve</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">noise_type='ASD'</em>, <em class="sig-param">is_wd_background=False</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SensitivityInput.add_noise_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a noise curve for generation.</p>
+<p>This will add a noise curve for an SNR calculation by appending to the sensitivity_curves
+list within the sensitivity_input dictionary.</p>
+<p>The name of the noise curve prior to the file extension will appear as its
+label in the final output dataset. Therefore, it is recommended prior to
+running the generator that file names are renamed to simple names
+for later reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of noise curve including file extension inside input_folder.</p></li>
+<li><p><strong>noise_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of noise. Choices are <cite>ASD</cite>, <cite>PSD</cite>, or <cite>char_strain</cite>.
+Default is ASD.</p></li>
+<li><p><strong>is_wd_background</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, this sensitivity is used as the white dwarf
+background noise. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.forminput.SensitivityInput.set_wd_noise">
+<code class="sig-name descname">set_wd_noise</code><span class="sig-paren">(</span><em class="sig-param">wd_noise</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SensitivityInput.set_wd_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add White Dwarf Background Noise</p>
+<p>This adds the White Dwarf (WD) Background noise. This can either do calculations with,
+without, or with and without WD noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>wd_noise</strong> (<em>bool</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – Add or remove WD background noise. First option is to
+have only calculations with the wd_noise. For this, use <cite>yes</cite> or True.
+Second option is no WD noise. For this, use <cite>no</cite> or False. For both calculations
+with and without WD noise, use <cite>both</cite>.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Input value is not one of the options.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.forminput.SensitivityInputContainer">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.forminput.</code><code class="sig-name descname">SensitivityInputContainer</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SensitivityInputContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Holds all of the attributes related to the sensitivity_input dictionary.</p>
+<p>This class is used to store the information when methods from Input class
+are called by the MainContainer class.</p>
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.forminput.SensitivityInputContainer.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.genconutils.forminput.SensitivityInputContainer.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attributes represent the kwargs from
+<a class="reference internal" href="#gwsnrcalc.utils.sensitivity.SensitivityContainer" title="gwsnrcalc.utils.sensitivity.SensitivityContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.sensitivity.SensitivityContainer</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="background-documentation">
+<h3>Background documentation:<a class="headerlink" href="#background-documentation" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="utils-package">
+<h4>utils package<a class="headerlink" href="#utils-package" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="module-gwsnrcalc.utils.csnr">
+<span id="csnr-module"></span><h5>csnr module<a class="headerlink" href="#module-gwsnrcalc.utils.csnr" title="Permalink to this headline">¶</a></h5>
+<p>Author: Michael Katz
+This was used in “Evaluating Black Hole Detectability with LISA” (arXiv:1508.07253),
+as a part of the BOWIE package (https://github.com/mikekatz04/BOWIE).</p>
+<p>This code is licensed with the GNU public license.</p>
+<p>This python code impliments a fast SNR calculator for binary black hole waveforms in c. It wraps the
+accompanying c code, <cite>phenomd/phenomd.c</cite>, with <code class="docutils literal notranslate"><span class="pre">cython</span></code>.
+<cite>phenomd/phenomd.c</cite> is mostly from LALsuite. See <cite>phenomd/phenomd.c</cite> for specifics.</p>
+<p>Please cite all of the arXiv papers above if you use this code in a publication.</p>
+<dl class="function">
+<dt id="gwsnrcalc.utils.csnr.csnr">
+<code class="sig-prename descclassname">gwsnrcalc.utils.csnr.</code><code class="sig-name descname">csnr</code><span class="sig-paren">(</span><em class="sig-param">freqs</em>, <em class="sig-param">hc</em>, <em class="sig-param">hn</em>, <em class="sig-param">fmrg</em>, <em class="sig-param">fpeak</em>, <em class="sig-param">prefactor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.csnr.csnr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the SNR of a frequency domain waveform.</p>
+<p>SNRCalculation is a function that takes waveforms (frequencies and hcs)
+and a noise curve, and returns SNRs for all binary phases and the whole waveform.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>freqs</strong> (<em>1D</em><em> or </em><em>2D array of floats</em>) – Frequencies corresponding to the waveforms.
+Shape is (num binaries, num_points) if 2D.
+Shape is (num_points,) if 1D for one binary.</p></li>
+<li><p><strong>hc</strong> (<em>1D</em><em> or </em><em>2D array of floats</em>) – Characteristic strain of the waveforms.
+Shape is (num binaries, num_points) if 2D.
+Shape is (num_points,) if 1D for one binary.</p></li>
+<li><p><strong>fmrg</strong> – (scalar float or 1D array of floats): Merger frequency of each binary separating
+inspiral from merger phase. (0.014/M) Shape is (num binaries,)
+if more than one binary.</p></li>
+<li><p><strong>fpeak</strong> – (scalar float or 1D array of floats): Peak frequency of each binary separating
+merger from ringdown phase. (0.014/M) Shape is (num binaries,)
+if more than one binary.</p></li>
+<li><p><strong>hn</strong> – (1D or 2D array of floats): Characteristic strain of the noise.
+Shape is (num binaries, num_points) if 2D.
+Shape is (num_points,) if 1D for one binary.</p></li>
+<li><p><strong>prefactor</strong> (<em>float</em><em>, </em><em>optional</em>) – Factor to multiply snr (not snr^2) integral values by.
+Default is 1.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with SNRs from each phase.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-gwsnrcalc.utils.sensitivity">
+<span id="sensitivity-module"></span><h5>sensitivity module<a class="headerlink" href="#module-gwsnrcalc.utils.sensitivity" title="Permalink to this headline">¶</a></h5>
+<dl class="class">
+<dt id="gwsnrcalc.utils.sensitivity.SensitivityContainer">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.utils.sensitivity.</code><code class="sig-name descname">SensitivityContainer</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.sensitivity.SensitivityContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Sensitivity curve analysis</p>
+<p>This prepares the sensitivity side of the SNR calculation.
+It takes all the inputs and converts them to characterstic strain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensitivity_curves</strong> (<em>scalar</em><em> or </em><em>list of str</em><em> or </em><em>single</em><em> or </em><em>list of lists</em><em>, </em><em>optional</em>) – String that starts the .txt file containing the sensitivity curve in
+folder ‘noise_curves/’ or list of <code class="docutils literal notranslate"><span class="pre">[f_n,</span> <span class="pre">asd_n]</span></code>
+in terms of an amplitude spectral density. It can be a single one of these
+values or a list of these values. A folder string with absolute path to a sensitivity
+curve .txt file can also be input.
+Default is [<cite>LPA</cite>] (LISA Phase A).</p></li>
+<li><p><strong>add_wd_noise</strong> (<em>str</em><em> or </em><em>bool</em><em>, </em><em>optional</em>) – Options are <cite>yes</cite>, <cite>no</cite>, <cite>True</cite>, <cite>False</cite>,
+<cite>Both</cite>, True, or False. <cite>yes</cite>, <cite>True</cite>, or True
+will exclusively calculate with the wd noise.
+<cite>no</cite>, <cite>False</cite>, or False will exclusively calculate without the wd noise.
+<cite>Both</cite> will calculate with and without wd noise.
+Default is <cite>Both</cite>.</p></li>
+<li><p><strong>wd_noise</strong> (<em>str</em><em> or </em><em>list</em><em>, </em><em>optional</em>) – If string,
+read the wd noise from <cite>noise_curves</cite> folder or absolute path to file.
+If list, must be <code class="docutils literal notranslate"><span class="pre">[f_n_wd,</span> <span class="pre">asd_n_wd]</span></code>.
+Default is Hils-Bender estimation (Bender &amp; Hils 1997) by Hiscock et al. 2000.</p></li>
+<li><p><strong>noise_type_in</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of noise curve passed in.
+Options are <cite>ASD</cite>, <cite>PSD</cite>, or <cite>char_strain</cite>.
+All sensitivity curves must have same noise type.
+Also, their amplitude column must have this same string as its label.
+Default is <cite>ASD</cite>.</p></li>
+<li><p><strong>wd_noise_type_in</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of wd noise curve passed in.
+Options are <cite>ASD</cite>, <cite>PSD</cite>, or <cite>char_strain</cite>.
+Amplitude column must have this same string as its label.
+Default is <cite>ASD</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.sensitivity.SensitivityContainer.noise_interpolants">
+<code class="sig-name descname">noise_interpolants</code><a class="headerlink" href="#gwsnrcalc.utils.sensitivity.SensitivityContainer.noise_interpolants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary carrying scipy.interpolate.interp1d objects.
+These are the interpolations used to calculate the SNR.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.sensitivity.SensitivityContainer.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.utils.sensitivity.SensitivityContainer.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>All Keyword Arguments are added as attributes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.utils.sensitivity.SensitivityContainer._prep_noise_interpolants">
+<code class="sig-name descname">_prep_noise_interpolants</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.sensitivity.SensitivityContainer._prep_noise_interpolants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct interpolated sensitivity curves</p>
+<p>This will construct the interpolated sensitivity curves
+using scipy.interpolate.interp1d. It will add wd noise
+if that is requested.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – <code class="docutils literal notranslate"><span class="pre">len(noise_type_in)</span> <span class="pre">!=</span> <span class="pre">len(sensitivity_curves)</span></code></p></li>
+<li><p><strong>ValueError</strong> – Issue with sensitivity curve type provided.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-gwsnrcalc.utils.parallel">
+<span id="parallel-module"></span><h5>parallel module<a class="headerlink" href="#module-gwsnrcalc.utils.parallel" title="Permalink to this headline">¶</a></h5>
+<dl class="class">
+<dt id="gwsnrcalc.utils.parallel.ParallelContainer">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.utils.parallel.</code><code class="sig-name descname">ParallelContainer</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.parallel.ParallelContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Run SNR calculation in parallel.</p>
+<p>Calculate in parallel using multiprocessing module.
+This can be easily adaptable to other parallel functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>length</strong> (<em>int</em>) – Number of binaries to process.</p></li>
+<li><p><strong>num_processors</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – If None, run on single processor.
+If -1, use <code class="docutils literal notranslate"><span class="pre">`multiprocessing.cpu_count()</span></code> to determine cpus to use.
+Otherwise, this is the number of processors to use. Default is -1.</p></li>
+<li><p><strong>num_splits</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of binaries to run for each process. Default is 1000.</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – Notify each time <code class="docutils literal notranslate"><span class="pre">verbose</span></code> processes finish.
+If -1, then no notification. Default is -1.</p></li>
+<li><p><strong>timer</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, time the parallel process. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.parallel.ParallelContainer.args">
+<code class="sig-name descname">args</code><a class="headerlink" href="#gwsnrcalc.utils.parallel.ParallelContainer.args" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of arguments to passes to the parallel function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.utils.parallel.ParallelContainer.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.utils.parallel.ParallelContainer.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>All kwargs above are stored as attributes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.utils.parallel.ParallelContainer.prep_parallel">
+<code class="sig-name descname">prep_parallel</code><span class="sig-paren">(</span><em class="sig-param">binary_args</em>, <em class="sig-param">other_args</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.parallel.ParallelContainer.prep_parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare the parallel calculations</p>
+<p>Prepares the arguments to be run in parallel.
+It will divide up arrays according to num_splits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>binary_args</strong> (<em>list</em>) – List of binary arguments for input into the SNR function.</p></li>
+<li><p><strong>other_args</strong> (<em>tuple of obj</em>) – tuple of other args for input into parallel snr function.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.utils.parallel.ParallelContainer.run_parallel">
+<code class="sig-name descname">run_parallel</code><span class="sig-paren">(</span><em class="sig-param">para_func</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.utils.parallel.ParallelContainer.run_parallel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run parallel calulation</p>
+<p>This will run the parallel calculation on self.num_processors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>para_func</strong> (<em>obj</em>) – Function object to be used in parallel.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary with parallel results.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="genconutils-package">
+<h4>genconutils package<a class="headerlink" href="#genconutils-package" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="module-gwsnrcalc.genconutils.genprocess">
+<span id="genprocess-module"></span><h5>genprocess module<a class="headerlink" href="#module-gwsnrcalc.genconutils.genprocess" title="Permalink to this headline">¶</a></h5>
+<p>Generate gridded data for contour plots with PhenomD waveform.</p>
+<p>This module provides the main process class which the main part of the code is run out of.
+It is part of the BOWIE analysis tool.</p>
+<p>Author: Michael Katz.
+Please cite “Evaluating Black Hole Detectability with LISA” (arXiv:1807.02511)
+for usage of this code.</p>
+<p>PhenomD waveforms are generated according to Husa et al 2016 (arXiv:1508.07250) and
+Khan et al 2016 (arXiv:1508.07253). Please cite these papers if the PhenomD waveform is used.</p>
+<p>It can take any basic set of parameters for binary black holes and produce waveforms and
+SNR calculations for each phase of binary black hole coalescence. It reads in sensitivity curves
+from .txt files. The outputs can either be .txt or .hdf5. It can run in parallel or
+on a single processor.</p>
+<p>This code is licensed under the GNU public license.</p>
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.genprocess.GenProcess">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.genprocess.</code><code class="sig-name descname">GenProcess</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.genprocess.GenProcess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Direct the contour generation process.</p>
+<p>Class that carries the input information and directs the program to accomplish generation tasks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>dict</em>) – Combination of all input dictionaries to have their information
+stored as attributes.</p>
+</dd>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>xscale/yscale</strong> (<em>str</em>) – <cite>lin</cite> for linear scale or <cite>log</cite> for log10 scaling.</p></li>
+<li><p><strong>xlow/xhigh/ylow/yhigh</strong> (<em>float</em>) – Low/high value for x/y.</p></li>
+<li><p><strong>num_x/num_y</strong> (<em>int</em>) – Number of x/y points in contour.</p></li>
+<li><p><strong>xval_name/yval_name</strong> (<em>str</em>) – Name of the x/y quantity.</p></li>
+<li><p><strong>xval_unit/yval_unit</strong> (<em>str</em>) – Units for x/y quantity.</p></li>
+<li><p><strong>parameters</strong> – All the parameters (args) for the specific waveform generator.
+For both circular and eccentric, this will include start_time, m1, m2,
+redshift (or luminosity_distance or comoving_distance). For circular with will
+also include spin_1, spin_2, and end_time. For eccentric this will
+additionally include eccentricity and observation time.</p></li>
+<li><p><strong>sensitivty_input</strong> (<em>dict</em>) – kwargs for
+<a class="reference internal" href="#gwsnrcalc.utils.sensitivity.SensitivityContainer" title="gwsnrcalc.utils.sensitivity.SensitivityContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.utils.sensitivity.SensitivityContainer</span></code></a>.</p></li>
+<li><p><strong>snr_input</strong> (<em>dict</em>) – kwargs for <a class="reference internal" href="#gwsnrcalc.gw_snr_calculator.SNR" title="gwsnrcalc.gw_snr_calculator.SNR"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.gw_snr_calculator.SNR</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.genprocess.GenProcess.final_dict">
+<code class="sig-name descname">final_dict</code><a class="headerlink" href="#gwsnrcalc.genconutils.genprocess.GenProcess.final_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary with SNR results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.genprocess.GenProcess.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.genconutils.genprocess.GenProcess.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>All kwargs above are added as attributes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.genprocess.GenProcess.run_snr">
+<code class="sig-name descname">run_snr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.genprocess.GenProcess.run_snr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the snr calculation.</p>
+<p>Takes results from <code class="docutils literal notranslate"><span class="pre">self.set_parameters</span></code> and other inputs and inputs these
+into the snr calculator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.genprocess.GenProcess.set_parameters">
+<code class="sig-name descname">set_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.genprocess.GenProcess.set_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup all the parameters for the binaries to be evaluated.</p>
+<p>Grid values and store necessary parameters for input into the SNR function.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-gwsnrcalc.genconutils.readout">
+<span id="readout-module"></span><h5>readout module<a class="headerlink" href="#module-gwsnrcalc.genconutils.readout" title="Permalink to this headline">¶</a></h5>
+<p>Read out contour data. It is part of the BOWIE analysis tool. Author: Michael Katz.
+Please cite “Evaluating Black Hole Detectability with LISA” (arXiv:1807.02511)
+for usage of this code.</p>
+<p>This code is licensed under the GNU public license.</p>
+<dl class="class">
+<dt id="gwsnrcalc.genconutils.readout.FileReadOut">
+<em class="property">class </em><code class="sig-prename descclassname">gwsnrcalc.genconutils.readout.</code><code class="sig-name descname">FileReadOut</code><span class="sig-paren">(</span><em class="sig-param">xvals</em>, <em class="sig-param">yvals</em>, <em class="sig-param">output_dict</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.readout.FileReadOut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class designed for reading out files in .txt files or hdf5 compressed files.</p>
+<p>FileReadOut will export all of the contour data to a file and file type
+of the user’s choice. It will include all supplemental information for reference
+back to the file at a later point in time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xvals/yvals</strong> (<em>1D array</em>) – The x/y values for the contour data.</p></li>
+<li><p><strong>output_dict</strong> (<em>dict</em>) – The output of the SNR calculations. This is the dictionary
+returned by <code class="docutils literal notranslate"><span class="pre">gwsnrcalc.gw_snr_calculator.snr</span></code>.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Combination of the <cite>general</cite>, <cite>output_info</cite>, and <cite>generate_info</cite>
+dictionaries from pid. These kwargs are stored as attributes.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>output_file_name</strong> (<em>str</em>) – Path and name of output file in relation to working directory.</p></li>
+<li><p><strong>x_col_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Column label for x column in output file. Default is <cite>x</cite>.</p></li>
+<li><p><strong>y_col_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Column label for y column in output file. Default is <cite>y</cite>.</p></li>
+<li><p><strong>added_note</strong> (<em>str</em><em>, </em><em>optional</em>) – Add note to output file. Default is ‘’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.readout.FileReadOut.output_file_type">
+<code class="sig-name descname">output_file_type</code><a class="headerlink" href="#gwsnrcalc.genconutils.readout.FileReadOut.output_file_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type of file. Must be <cite>hdf5</cite> or <cite>txt</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="gwsnrcalc.genconutils.readout.FileReadOut.Note">
+<code class="sig-name descname">Note</code><a class="headerlink" href="#gwsnrcalc.genconutils.readout.FileReadOut.Note" title="Permalink to this definition">¶</a></dt>
+<dd><p>All args above are added as attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">Note</code></dt>
+<dd><p>All kwargs above are added as attributes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">Note</code></dt>
+<dd><p>kwargs from <a class="reference internal" href="#gwsnrcalc.genconutils.genprocess.GenProcess" title="gwsnrcalc.genconutils.genprocess.GenProcess"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.genconutils.genprocess.GenProcess</span></code></a>
+are also included for readout information. These are stored as attributes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.readout.FileReadOut.hdf5_read_out">
+<code class="sig-name descname">hdf5_read_out</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.readout.FileReadOut.hdf5_read_out" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read out an hdf5 file.</p>
+<p>Takes the output of <a class="reference internal" href="#gwsnrcalc.genconutils.genprocess.GenProcess" title="gwsnrcalc.genconutils.genprocess.GenProcess"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.genconutils.genprocess.GenProcess</span></code></a>
+and reads it out to an HDF5 file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gwsnrcalc.genconutils.readout.FileReadOut.txt_read_out">
+<code class="sig-name descname">txt_read_out</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gwsnrcalc.genconutils.readout.FileReadOut.txt_read_out" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read out txt file.</p>
+<p>Takes the output of <a class="reference internal" href="#gwsnrcalc.genconutils.genprocess.GenProcess" title="gwsnrcalc.genconutils.genprocess.GenProcess"><code class="xref py py-class docutils literal notranslate"><span class="pre">gwsnrcalc.genconutils.genprocess.GenProcess</span></code></a>
+and reads it out to a txt file.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">gwsnrcalc package</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#testing-and-running-an-example">Testing and Running an Example</a></li>
+<li><a class="reference internal" href="#contributing">Contributing</a></li>
+<li><a class="reference internal" href="#versioning">Versioning</a></li>
+<li><a class="reference internal" href="#authors">Authors</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+<li><a class="reference internal" href="#acknowledgments">Acknowledgments</a></li>
+<li><a class="reference internal" href="#gwsnrcalc-pacakge-documentation">gwsnrcalc pacakge documentation:</a><ul>
+<li><a class="reference internal" href="#user-interfacing-modules">User interfacing modules:</a><ul>
+<li><a class="reference internal" href="#module-gwsnrcalc.gw_snr_calculator">gw_snr_calculator module</a></li>
+<li><a class="reference internal" href="#module-gwsnrcalc.utils.waveforms">waveforms module</a></li>
+<li><a class="reference internal" href="#module-gwsnrcalc.utils.readnoisecurves">readnoisecurves module</a></li>
+<li><a class="reference internal" href="#module-gwsnrcalc.generate_contour_data">generate_contour_data module</a></li>
+<li><a class="reference internal" href="#module-gwsnrcalc.genconutils.forminput">forminput module</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#background-documentation">Background documentation:</a><ul>
+<li><a class="reference internal" href="#utils-package">utils package</a><ul>
+<li><a class="reference internal" href="#module-gwsnrcalc.utils.csnr">csnr module</a></li>
+<li><a class="reference internal" href="#module-gwsnrcalc.utils.sensitivity">sensitivity module</a></li>
+<li><a class="reference internal" href="#module-gwsnrcalc.utils.parallel">parallel module</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#genconutils-package">genconutils package</a><ul>
+<li><a class="reference internal" href="#module-gwsnrcalc.genconutils.genprocess">genprocess module</a></li>
+<li><a class="reference internal" href="#module-gwsnrcalc.genconutils.readout">readout module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="makeplot.html"
+                        title="previous chapter">BOWIE: Binary Observability With Illustrative Exploration</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/gwsnrcalc.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="makeplot.html" title="BOWIE: Binary Observability With Illustrative Exploration"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">bowie  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Michael Katz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.0.
+    </div>
+  </body>
+</html>
