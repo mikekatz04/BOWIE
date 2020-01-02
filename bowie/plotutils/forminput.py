@@ -47,6 +47,7 @@ class Label:
     in the SinglePlot class.
 
     """
+
     def _set_label(self, which, label, **kwargs):
         """Private method for setting labels.
 
@@ -59,15 +60,13 @@ class Label:
                 is None.
 
         """
-        prop_default = {
-            'fontsize': 18,
-        }
+        prop_default = {"fontsize": 18}
 
         for prop, default in prop_default.items():
             kwargs[prop] = kwargs.get(prop, default)
 
         setattr(self.label, which, label)
-        setattr(self.label, which + '_kwargs', kwargs)
+        setattr(self.label, which + "_kwargs", kwargs)
         return
 
     def set_xlabel(self, label, **kwargs):
@@ -85,7 +84,7 @@ class Label:
                 https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html
 
         """
-        self._set_label('xlabel', label, **kwargs)
+        self._set_label("xlabel", label, **kwargs)
         return
 
     def set_ylabel(self, label, **kwargs):
@@ -103,7 +102,7 @@ class Label:
                 https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html
 
         """
-        self._set_label('ylabel', label, **kwargs)
+        self._set_label("ylabel", label, **kwargs)
         return
 
     def set_title(self, title, **kwargs):
@@ -121,7 +120,7 @@ class Label:
                 https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_title.html
 
         """
-        self._set_label('title', title, **kwargs)
+        self._set_label("title", title, **kwargs)
         return
 
     def _set_tick_label_fontsize(self, which, fontsize):
@@ -133,7 +132,7 @@ class Label:
             fontsize (int): Fontsize for associated label.
 
         """
-        setattr(self.label, which + '_tick_label_fontsize', fontsize)
+        setattr(self.label, which + "_tick_label_fontsize", fontsize)
         return
 
     def set_x_tick_label_fontsize(self, fontsize):
@@ -147,7 +146,7 @@ class Label:
             fontsize (int): Fontsize for x axis tick labels.
 
         """
-        self._set_tick_label_fontsize('x', fontsize)
+        self._set_tick_label_fontsize("x", fontsize)
         return
 
     def set_y_tick_label_fontsize(self, fontsize):
@@ -161,7 +160,7 @@ class Label:
             fontsize (int): Fontsize for y axis tick labels.
 
         """
-        self._set_tick_label_fontsize('y', fontsize)
+        self._set_tick_label_fontsize("y", fontsize)
         return
 
     def set_tick_label_fontsize(self, fontsize):
@@ -174,7 +173,7 @@ class Label:
             fontsize (int): Fontsize for x and y axes tick labels.
 
         """
-        self._set_tick_label_fontsize('x', fontsize)
+        self._set_tick_label_fontsize("x", fontsize)
         return
 
 
@@ -196,6 +195,7 @@ class LabelContainer:
             plot. Default is 14.
 
     """
+
     def __init__(self):
         pass
 
@@ -211,6 +211,7 @@ class Limits:
     in the SinglePlot class.
 
     """
+
     def _set_axis_limits(self, which, lims, d, scale, reverse=False):
         """Private method for setting axis limits.
 
@@ -225,12 +226,12 @@ class Limits:
             reverse (bool, optional): If True, reverse the axis tick marks. Default is False.
 
         """
-        setattr(self.limits, which + 'lims', lims)
-        setattr(self.limits, 'd' + which, d)
-        setattr(self.limits, which + 'scale', scale)
+        setattr(self.limits, which + "lims", lims)
+        setattr(self.limits, "d" + which, d)
+        setattr(self.limits, which + "scale", scale)
 
         if reverse:
-            setattr(self.limits, 'reverse_' + which + '_axis', True)
+            setattr(self.limits, "reverse_" + which + "_axis", True)
         return
 
     def set_xlim(self, xlims, dx, xscale, reverse=False):
@@ -246,7 +247,7 @@ class Limits:
             reverse (bool, optional): If True, reverse the axis tick marks. Default is False.
 
         """
-        self._set_axis_limits('x', xlims, dx, xscale, reverse)
+        self._set_axis_limits("x", xlims, dx, xscale, reverse)
         return
 
     def set_ylim(self, xlims, dx, xscale, reverse=False):
@@ -262,7 +263,7 @@ class Limits:
             reverse (bool, optional): If True, reverse the axis tick marks. Default is False.
 
         """
-        self._set_axis_limits('y', xlims, dx, xscale, reverse)
+        self._set_axis_limits("y", xlims, dx, xscale, reverse)
         return
 
 
@@ -286,6 +287,7 @@ class LimitsContainer:
             Default is ``False``.
 
     """
+
     def __init__(self):
         pass
 
@@ -301,6 +303,7 @@ class Legend:
     in the SinglePlot class.
 
     """
+
     def add_legend(self, labels=None, **kwargs):
         """Specify legend for a plot.
 
@@ -335,12 +338,12 @@ class Legend:
                 https://matplotlib.org/api/_as_gen/matplotlib.pyplot.legend.html
 
         """
-        if 'size' in kwargs:
-            if 'prop' not in kwargs:
-                kwargs['prop'] = {'size': kwargs['size']}
+        if "size" in kwargs:
+            if "prop" not in kwargs:
+                kwargs["prop"] = {"size": kwargs["size"]}
             else:
-                kwargs['prop']['size'] = kwargs['size']
-            del kwargs['size']
+                kwargs["prop"]["size"] = kwargs["size"]
+            del kwargs["size"]
         self.legend.add_legend = True
         self.legend.legend_labels = labels
         self.legend.legend_kwargs = kwargs
@@ -359,6 +362,7 @@ class LegendContainer:
         legend_kwargs (dict): Stores kwargs for ``ax.legend()``.
 
     """
+
     def __init__(self):
         pass
 
@@ -378,6 +382,7 @@ class Extra:
     extra customization of plots.
 
     """
+
     def grid(self, grid=True):
         """Add gridlines to plot.
 
@@ -488,6 +493,7 @@ class ExtraContainer:
             Default is same value as loss/gain contour (which defaults to SNR_CUT).
 
     """
+
     def __init__(self):
         pass
 
@@ -500,8 +506,16 @@ class DataImport:
     have already been imported.
 
     """
-    def add_dataset(self, name=None, label=None,
-                    x_column_label=None, y_column_label=None, index=None, control=False):
+
+    def add_dataset(
+        self,
+        name=None,
+        label=None,
+        x_column_label=None,
+        y_column_label=None,
+        index=None,
+        control=False,
+    ):
         """Add a dataset to a specific plot.
 
         This method adds a dataset to a plot. Its functional use is imperative
@@ -533,8 +547,10 @@ class DataImport:
 
         """
         if name is None and label is None and index is None:
-            raise ValueError("Attempting to add a dataset without"
-                             + "supplying index or file information.")
+            raise ValueError(
+                "Attempting to add a dataset without"
+                + "supplying index or file information."
+            )
 
         if index is None:
             trans_dict = DataImportContainer()
@@ -554,7 +570,7 @@ class DataImport:
                 self.control = trans_dict
             else:
                 # need to append file to file list.
-                if 'file' not in self.__dict__:
+                if "file" not in self.__dict__:
                     self.file = []
                 self.file.append(trans_dict)
         else:
@@ -564,7 +580,7 @@ class DataImport:
 
             else:
                 # need to append index to index list.
-                if 'indices' not in self.__dict__:
+                if "indices" not in self.__dict__:
                     self.indices = []
 
                 self.indices.append(index)
@@ -593,6 +609,7 @@ class DataImportContainer:
             is `x`/`y`.
 
     """
+
     def __init__(self):
         pass
 
@@ -622,6 +639,7 @@ class SinglePlot(Label, Limits, Legend, Extra, DataImport):
             Default is empty container or ``{}``.
 
     """
+
     def __init__(self):
         self.label = LabelContainer()
         self.limits = LimitsContainer()
@@ -655,7 +673,7 @@ class SinglePlot(Label, Limits, Legend, Extra, DataImport):
         return
 
     def add_comparison(self, comp_list):
-        if 'comparisons' not in self.__dict__:
+        if "comparisons" not in self.__dict__:
             self.comparisons = []
 
         self.comparisons.append(comp_list)
@@ -723,14 +741,14 @@ class Figure:
 
         """
         self.figure.spacing = space
-        if 'subplots_adjust_kwargs' not in self.figure.__dict__:
+        if "subplots_adjust_kwargs" not in self.figure.__dict__:
             self.figure.subplots_adjust_kwargs = {}
-        if space == 'wide':
-            self.figure.subplots_adjust_kwargs['hspace'] = 0.3
-            self.figure.subplots_adjust_kwargs['wspace'] = 0.3
+        if space == "wide":
+            self.figure.subplots_adjust_kwargs["hspace"] = 0.3
+            self.figure.subplots_adjust_kwargs["wspace"] = 0.3
         else:
-            self.figure.subplots_adjust_kwargs['hspace'] = 0.0
-            self.figure.subplots_adjust_kwargs['wspace'] = 0.0
+            self.figure.subplots_adjust_kwargs["hspace"] = 0.0
+            self.figure.subplots_adjust_kwargs["wspace"] = 0.0
 
         return
 
@@ -759,15 +777,15 @@ class Figure:
 
         """
         prop_default = {
-            'bottom': 0.1,
-            'top': 0.85,
-            'right': 0.9,
-            'left': 0.12,
-            'hspace': 0.3,
-            'wspace': 0.3,
+            "bottom": 0.1,
+            "top": 0.85,
+            "right": 0.9,
+            "left": 0.12,
+            "hspace": 0.3,
+            "wspace": 0.3,
         }
 
-        if 'subplots_adjust_kwargs' in self.figure.__dict__:
+        if "subplots_adjust_kwargs" in self.figure.__dict__:
             for key, value in self.figure.subplots_adjust_kwargs.items():
                 prop_default[key] = value
 
@@ -778,10 +796,10 @@ class Figure:
         return
 
     def _set_fig_label(self, which, label, x, y, **kwargs):
-        setattr(self.figure, 'fig_' + which + '_label', label)
-        setattr(self.figure, 'fig_' + which + '_label_x', x)
-        setattr(self.figure, 'fig_' + which + '_label_y', y)
-        setattr(self.figure, 'fig_' + which + '_label_kwargs', kwargs)
+        setattr(self.figure, "fig_" + which + "_label", label)
+        setattr(self.figure, "fig_" + which + "_label_x", x)
+        setattr(self.figure, "fig_" + which + "_label_y", y)
+        setattr(self.figure, "fig_" + which + "_label_kwargs", kwargs)
 
     def set_fig_x_label(self, xlabel, **kwargs):
         """Set overall figure x.
@@ -809,17 +827,17 @@ class Figure:
 
         """
         prop_default = {
-            'x': 0.01,
-            'y': 0.51,
-            'fontsize': 20,
-            'rotation': 'vertical',
-            'va': 'center',
+            "x": 0.45,
+            "y": 0.02,
+            "fontsize": 20,
+            "rotation": "horizontal",
+            "ha": "center",
         }
 
         for prop, default in prop_default.items():
             kwargs[prop] = kwargs.get(prop, default)
 
-        self._set_fig_label('x', xlabel, **kwargs)
+        self._set_fig_label("x", xlabel, **kwargs)
         return
 
     def set_fig_y_label(self, ylabel, **kwargs):
@@ -848,17 +866,17 @@ class Figure:
 
         """
         prop_default = {
-            'x': 0.45,
-            'y': 0.02,
-            'fontsize': 20,
-            'rotation': 'horizontal',
-            'ha': 'center',
+            "x": 0.01,
+            "y": 0.51,
+            "fontsize": 20,
+            "rotation": "vertical",
+            "va": "center",
         }
 
         for prop, default in prop_default.items():
             kwargs[prop] = kwargs.get(prop, default)
 
-        self._set_fig_label('y', ylabel, **kwargs)
+        self._set_fig_label("y", ylabel, **kwargs)
         return
 
     def set_fig_title(self, title, **kwargs):
@@ -882,9 +900,7 @@ class Figure:
             fontsize/size (int, optional): The font size of the text. Default is 20.
 
         """
-        prop_default = {
-            'fontsize': 20,
-        }
+        prop_default = {"fontsize": 20}
 
         for prop, default in prop_default.items():
             kwargs[prop] = kwargs.get(prop, default)
@@ -916,14 +932,14 @@ class Figure:
 
         """
         prop_default = {
-            'cbar_label': None,
-            'cbar_ticks_fontsize': 15,
-            'cbar_label_fontsize': 20,
-            'cbar_axes': [],
-            'cbar_ticks': [],
-            'cbar_tick_labels': [],
-            'cbar_pos': 'use_default',
-            'cbar_label_pad': None,
+            "cbar_label": None,
+            "cbar_ticks_fontsize": 15,
+            "cbar_label_fontsize": 20,
+            "cbar_axes": [],
+            "cbar_ticks": [],
+            "cbar_tick_labels": [],
+            "cbar_pos": "use_default",
+            "cbar_label_pad": None,
         }
 
         for prop, default in prop_default.items():
@@ -932,7 +948,7 @@ class Figure:
             if prop[5:] in kwargs:
                 del kwargs[prop[5:]]
 
-        if 'colorbars' not in self.figure.__dict__:
+        if "colorbars" not in self.figure.__dict__:
             self.figure.colorbars = {}
 
         self.figure.colorbars[plot_type] = kwargs
@@ -971,6 +987,7 @@ class FigureContainer:
         colorbars (obj): ColorbarContainer object carrying information for the colorbars.
 
     """
+
     def __init__(self):
         pass
 
@@ -983,6 +1000,7 @@ class General:
     can be overriden with methods in SinglePlot.
 
     """
+
     def set_snr_cut(self, cut_val):
         """Set the SNR_CUT value.
 
@@ -1009,7 +1027,7 @@ class General:
         self.general.WORKING_DIRECTORY = wd
         return
 
-    def switch_backend(self, string='agg'):
+    def switch_backend(self, string="agg"):
         """Switch the matplotlib backend.
 
         Changes the backend for matplotlib. See https://matplotlib.org/faq/usage_faq.html
@@ -1057,8 +1075,11 @@ class General:
         if ylabel is not None:
             self.general.y_column_label = ylabel
         if xlabel is None and ylabel is None:
-            warnings.warn("is not specifying x or y lables even"
-                          + "though column labels function is called.", UserWarning)
+            warnings.warn(
+                "is not specifying x or y lables even"
+                + "though column labels function is called.",
+                UserWarning,
+            )
         return
 
     def _set_all_lims(self, which, lim, d, scale, fontsize=None):
@@ -1078,12 +1099,12 @@ class General:
 
         """
 
-        setattr(self.general, which + 'lims', lim)
-        setattr(self.general, 'd' + which, d)
-        setattr(self.general, which + 'scale', scale)
+        setattr(self.general, which + "lims", lim)
+        setattr(self.general, "d" + which, d)
+        setattr(self.general, which + "scale", scale)
 
         if fontsize is not None:
-            setattr(self.general, which + '_tick_label_fontsize', fontsize)
+            setattr(self.general, which + "_tick_label_fontsize", fontsize)
         return
 
     def set_all_xlims(self, xlim, dx, xscale, fontsize=None):
@@ -1100,7 +1121,7 @@ class General:
                 Default is None.
 
         """
-        self._set_all_lims('x', xlim, dx, xscale, fontsize)
+        self._set_all_lims("x", xlim, dx, xscale, fontsize)
         return
 
     def set_all_ylims(self, ylim, dy, yscale, fontsize=None):
@@ -1117,7 +1138,7 @@ class General:
                 Default is None.
 
         """
-        self._set_all_lims('y', ylim, dy, yscale, fontsize)
+        self._set_all_lims("y", ylim, dy, yscale, fontsize)
         return
 
     def set_all_ticklabel_fontsize(self, fontsize):
@@ -1159,12 +1180,12 @@ class General:
             ValueError: The string representing the axis to reverse is not `x` or `y`.
 
         """
-        if axis_to_reverse.lower() == 'x':
+        if axis_to_reverse.lower() == "x":
             self.general.reverse_x_axis = True
-        if axis_to_reverse.lower() == 'y':
+        if axis_to_reverse.lower() == "y":
             self.general.reverse_y_axis = True
-        if axis_to_reverse.lower() != 'x' or axis_to_reverse.lower() != 'y':
-            raise ValueError('Axis for reversing needs to be either x or y.')
+        if axis_to_reverse.lower() != "x" or axis_to_reverse.lower() != "y":
+            raise ValueError("Axis for reversing needs to be either x or y.")
         return
 
 
@@ -1219,6 +1240,7 @@ class GeneralContainer:
             Can be overridden for specific plots. Default is False.
 
     """
+
     def __init__(self, nrows, ncols, sharex=True, sharey=True):
         self.num_rows = nrows
         self.num_cols = ncols
@@ -1259,9 +1281,10 @@ class MainContainer(General, Figure):
             class after it is completed.
 
     """
+
     def __init__(self, nrows, ncols, sharex=True, sharey=True, print_input=False):
         self.print_input = print_input
-        self.total_plots = nrows*ncols
+        self.total_plots = nrows * ncols
 
         self.general = GeneralContainer(nrows, ncols, sharex, sharey)
         self.figure = FigureContainer()
@@ -1285,17 +1308,20 @@ class MainContainer(General, Figure):
 
         """
         output_dict = {}
-        output_dict['general'] = self._iterate_through_class(self.general.__dict__)
-        output_dict['figure'] = self._iterate_through_class(self.figure.__dict__)
+        output_dict["general"] = self._iterate_through_class(self.general.__dict__)
+        output_dict["figure"] = self._iterate_through_class(self.figure.__dict__)
 
         if self.total_plots > 1:
-            trans_dict = ({
-                           str(i): self._iterate_through_class(axis.__dict__) for i, axis
-                          in enumerate(self.ax)})
-            output_dict['plot_info'] = trans_dict
+            trans_dict = {
+                str(i): self._iterate_through_class(axis.__dict__)
+                for i, axis in enumerate(self.ax)
+            }
+            output_dict["plot_info"] = trans_dict
 
         else:
-            output_dict['plot_info'] = {'0': self._iterate_through_class(self.ax.__dict__)}
+            output_dict["plot_info"] = {
+                "0": self._iterate_through_class(self.ax.__dict__)
+            }
 
         if self.print_input:
             print(output_dict)

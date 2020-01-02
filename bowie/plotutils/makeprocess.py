@@ -15,10 +15,7 @@ import matplotlib.pyplot as plt
 
 from bowie.plotutils.readdata import PlotVals, ReadInData
 from bowie.plotutils.baseplot import FigColorbar
-from bowie.plotutils.plottypes import (CreateSinglePlot,
-                                                Waterfall,
-                                                Ratio,
-                                                Horizon)
+from bowie.plotutils.plottypes import CreateSinglePlot, Waterfall, Ratio, Horizon
 
 
 class MakePlotProcess:
@@ -71,24 +68,25 @@ class MakePlotProcess:
         Note: All kwargs above are added as attributes.
 
     """
+
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
         prop_default = {
-            'sharex': True,
-            'sharey': True,
-            'figure_width': 8,
-            'figure_height': 8,
-            'bottom': 0.1,
-            'right': 0.9,
-            'left': 0.12,
-            'top': 0.85,
-            'hspace': 0.3,
-            'wspace': 0.3,
-            'colorbars': {},
-            'subplots_adjust_kwargs': {},
-            }
+            "sharex": True,
+            "sharey": True,
+            "figure_width": 8,
+            "figure_height": 8,
+            "bottom": 0.1,
+            "right": 0.9,
+            "left": 0.12,
+            "top": 0.85,
+            "hspace": 0.3,
+            "wspace": 0.3,
+            "colorbars": {},
+            "subplots_adjust_kwargs": {},
+        }
 
         for prop, default in prop_default.items():
             setattr(self, prop, kwargs.get(prop, default))
@@ -109,18 +107,23 @@ class MakePlotProcess:
         self.plot_info = trans_cont_dict
 
         # set empty lists for x,y,z
-        x = [[]for i in np.arange(len(self.plot_info.keys()))]
+        x = [[] for i in np.arange(len(self.plot_info.keys()))]
         y = [[] for i in np.arange(len(self.plot_info.keys()))]
         z = [[] for i in np.arange(len(self.plot_info.keys()))]
 
         # read in base files/data
         for k, axis_string in enumerate(self.plot_info.keys()):
 
-            if 'file' not in self.plot_info[axis_string].keys():
+            if "file" not in self.plot_info[axis_string].keys():
                 continue
-            for j, file_dict in enumerate(self.plot_info[axis_string]['file']):
-                data_class = ReadInData(**{**self.general, **file_dict,
-                                           **self.plot_info[axis_string]['limits']})
+            for j, file_dict in enumerate(self.plot_info[axis_string]["file"]):
+                data_class = ReadInData(
+                    **{
+                        **self.general,
+                        **file_dict,
+                        **self.plot_info[axis_string]["limits"],
+                    }
+                )
 
                 x[k].append(data_class.x_append_value)
                 y[k].append(data_class.y_append_value)
@@ -132,12 +135,13 @@ class MakePlotProcess:
         for k, axis_string in enumerate(self.plot_info.keys()):
 
             # takes first file from plot
-            if 'indices' in self.plot_info[axis_string]:
-                if type(self.plot_info[axis_string]['indices']) == int:
-                    self.plot_info[axis_string]['indices'] = (
-                        [self.plot_info[axis_string]['indices']])
+            if "indices" in self.plot_info[axis_string]:
+                if type(self.plot_info[axis_string]["indices"]) == int:
+                    self.plot_info[axis_string]["indices"] = [
+                        self.plot_info[axis_string]["indices"]
+                    ]
 
-                for index in self.plot_info[axis_string]['indices']:
+                for index in self.plot_info[axis_string]["indices"]:
 
                     index = int(index)
 
@@ -147,21 +151,28 @@ class MakePlotProcess:
 
         # read or append control values for ratio plots
         for k, axis_string in enumerate(self.plot_info.keys()):
-            if 'control' in self.plot_info[axis_string]:
-                if ('name' in self.plot_info[axis_string]['control'] or
-                        'label' in self.plot_info[axis_string]['control']):
-                    file_dict = self.plot_info[axis_string]['control']
-                    if 'limits' in self.plot_info[axis_string].keys():
-                        liimits_dict = self.plot_info[axis_string]['limits']
+            if "control" in self.plot_info[axis_string]:
+                if (
+                    "name" in self.plot_info[axis_string]["control"]
+                    or "label" in self.plot_info[axis_string]["control"]
+                ):
+                    file_dict = self.plot_info[axis_string]["control"]
+                    if "limits" in self.plot_info[axis_string].keys():
+                        liimits_dict = self.plot_info[axis_string]["limits"]
 
-                    data_class = ReadInData(**{**self.general, **file_dict,
-                                               **self.plot_info[axis_string]['limits']})
+                    data_class = ReadInData(
+                        **{
+                            **self.general,
+                            **file_dict,
+                            **self.plot_info[axis_string]["limits"],
+                        }
+                    )
                     x[k].append(data_class.x_append_value)
                     y[k].append(data_class.y_append_value)
                     z[k].append(data_class.z_append_value)
 
-                elif 'index' in self.plot_info[axis_string]['control']:
-                    index = int(self.plot_info[axis_string]['control']['index'])
+                elif "index" in self.plot_info[axis_string]["control"]:
+                    index = int(self.plot_info[axis_string]["control"]["index"])
 
                     x[k].append(x[index][0])
                     y[k].append(y[index][0])
@@ -183,10 +194,12 @@ class MakePlotProcess:
         """
 
         # declare figure and axes environments
-        fig, ax = plt.subplots(nrows=int(self.num_rows),
-                               ncols=int(self.num_cols),
-                               sharex=self.sharex,
-                               sharey=self.sharey)
+        fig, ax = plt.subplots(
+            nrows=int(self.num_rows),
+            ncols=int(self.num_cols),
+            sharex=self.sharex,
+            sharey=self.sharey,
+        )
 
         fig.set_size_inches(self.figure_width, self.figure_height)
 
@@ -197,54 +210,61 @@ class MakePlotProcess:
             ax = [ax]
 
         # create list of plot types
-        self.plot_types = [self.plot_info[str(i)]['plot_type'] for i in range(len(ax))]
+        self.plot_types = [self.plot_info[str(i)]["plot_type"] for i in range(len(ax))]
 
         if len(self.plot_types) == 1:
             if self.plot_types[0] not in self.colorbars:
-                self.colorbars[self.plot_types[0]] = {'cbar_pos': 5}
+                self.colorbars[self.plot_types[0]] = {"cbar_pos": 5}
             else:
-                if 'cbar_pos' not in self.colorbars[self.plot_types[0]]:
-                    self.colorbars[self.plot_types[0]]['cbar_pos'] = 5
+                if "cbar_pos" not in self.colorbars[self.plot_types[0]]:
+                    self.colorbars[self.plot_types[0]]["cbar_pos"] = 5
 
         # prepare colorbar classes
         self.colorbar_classes = {}
         for plot_type in self.plot_types:
             if plot_type in self.colorbar_classes:
                 continue
-            if plot_type == 'Horizon':
+            if plot_type == "Horizon":
                 self.colorbar_classes[plot_type] = None
 
             elif plot_type in self.colorbars:
-                self.colorbar_classes[plot_type] = FigColorbar(fig, plot_type,
-                                                               **self.colorbars[plot_type])
+                self.colorbar_classes[plot_type] = FigColorbar(
+                    fig, plot_type, **self.colorbars[plot_type]
+                )
 
             else:
                 self.colorbar_classes[plot_type] = FigColorbar(fig, plot_type)
 
         # set subplots_adjust settings
-        if 'Ratio' in self.plot_types or 'Waterfall':
-            self.subplots_adjust_kwargs['right'] = 0.79
+        if "Ratio" in self.plot_types or "Waterfall":
+            self.subplots_adjust_kwargs["right"] = 0.79
 
         # adjust figure sizes
         fig.subplots_adjust(**self.subplots_adjust_kwargs)
 
-        if 'fig_y_label' in self.__dict__.keys():
-            fig.text(self.fig_y_label_x,
-                     self.fig_y_label_y,
-                     r'{}'.format(self.fig_y_label),
-                     **self.fig_y_label_kwargs)
+        if "fig_y_label" in self.__dict__.keys():
+            fig.text(
+                self.fig_y_label_x,
+                self.fig_y_label_y,
+                r"{}".format(self.fig_y_label),
+                **self.fig_y_label_kwargs
+            )
 
-        if 'fig_x_label' in self.__dict__.keys():
-            fig.text(self.fig_x_label_x,
-                     self.fig_x_label_y,
-                     r'{}'.format(self.fig_x_label),
-                     **self.fig_x_label_kwargs)
+        if "fig_x_label" in self.__dict__.keys():
+            fig.text(
+                self.fig_x_label_x,
+                self.fig_x_label_y,
+                r"{}".format(self.fig_x_label),
+                **self.fig_x_label_kwargs
+            )
 
-        if 'fig_title' in self.__dict__.keys():
-            fig.text(self.fig_title_kwargs['x'],
-                     self.fig_title_kwargs['y'],
-                     r'{}'.format(self.fig_title),
-                     **self.fig_title_kwargs)
+        if "fig_title" in self.__dict__.keys():
+            fig.text(
+                self.fig_title_kwargs["x"],
+                self.fig_title_kwargs["y"],
+                r"{}".format(self.fig_title),
+                **self.fig_title_kwargs
+            )
 
         self.fig, self.ax = fig, ax
         return
@@ -256,19 +276,23 @@ class MakePlotProcess:
         for i, axis in enumerate(self.ax):
             # plot everything. First check general dict for parameters related to plots.
             trans_plot_class_call = globals()[self.plot_types[i]]
-            trans_plot_class = trans_plot_class_call(self.fig, axis,
-                                                     self.value_classes[i].x_arr_list,
-                                                     self.value_classes[i].y_arr_list,
-                                                     self.value_classes[i].z_arr_list,
-                                                     colorbar=(
-                                                        self.colorbar_classes[self.plot_types[i]]),
-                                                     **{**self.general,
-                                                        **self.figure,
-                                                        **self.plot_info[str(i)],
-                                                        **self.plot_info[str(i)]['limits'],
-                                                        **self.plot_info[str(i)]['label'],
-                                                        **self.plot_info[str(i)]['extra'],
-                                                        **self.plot_info[str(i)]['legend']})
+            trans_plot_class = trans_plot_class_call(
+                self.fig,
+                axis,
+                self.value_classes[i].x_arr_list,
+                self.value_classes[i].y_arr_list,
+                self.value_classes[i].z_arr_list,
+                colorbar=(self.colorbar_classes[self.plot_types[i]]),
+                **{
+                    **self.general,
+                    **self.figure,
+                    **self.plot_info[str(i)],
+                    **self.plot_info[str(i)]["limits"],
+                    **self.plot_info[str(i)]["label"],
+                    **self.plot_info[str(i)]["extra"],
+                    **self.plot_info[str(i)]["legend"],
+                }
+            )
 
             # create the plot
             trans_plot_class.make_plot()

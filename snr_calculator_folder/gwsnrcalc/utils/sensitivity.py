@@ -43,18 +43,19 @@ class SensitivityContainer:
         Note: All Keyword Arguments are added as attributes.
 
     """
+
     def __init__(self, **kwargs):
         prop_defaults = {
-            'sensitivity_curves': ['LPA'],
-            'add_wd_noise': 'Both',
-            'wd_noise': 'HB_wd_noise',
+            "sensitivity_curves": ["LPA"],
+            "add_wd_noise": "Both",
+            "wd_noise": "HB_wd_noise",
             # TODO: add 'all' and 'full' capabilities
-            'noise_type_in': 'ASD',
-            'wd_noise_type_in': 'ASD',
+            "noise_type_in": "ASD",
+            "wd_noise_type_in": "ASD",
         }
 
         for (prop, default) in prop_defaults.items():
-                setattr(self, prop, kwargs.get(prop, default))
+            setattr(self, prop, kwargs.get(prop, default))
 
         self._prep_noise_interpolants()
 
@@ -78,9 +79,11 @@ class SensitivityContainer:
 
         if isinstance(self.noise_type_in, list):
             if len(self.noise_type_in) != len(self.sensitivity_curves):
-                raise ValueError('noise_type_in must have same shape as sensitivity_curves if it is'
-                                 + 'provided as a list.'
-                                 + 'If all curves are of the same type, provide a string.')
+                raise ValueError(
+                    "noise_type_in must have same shape as sensitivity_curves if it is"
+                    + "provided as a list."
+                    + "If all curves are of the same type, provide a string."
+                )
 
         else:
             assert isinstance(self.noise_type_in, str)
@@ -92,10 +95,13 @@ class SensitivityContainer:
         # read in all the noise curves
         for num, sc in enumerate(self.sensitivity_curves):
             if isinstance(sc, str):
-                f, h_n = read_noise_curve(sc, noise_type_in=self.noise_type_in[num],
-                                          noise_type_out='char_strain')
-                if sc[-4:] == '.txt':
-                    key = sc.split('.')[0].split('/')[-1]
+                f, h_n = read_noise_curve(
+                    sc,
+                    noise_type_in=self.noise_type_in[num],
+                    noise_type_out="char_strain",
+                )
+                if sc[-4:] == ".txt":
+                    key = sc.split("/")[-1].split(".")[0]
                 else:
                     key = sc
             elif isinstance(sc, list):
@@ -103,34 +109,39 @@ class SensitivityContainer:
                 f, h_n = sc
                 key = str(num)
             else:
-                raise ValueError('Sensitivity curves must either be string'
-                                 + 'or list containing f_n and asd_n.')
+                raise ValueError(
+                    "Sensitivity curves must either be string"
+                    + "or list containing f_n and asd_n."
+                )
 
             noise_lists[key] = [f, h_n]
 
         # add wd noise
-        if str(self.add_wd_noise).lower() in ['true', 'both', 'yes']:
+        if str(self.add_wd_noise).lower() in ["true", "both", "yes"]:
             if isinstance(self.wd_noise, str):
-                f_n_wd, h_n_wd = read_noise_curve(self.wd_noise,
-                                                  noise_type_in=self.wd_noise_type_in,
-                                                  noise_type_out='char_strain')
+                f_n_wd, h_n_wd = read_noise_curve(
+                    self.wd_noise,
+                    noise_type_in=self.wd_noise_type_in,
+                    noise_type_out="char_strain",
+                )
             elif isinstance(self, wd_noise, list):
                 f_n_wd, h_n_wd = self.wd_noise
 
             trans_dict = {}
             for sc in noise_lists.keys():
                 f_n, h_n = noise_lists[sc]
-                if self.add_wd_noise.lower() == 'both':
+                if self.add_wd_noise.lower() == "both":
                     trans_dict[sc] = [f_n, h_n]
 
                 f_n, h_n = combine_with_wd_noise(f_n, h_n, f_n_wd, h_n_wd)
-                trans_dict[sc + '_wd'] = [f_n, h_n]
+                trans_dict[sc + "_wd"] = [f_n, h_n]
 
             noise_lists = trans_dict
 
         # interpolate
         for sc in noise_lists:
             f_n, h_n = noise_lists[sc]
-            self.noise_interpolants[sc] = (interpolate.interp1d(f_n, h_n,
-                                           bounds_error=False, fill_value=1e30))
+            self.noise_interpolants[sc] = interpolate.interp1d(
+                f_n, h_n, bounds_error=False, fill_value=1e30
+            )
         return
