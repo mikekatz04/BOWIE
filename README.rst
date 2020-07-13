@@ -19,7 +19,7 @@ The three plots to choose from are Waterfall, Ratio, and Horizon. A Waterfall pl
 
 **Note**: The remainder of this introduction specifically details installation of the plotting module. It is very adaptable to different gravitational wave sources or other measurements with similar signal-to-noise properties. The ``snr_calculator`` package is listed as a requirement for BOWIE (meaning the plotting module). This package is installed with the bowie install, however, it is available separately from the plotting module. For this purpose, it has its own README and documentation `here`_.
 
-.. _here: https://mikekatz04.github.io/BOWIE/snrcalc_link.html
+.. _here: https://mikekatz04.github.io/BOWIE/
 
 Getting Started
 ===============
